@@ -2014,6 +2014,7 @@ footer {
 .social-font a:hover:before {
   color: #2ca6cb;
 }
+.icon-bilibili:before,
 .icon-weibo:before,
 .icon-github:before,
 .icon-twitter:before,
@@ -2061,6 +2062,9 @@ footer {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   content: "\f142";
+}
+.icon-bilibili:before {
+  content: "\e606";
 }
 .copyright {
   -webkit-font-smoothing: antialiased;

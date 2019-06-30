@@ -1,0 +1,509 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+  
+    <title>排序算法笔记（C++版） | xxpcb&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="xxpcb">
+    
+
+    
+    <meta name="description" content="注：&amp;emsp;①第一个算法给出了完整的测试程序，其余的为避免重复及节省空间，只显示排序算法部分代码&amp;emsp;②运行结果的程序耗时每次运行略有不同，仅供大致对比参考 冒泡排序时间复杂度：O(n)[最好]，O(n^2^)[平均]，O(n^2^)[最差]空间复杂度：O(1)代码： 123456789101112131415161718192021222324252627282930313233343">
+<meta name="keywords" content="排序,算法,C++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="排序算法笔记（C++版）">
+<meta property="og:url" content="https://xxpcb.github.io/2019/06/29/排序算法笔记/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="注：&amp;emsp;①第一个算法给出了完整的测试程序，其余的为避免重复及节省空间，只显示排序算法部分代码&amp;emsp;②运行结果的程序耗时每次运行略有不同，仅供大致对比参考 冒泡排序时间复杂度：O(n)[最好]，O(n^2^)[平均]，O(n^2^)[最差]空间复杂度：O(1)代码： 123456789101112131415161718192021222324252627282930313233343">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-29T13:21:31.510Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="排序算法笔记（C++版）">
+<meta name="twitter:description" content="注：&amp;emsp;①第一个算法给出了完整的测试程序，其余的为避免重复及节省空间，只显示排序算法部分代码&amp;emsp;②运行结果的程序耗时每次运行略有不同，仅供大致对比参考 冒泡排序时间复杂度：O(n)[最好]，O(n^2^)[平均]，O(n^2^)[最差]空间复杂度：O(1)代码： 123456789101112131415161718192021222324252627282930313233343">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="xxpcb&#39;s Blog" title="xxpcb&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="xxpcb&#39;s Blog">xxpcb&#39;s Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/tags">标签</a></li>
+					
+						<li><a href="/categories">分类</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:xxpcb.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/06/29/排序算法笔记/" title="排序算法笔记（C++版）" itemprop="url">排序算法笔记（C++版）</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="xxpcb" target="_blank" itemprop="author">xxpcb</a>
+		
+  <p class="article-time">
+    <time datetime="2019-06-29T13:04:30.000Z" itemprop="datePublished"> 发表于 2019-06-29</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#冒泡排序"><span class="toc-number">1.</span> <span class="toc-text">冒泡排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#选择排序"><span class="toc-number">2.</span> <span class="toc-text">选择排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#插入排序"><span class="toc-number">3.</span> <span class="toc-text">插入排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#快速排序"><span class="toc-number">4.</span> <span class="toc-text">快速排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#归并排序"><span class="toc-number">5.</span> <span class="toc-text">归并排序</span></a></li></ol>
+		
+		</div>
+		
+		<p>注：<br>&emsp;①第一个算法给出了完整的测试程序，其余的为避免重复及节省空间，只显示排序算法部分代码<br>&emsp;②运行结果的程序耗时每次运行略有不同，仅供大致对比参考</p>
+<h1 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h1><p>时间复杂度：O(n)[最好]，O(n^2^)[平均]，O(n^2^)[最差]<br>空间复杂度：O(1)<br>代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;windows.h&gt;//计时用</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//冒泡排序算法</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bubbleSort</span><span class="params">(<span class="keyword">int</span> data[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//打印原始数据信息</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"\n 待排序数据为："</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) </span><br><span class="line">		<span class="built_in">cout</span> &lt;&lt; data[i] &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">	<span class="comment">//算法计时</span></span><br><span class="line">	LARGE_INTEGER  nFreq, t1, t2;</span><br><span class="line">	<span class="keyword">double</span> dt;</span><br><span class="line">	QueryPerformanceFrequency(&amp;nFreq);</span><br><span class="line">	QueryPerformanceCounter(&amp;t1);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//排序算法</span></span><br><span class="line">	<span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n - <span class="number">1</span>; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">bool</span> flag = <span class="literal">true</span>;<span class="comment">//排序提前完成标志</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n - i - <span class="number">1</span>; j++)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (data[j] &gt; data[j + <span class="number">1</span>])<span class="comment">//改成'&lt;'则为降序</span></span><br><span class="line">			&#123;</span><br><span class="line">				swap(data[j], data[j + <span class="number">1</span>]);</span><br><span class="line">				count++;</span><br><span class="line">				flag = <span class="literal">false</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (flag) <span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打印结果信息</span></span><br><span class="line">	QueryPerformanceCounter(&amp;t2);</span><br><span class="line">	dt = (t2.QuadPart - t1.QuadPart) / (<span class="keyword">double</span>)nFreq.QuadPart;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"\n 此次排序耗时: "</span> &lt;&lt; dt * <span class="number">1000000</span> &lt;&lt; <span class="string">"us"</span>;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"\n 执行了"</span>&lt;&lt;count&lt;&lt;<span class="string">"次swap交换"</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"\n 排序结果为："</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">		<span class="built_in">cout</span> &lt;&lt; data[i] &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//主函数</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> testdata1[<span class="number">10</span>] = &#123; <span class="number">1</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">9</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">0</span> &#125;;</span><br><span class="line">	bubbleSort(testdata1, <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> testdata2[<span class="number">10</span>] = &#123; <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">9</span>, <span class="number">8</span>, <span class="number">7</span>, <span class="number">6</span>, <span class="number">5</span> &#125;;</span><br><span class="line">	bubbleSort(testdata2, <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"> 待排序数据为：1 3 5 7 9 2 4 6 8 0</span><br><span class="line"> 此次排序耗时: 2us</span><br><span class="line"> 执行了19次swap交换</span><br><span class="line"> 排序结果为：0 1 2 3 4 5 6 7 8 9</span><br><span class="line"></span><br><span class="line"> 待排序数据为：0 1 2 3 4 9 8 7 6 5</span><br><span class="line"> 此次排序耗时: 1.1us</span><br><span class="line"> 执行了10次swap交换</span><br><span class="line"> 排序结果为：0 1 2 3 4 5 6 7 8 9</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<h1 id="选择排序"><a href="#选择排序" class="headerlink" title="选择排序"></a>选择排序</h1><p>时间复杂度：O(n^2^)[最好]，O(n^2^)[平均]，O(n^2^)[最差]<br>空间复杂度：O(1)<br>主要代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//n-1次外循环，每次选出最大的放在最右边</span></span><br><span class="line"><span class="comment">//内循环与最大值比较，记录最大值的标签</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">selectSort</span><span class="params">(<span class="keyword">int</span> data[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//打印原始数据信息（代码略，同上）</span></span><br><span class="line">	<span class="comment">//算法计时（代码略）</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//排序算法</span></span><br><span class="line">	<span class="comment">//int count = 0;</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = n - <span class="number">1</span>; i &gt; <span class="number">0</span>; i--)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">int</span> max = i;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> j = i - <span class="number">1</span>; j &gt;= <span class="number">0</span>; j--)<span class="comment">//从后向前推，有点绕</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (data[j] &gt; data[max])<span class="comment">//改成'&lt;'则为降序</span></span><br><span class="line">				max = j;</span><br><span class="line">		&#125;</span><br><span class="line">		swap(data[max], data[i]);</span><br><span class="line">		<span class="comment">//count++;</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打印结果信息（代码略）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"> 待排序数据为：1 3 5 7 9 2 4 6 8 0</span><br><span class="line"> 此次排序耗时: 1.1us</span><br><span class="line"> 执行了9次swap交换</span><br><span class="line"> 排序结果为：0 1 2 3 4 5 6 7 8 9</span><br><span class="line"></span><br><span class="line"> 待排序数据为：0 1 2 3 4 9 8 7 6 5</span><br><span class="line"> 此次排序耗时: 1us</span><br><span class="line"> 执行了9次swap交换</span><br><span class="line"> 排序结果为：0 1 2 3 4 5 6 7 8 9</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<h1 id="插入排序"><a href="#插入排序" class="headerlink" title="插入排序"></a>插入排序</h1><p>时间复杂度：O(n)[最好]，O(n^2^)[平均]，O(n^2^)[最差]<br>空间复杂度：O(1)<br>主要代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//插入排序</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">insertionSort</span><span class="params">(<span class="keyword">int</span>* data, <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//打印原始数据信息（代码略，同上）</span></span><br><span class="line">	<span class="comment">//算法计时（代码略）</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//排序算法</span></span><br><span class="line">	<span class="keyword">int</span> i, j;</span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; n; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">int</span> tmp = data[i];<span class="comment">//待插入的值</span></span><br><span class="line">		j = i;<span class="comment">//待插入的位置</span></span><br><span class="line">		<span class="keyword">while</span> (j &gt; <span class="number">0</span> &amp;&amp; data[j - <span class="number">1</span>] &gt; tmp)<span class="comment">//待插入的数较小</span></span><br><span class="line">		&#123;</span><br><span class="line">			data[j] = data[j - <span class="number">1</span>];<span class="comment">//前面的依次后移</span></span><br><span class="line">			j--;</span><br><span class="line">		&#125;</span><br><span class="line">		data[j] = tmp;<span class="comment">//插入值</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打印结果信息（代码略）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"> 待排序数据为：1 3 5 7 9 2 4 6 8 0</span><br><span class="line"> 此次排序耗时: 0.3us</span><br><span class="line"> 排序结果为：0 1 2 3 4 5 6 7 8 9</span><br><span class="line"></span><br><span class="line"> 待排序数据为：0 1 2 3 4 9 8 7 6 5</span><br><span class="line"> 此次排序耗时: 0.2us</span><br><span class="line"> 排序结果为：0 1 2 3 4 5 6 7 8 9</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<h1 id="快速排序"><a href="#快速排序" class="headerlink" title="快速排序"></a>快速排序</h1><p>时间复杂度：O(nlogn)[最好]，O(nlogn)[平均]，O(n^2^)[最差]<br>空间复杂度：O(logn)<br>主要代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//轴点构造算法</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">partition</span><span class="params">(<span class="keyword">int</span> x[], <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	swap(x[lo], x[lo + rand() % (hi - lo + <span class="number">1</span>)]);<span class="comment">//任选一个元素与首元素交换</span></span><br><span class="line">	<span class="keyword">int</span> pivot = x[lo];<span class="comment">//以首元素为候选轴点————经以上交换，等效于随机选取</span></span><br><span class="line">	<span class="keyword">while</span> (lo &lt; hi)<span class="comment">//从向量两端交替向中间扫描</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">while</span> ((lo &lt; hi) &amp;&amp; (pivot &lt;= x[hi])) hi--;<span class="comment">//不小于pivot下，向左拓展右端子向量</span></span><br><span class="line">		x[lo] = x[hi];<span class="comment">//小于pivot者归入左侧序列</span></span><br><span class="line">		<span class="keyword">while</span> ((lo &lt; hi) &amp;&amp; (x[lo] &lt;= pivot)) lo++;<span class="comment">//不大于pivot下，向右拓展左端子向量</span></span><br><span class="line">		x[hi] = x[lo];<span class="comment">//大于pivot者归入右侧序列</span></span><br><span class="line">	&#125;<span class="comment">//assert:lo==hi</span></span><br><span class="line">	x[lo] = pivot;<span class="comment">//将备份的轴点记录置于前后子向量之间</span></span><br><span class="line">	<span class="keyword">return</span> lo;<span class="comment">//返回轴点的秩</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//整体快速算法</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">quicksort</span><span class="params">(<span class="keyword">int</span> x[], <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (hi - lo &lt; <span class="number">2</span>) <span class="keyword">return</span>;<span class="comment">//单元素区间自然有序</span></span><br><span class="line">	<span class="keyword">int</span> mi = partition(x, lo, hi - <span class="number">1</span>);<span class="comment">//在[lo,hi-1]内构造轴点</span></span><br><span class="line">	quicksort(x, lo, mi);<span class="comment">//对前缀递归排序</span></span><br><span class="line">	quicksort(x, mi + <span class="number">1</span>, hi);<span class="comment">//对后缀递归排序</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> 待排序数据为：1 3 5 7 9 2 4 6 8 0</span><br><span class="line"> 此次排序耗时: 5.1us</span><br><span class="line"> 排序结果为：0 1 2 3 4 5 6 7 8 9</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<h1 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h1><p>时间复杂度：O(nlogn)[最好]，O(nlogn)[平均]，O(nlogn)[最差]<br>空间复杂度：O(n)<br>主要代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//合并两个有序数组</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">merge</span><span class="params">(<span class="keyword">int</span> x[], <span class="keyword">int</span> lo, <span class="keyword">int</span> mi, <span class="keyword">int</span> hi)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> *A = x + lo;<span class="comment">//设合并后为A(B+C=A)</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> lb = mi - lo;<span class="comment">//B的长度</span></span><br><span class="line">	<span class="keyword">int</span> *B = <span class="keyword">new</span>  <span class="keyword">int</span>[lb];<span class="comment">//先复制出一份B</span></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; lb; B[i] = A[i++]);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> lc = hi - mi;<span class="comment">//C的长度</span></span><br><span class="line">	<span class="keyword">int</span> *C = x + mi;<span class="comment">//C的指针起始位置（不用重新复制C）</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, j = <span class="number">0</span>, k = <span class="number">0</span>; j &lt; lb; )<span class="comment">//B未排完情况</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (k &lt;  lc &amp;&amp; C[k] &lt;  B[j]) A[i++] = C[k++];<span class="comment">//C也未完 且 C小（即两个都未完，复制小的C）</span></span><br><span class="line">		<span class="keyword">if</span> (k &gt;= lc || B[j] &lt;= C[k]) A[i++] = B[j++];<span class="comment">//C已完(只能复制B了) 或 B小(肯定要复制B)</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">delete</span>[] B;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//整体归并算法</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">mergesort</span><span class="params">(<span class="keyword">int</span> x[], <span class="keyword">int</span> lo, <span class="keyword">int</span> hi)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (hi - lo &lt; <span class="number">2</span>) <span class="keyword">return</span>;</span><br><span class="line">	<span class="keyword">int</span> mi = (hi + lo) / <span class="number">2</span>;</span><br><span class="line">	mergesort(x, lo, mi);</span><br><span class="line">	mergesort(x, mi, hi);</span><br><span class="line">	merge(x, lo, mi, hi);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> 待排序数据为：1 3 5 7 9 2 4 6 8 0</span><br><span class="line"> 此次排序耗时: 4.4us</span><br><span class="line"> 排序结果为：0 1 2 3 4 5 6 7 8 9</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<p>此文首发于我的CSDN：<a href="https://blog.csdn.net/hbsyaaa/article/details/89765323" target="_blank" rel="noopener">https://blog.csdn.net/hbsyaaa/article/details/89765323</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/排序/">排序</a><a href="/tags/算法/">算法</a><a href="/tags/C/">C++</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://xxpcb.github.io/2019/06/29/排序算法笔记/" data-title="排序算法笔记（C++版） | xxpcb&#39;s Blog" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2019/06/29/查找算法笔记/" title="查找算法笔记（C++版）">
+  <strong>上一篇：</strong><br/>
+  <span>
+  查找算法笔记（C++版）</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2019/06/27/My-new-Post/"  title="My new Post">
+ <strong>下一篇：</strong><br/> 
+ <span>My new Post
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#冒泡排序"><span class="toc-number">1.</span> <span class="toc-text">冒泡排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#选择排序"><span class="toc-number">2.</span> <span class="toc-text">选择排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#插入排序"><span class="toc-number">3.</span> <span class="toc-text">插入排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#快速排序"><span class="toc-number">4.</span> <span class="toc-text">快速排序</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#归并排序"><span class="toc-number">5.</span> <span class="toc-text">归并排序</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="xxpcb" data-theme="medium"></div>
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+
+
+
+  
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/C/" title="C++">C++<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/查找/" title="查找">查找<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/" target="_blank" title="Github">Github</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.instructables.com/" target="_blank" title="Yours for the making">Instructables</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m xxpcb in CJLU. <br/>
+			This is my blog ^_^</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/xxpcb" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		<a href="http://www.zhihu.com/people/xxpcb" target="_blank" class="icon-zhihu" title="知乎"></a>
+		
+		
+		<a href="http://space.bilibili.com/146899653" target="_blank" class="icon-bilibili" title="bilibili"></a>
+		
+		
+		
+		<a href="mailto:xxpcb2018@126.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="xxpcb">xxpcb</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
