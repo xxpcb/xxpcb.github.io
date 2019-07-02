@@ -4,30 +4,31 @@
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="UTF-8">
   
-    <title>使用swiftype实现站内搜索 | xxpcb&#39;s Blog</title>
+    <title>给网站添加CNZZ站点统计功能 | xxpcb&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="xxpcb">
     
 
     
-    <meta name="description" content="通过swiftype可以实现自建的hexo网站的内部文章内容搜索。 添加Engine提供两种，一种网站内搜索，一种app内搜索，选择网站搜索，输入自己的网站地址，如我的为：随后还要填写一个名称，任意，我填的“xxpcbWebSearch” 预览与安装按照提示，点击PREVIEW按钮，可能比较慢，我没等它出来预览结果就选择Step2了Step2会有一些配置可以改，默认就好，最后会出来如下一段代码：注">
-<meta name="keywords" content="搜索,swiftype">
+    <meta name="description" content="首先去CNZZ/友盟注册个账号，在网页底端找到网站数据统计  点击立即使用  之后就是添加自己网站的信息了，下面的图是我已经添加过了，当然还可以继续添加其它站点  填写基本的添加信息  然后去修改jacman主题下的_config.yml文件，将cnzz_tongji设为true，并添加自己的cnzz账号的id,id是在注册完成cnzz后，浏览器的网址栏里可以看到自己的id。 123cnzz_to">
+<meta name="keywords" content="CNZZ">
 <meta property="og:type" content="article">
-<meta property="og:title" content="使用swiftype实现站内搜索">
-<meta property="og:url" content="https://xxpcb.github.io/2019/07/01/站内搜索/index.html">
+<meta property="og:title" content="给网站添加CNZZ站点统计功能">
+<meta property="og:url" content="https://xxpcb.github.io/2019/07/02/站点统计/index.html">
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
-<meta property="og:description" content="通过swiftype可以实现自建的hexo网站的内部文章内容搜索。 添加Engine提供两种，一种网站内搜索，一种app内搜索，选择网站搜索，输入自己的网站地址，如我的为：随后还要填写一个名称，任意，我填的“xxpcbWebSearch” 预览与安装按照提示，点击PREVIEW按钮，可能比较慢，我没等它出来预览结果就选择Step2了Step2会有一些配置可以改，默认就好，最后会出来如下一段代码：注">
+<meta property="og:description" content="首先去CNZZ/友盟注册个账号，在网页底端找到网站数据统计  点击立即使用  之后就是添加自己网站的信息了，下面的图是我已经添加过了，当然还可以继续添加其它站点  填写基本的添加信息  然后去修改jacman主题下的_config.yml文件，将cnzz_tongji设为true，并添加自己的cnzz账号的id,id是在注册完成cnzz后，浏览器的网址栏里可以看到自己的id。 123cnzz_to">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190701/qUPiBgSOCt4p.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190701/hQzrBrXmCvz6.jpg?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190701/kN1xnzteujy1.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190701/qA6xaX02SaKe.png?imageslim">
-<meta property="og:updated_time" content="2019-07-01T08:24:19.510Z">
+<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190702/HAsimLm9tn4w.png?imageslim">
+<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190702/rNDmeXsiiyp6.png?imageslim">
+<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190702/lJpdYOtAW5Xz.png?imageslim">
+<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190702/TDV8cvXgMSbE.png?imageslim">
+<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190702/x4fRbpP3Egt7.png?imageslim">
+<meta property="og:updated_time" content="2019-07-02T14:05:14.764Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="使用swiftype实现站内搜索">
-<meta name="twitter:description" content="通过swiftype可以实现自建的hexo网站的内部文章内容搜索。 添加Engine提供两种，一种网站内搜索，一种app内搜索，选择网站搜索，输入自己的网站地址，如我的为：随后还要填写一个名称，任意，我填的“xxpcbWebSearch” 预览与安装按照提示，点击PREVIEW按钮，可能比较慢，我没等它出来预览结果就选择Step2了Step2会有一些配置可以改，默认就好，最后会出来如下一段代码：注">
-<meta name="twitter:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190701/qUPiBgSOCt4p.png?imageslim">
+<meta name="twitter:title" content="给网站添加CNZZ站点统计功能">
+<meta name="twitter:description" content="首先去CNZZ/友盟注册个账号，在网页底端找到网站数据统计  点击立即使用  之后就是添加自己网站的信息了，下面的图是我已经添加过了，当然还可以继续添加其它站点  填写基本的添加信息  然后去修改jacman主题下的_config.yml文件，将cnzz_tongji设为true，并添加自己的cnzz账号的id,id是在注册完成cnzz后，浏览器的网址栏里可以看到自己的id。 123cnzz_to">
+<meta name="twitter:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190702/HAsimLm9tn4w.png?imageslim">
 
     
     
@@ -96,14 +97,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2019/07/01/站内搜索/" title="使用swiftype实现站内搜索" itemprop="url">使用swiftype实现站内搜索</a>
+      <a href="/2019/07/02/站点统计/" title="给网站添加CNZZ站点统计功能" itemprop="url">给网站添加CNZZ站点统计功能</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="xxpcb" target="_blank" itemprop="author">xxpcb</a>
 		
   <p class="article-time">
-    <time datetime="2019-07-01T07:20:15.000Z" itemprop="datePublished"> 发表于 2019-07-01</time>
+    <time datetime="2019-07-02T14:02:39.000Z" itemprop="datePublished"> 发表于 2019-07-02</time>
     
   </p>
 </header>
@@ -112,26 +113,27 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#添加Engine"><span class="toc-number">1.</span> <span class="toc-text">添加Engine</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#预览与安装"><span class="toc-number">2.</span> <span class="toc-text">预览与安装</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置hexo中的jacman主题"><span class="toc-number">3.</span> <span class="toc-text">配置hexo中的jacman主题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#config-yml"><span class="toc-number">3.1.</span> <span class="toc-text">_config.yml</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#header-ejs"><span class="toc-number">3.2.</span> <span class="toc-text">header.ejs</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#测试效果"><span class="toc-number">4.</span> <span class="toc-text">测试效果</span></a></li></ol>
+			
 		
 		</div>
 		
-		<p>通过<a href="https://swiftype.com/" target="_blank" rel="noopener">swiftype</a>可以实现自建的hexo网站的内部文章内容搜索。</p>
-<h1 id="添加Engine"><a href="#添加Engine" class="headerlink" title="添加Engine"></a>添加Engine</h1><p>提供两种，一种网站内搜索，一种app内搜索，选择网站搜索，输入自己的网站地址，如我的为：<br><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190701/qUPiBgSOCt4p.png?imageslim" alt="mark"><br>随后还要填写一个名称，任意，我填的“xxpcbWebSearch”</p>
-<h1 id="预览与安装"><a href="#预览与安装" class="headerlink" title="预览与安装"></a>预览与安装</h1><p>按照提示，点击PREVIEW按钮，可能比较慢，我没等它出来预览结果就选择Step2了<br><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190701/hQzrBrXmCvz6.jpg?imageslim" alt="mark"><br>Step2会有一些配置可以改，默认就好，最后会出来如下一段代码：<br><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190701/kN1xnzteujy1.png?imageslim" alt="mark"><br>注意图片中最后一行有个<code>&lt;/script&gt;</code>不知什么原因没显示出来</p>
-<h1 id="配置hexo中的jacman主题"><a href="#配置hexo中的jacman主题" class="headerlink" title="配置hexo中的jacman主题"></a>配置hexo中的jacman主题</h1><h2 id="config-yml"><a href="#config-yml" class="headerlink" title="_config.yml"></a>_config.yml</h2><p>位于themes-&gt;jacman-&gt;_config.ym，末尾处，有谷歌百度等搜索方法，将其enable全设为false,并在最后添加两行：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">swift_search:</span><br><span class="line">  enable: true</span><br></pre></td></tr></table></figure>
+		<p>首先去<a href="https://www.umeng.com/" target="_blank" rel="noopener">CNZZ/友盟</a>注册个账号，在网页底端找到网站数据统计</p>
+<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190702/HAsimLm9tn4w.png?imageslim" alt="mark"></p>
+<p>点击立即使用</p>
+<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190702/rNDmeXsiiyp6.png?imageslim" alt="mark"></p>
+<p>之后就是添加自己网站的信息了，下面的图是我已经添加过了，当然还可以继续添加其它站点</p>
+<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190702/lJpdYOtAW5Xz.png?imageslim" alt="mark"></p>
+<p>填写基本的添加信息</p>
+<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190702/TDV8cvXgMSbE.png?imageslim" alt="mark"></p>
+<p>然后去修改jacman主题下的_config.yml文件，将cnzz_tongji设为true，并添加自己的cnzz账号的id,id是在注册完成cnzz后，浏览器的网址栏里可以看到自己的id。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cnzz_tongji:</span><br><span class="line">  enable: true</span><br><span class="line">  siteid: 1277776467   ## e.g. 1253575964 your cnzz tongji site id</span><br></pre></td></tr></table></figure>
 
-<h2 id="header-ejs"><a href="#header-ejs" class="headerlink" title="header.ejs"></a>header.ejs</h2><p>位于位于themes-&gt;jacman-&gt;layout-&gt;_partical-&gt;header.ejs, 在40行左右有百度的搜索代码：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">%</span> &#125; <span class="attr">else</span> <span class="attr">if</span>(<span class="attr">theme.baidu_search.enable</span>)&#123; %&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">form</span> <span class="attr">class</span>=<span class="string">"search"</span> <span class="attr">action</span>=<span class="string">"&lt;%- theme.baidu_search.site %&gt;"</span> <span class="attr">target</span>=<span class="string">"_blank"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">label</span>&gt;</span>Search<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">	&lt;input name="s" type="hidden" value= &lt;%= theme.baidu_search.id %&gt; &gt;&lt;input type="text" name="q" size="30" placeholder="&lt;%= __('search') %&gt;"&gt;&lt;br&gt;</span><br><span class="line">	<span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>到这里基本上就完成了，jacman主题默认配置好了一种统计显示格式，这是可以先测试一下是否可用。</p>
+<p>我是又改了一种显示方式，点获取代码，复制需要的格式代码<img src="http://pty934f18.bkt.clouddn.com/pic2019/20190702/x4fRbpP3Egt7.png?imageslim" alt="mark"></p>
+<p>替换粘贴到themes-&gt;jacman-&gt;layout-&gt;_partical-&gt;analytics.ejs的倒数第2行(我用的是图片样式2)</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">%</span> <span class="attr">if</span> (<span class="attr">theme.cnzz_tongji.enable</span>)&#123; %&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span>var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1277776467'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3D1277776467%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));<span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">%</span> &#125; %&gt;</span></span><br></pre></td></tr></table></figure>
 
-<p>在其下面添加类似的swift搜索代码：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">%</span> &#125; <span class="attr">else</span> <span class="attr">if</span>(<span class="attr">theme.swift_search.enable</span>)&#123; %&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">form</span> <span class="attr">class</span>=<span class="string">"search"</span> <span class="attr">action</span>=<span class="string">"&lt;%- config.root %&gt;search/index.html"</span> <span class="attr">method</span>=<span class="string">"get"</span> <span class="attr">accept-charset</span>=<span class="string">"utf-8"</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">label</span>&gt;</span>Search<span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">id</span>=<span class="string">"search"</span> <span class="attr">class</span>=<span class="string">"st-default-search-input"</span> <span class="attr">maxlength</span>=<span class="string">"20"</span> <span class="attr">placeholder</span>=<span class="string">"Search"</span> /&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>然后，在该文件的最后一行（<code>&lt;/div&gt;</code>）和倒数第二行（<code>&lt;/nav&gt;</code>）之间粘贴swift网站生成的那段代码，我的为：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">			<span class="tag">&lt;/<span class="name">nav</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span></span><br><span class="line">				(function(w,d,t,u,n,s,e)&#123;w['SwiftypeObject']=n;w[n]=w[n]||function()&#123;</span><br><span class="line">				(w[n].q=w[n].q||[]).push(arguments);&#125;;s=d.createElement(t);</span><br><span class="line">				e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);</span><br><span class="line">				&#125;)(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');</span><br><span class="line">				</span><br><span class="line">				_st('install','LoDyKRz9VvH9Xo2tRUyA','2.0.0');</span><br><span class="line">			<span class="tag">&lt;/<span class="name">script</span>&gt;</span>			</span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h1 id="测试效果"><a href="#测试效果" class="headerlink" title="测试效果"></a>测试效果</h1><p>使用<code>hexo g</code>编译，<code>hexo s</code>或<code>hexo d</code>测试，我的测试效果如下：<br><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190701/qA6xaX02SaKe.png?imageslim" alt="mark"></p>
+<p>另外，在cnzz网站上还可以设置查看密码，或设置所有人可查看。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -145,7 +147,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/搜索/">搜索</a><a href="/tags/swiftype/">swiftype</a>
+  <span></span> <a href="/tags/CNZZ/">CNZZ</a>
   </div>
 
 </div>
@@ -154,7 +156,7 @@
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="https://xxpcb.github.io/2019/07/01/站内搜索/" data-title="使用swiftype实现站内搜索 | xxpcb&#39;s Blog" data-tsina="" class="share clearfix">
+	  <div data-url="https://xxpcb.github.io/2019/07/02/站点统计/" data-title="给网站添加CNZZ站点统计功能 | xxpcb&#39;s Blog" data-tsina="" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -167,19 +169,11 @@
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2019/07/02/站点统计/" title="给网站添加CNZZ站点统计功能">
-  <strong>上一篇：</strong><br/>
-  <span>
-  给网站添加CNZZ站点统计功能</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2019/06/29/查找算法笔记/"  title="查找算法笔记（C++版）">
+<a href="/2019/07/01/站内搜索/"  title="使用swiftype实现站内搜索">
  <strong>下一篇：</strong><br/> 
- <span>查找算法笔记（C++版）
+ <span>使用swiftype实现站内搜索
 </span>
 </a>
 </div>
@@ -196,7 +190,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#添加Engine"><span class="toc-number">1.</span> <span class="toc-text">添加Engine</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#预览与安装"><span class="toc-number">2.</span> <span class="toc-text">预览与安装</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#配置hexo中的jacman主题"><span class="toc-number">3.</span> <span class="toc-text">配置hexo中的jacman主题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#config-yml"><span class="toc-number">3.1.</span> <span class="toc-text">_config.yml</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#header-ejs"><span class="toc-number">3.2.</span> <span class="toc-text">header.ejs</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#测试效果"><span class="toc-number">4.</span> <span class="toc-text">测试效果</span></a></li></ol>
+ 
  
   </div>
 
