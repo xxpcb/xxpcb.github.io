@@ -1,0 +1,703 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+  
+    <title>Linux常用命令 | xxpcb&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="xxpcb">
+    
+
+    
+    <meta name="description" content="文件/目录类注：目录或称文件夹。 新建文件1touch xxxfile  新建xxxfile文件。 新建目录1mkdir xxxdir  新建xxxdir目录  mkdir /home/workdir 在/home目录下创建workdir目录。 mkdir -p /home/workdir/dir1/dir2 连续创建，若中间目录不存在则强制创建。  查看文件/目录1ls  显示当前目录中的文件与">
+<meta name="keywords" content="Linux,命令">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux常用命令">
+<meta property="og:url" content="https://xxpcb.github.io/2019/07/20/Linux常用命令/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="文件/目录类注：目录或称文件夹。 新建文件1touch xxxfile  新建xxxfile文件。 新建目录1mkdir xxxdir  新建xxxdir目录  mkdir /home/workdir 在/home目录下创建workdir目录。 mkdir -p /home/workdir/dir1/dir2 连续创建，若中间目录不存在则强制创建。  查看文件/目录1ls  显示当前目录中的文件与">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-07-20T13:22:09.611Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux常用命令">
+<meta name="twitter:description" content="文件/目录类注：目录或称文件夹。 新建文件1touch xxxfile  新建xxxfile文件。 新建目录1mkdir xxxdir  新建xxxdir目录  mkdir /home/workdir 在/home目录下创建workdir目录。 mkdir -p /home/workdir/dir1/dir2 连续创建，若中间目录不存在则强制创建。  查看文件/目录1ls  显示当前目录中的文件与">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="xxpcb&#39;s Blog" title="xxpcb&#39;s Blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="xxpcb&#39;s Blog">xxpcb&#39;s Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/tags">标签</a></li>
+					
+						<li><a href="/categories">分类</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+							<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>
+			<script type="text/javascript">
+				(function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+				(w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+				e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+				})(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+				
+				_st('install','LoDyKRz9VvH9Xo2tRUyA','2.0.0');
+			</script>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2019/07/20/Linux常用命令/" title="Linux常用命令" itemprop="url">Linux常用命令</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="xxpcb" target="_blank" itemprop="author">xxpcb</a>
+		
+  <p class="article-time">
+    <time datetime="2019-07-20T13:07:44.000Z" itemprop="datePublished"> 发表于 2019-07-20</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#文件-目录类"><span class="toc-number">1.</span> <span class="toc-text">文件/目录类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#新建文件"><span class="toc-number">1.1.</span> <span class="toc-text">新建文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#新建目录"><span class="toc-number">1.2.</span> <span class="toc-text">新建目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看文件-目录"><span class="toc-number">1.3.</span> <span class="toc-text">查看文件/目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看目录大小"><span class="toc-number">1.4.</span> <span class="toc-text">查看目录大小</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看当前路径"><span class="toc-number">1.5.</span> <span class="toc-text">查看当前路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#改变工作目录"><span class="toc-number">1.6.</span> <span class="toc-text">改变工作目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#复制文件"><span class="toc-number">1.7.</span> <span class="toc-text">复制文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#移动或重命名文件"><span class="toc-number">1.8.</span> <span class="toc-text">移动或重命名文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除文件-目录"><span class="toc-number">1.9.</span> <span class="toc-text">删除文件/目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改问价权限"><span class="toc-number">1.10.</span> <span class="toc-text">修改问价权限</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#用户管理类"><span class="toc-number">2.</span> <span class="toc-text">用户管理类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#添加用户"><span class="toc-number">2.1.</span> <span class="toc-text">添加用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除用户"><span class="toc-number">2.2.</span> <span class="toc-text">删除用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改密码"><span class="toc-number">2.3.</span> <span class="toc-text">修改密码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#切换用户"><span class="toc-number">2.4.</span> <span class="toc-text">切换用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加用户组"><span class="toc-number">2.5.</span> <span class="toc-text">添加用户组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除用户组"><span class="toc-number">2.6.</span> <span class="toc-text">删除用户组</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#压缩打包类"><span class="toc-number">3.</span> <span class="toc-text">压缩打包类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#只打包"><span class="toc-number">3.1.</span> <span class="toc-text">只打包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#打包且压缩"><span class="toc-number">3.2.</span> <span class="toc-text">打包且压缩</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#查找类"><span class="toc-number">4.</span> <span class="toc-text">查找类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#查找文件-目录"><span class="toc-number">4.1.</span> <span class="toc-text">查找文件/目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查找字符串"><span class="toc-number">4.2.</span> <span class="toc-text">查找字符串</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看帮助"><span class="toc-number">4.3.</span> <span class="toc-text">查看帮助</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#进程管理类"><span class="toc-number">5.</span> <span class="toc-text">进程管理类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#查看进程"><span class="toc-number">5.1.</span> <span class="toc-text">查看进程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结束进程"><span class="toc-number">5.2.</span> <span class="toc-text">结束进程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看内存"><span class="toc-number">5.3.</span> <span class="toc-text">查看内存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看CPU占用"><span class="toc-number">5.4.</span> <span class="toc-text">查看CPU占用</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#磁盘管理类"><span class="toc-number">6.</span> <span class="toc-text">磁盘管理类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#查看磁盘"><span class="toc-number">6.1.</span> <span class="toc-text">查看磁盘</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文件链接"><span class="toc-number">6.2.</span> <span class="toc-text">文件链接</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#关机类"><span class="toc-number">7.</span> <span class="toc-text">关机类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#注销"><span class="toc-number">7.1.</span> <span class="toc-text">注销</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重启"><span class="toc-number">7.2.</span> <span class="toc-text">重启</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关机"><span class="toc-number">7.3.</span> <span class="toc-text">关机</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<h1 id="文件-目录类"><a href="#文件-目录类" class="headerlink" title="文件/目录类"></a><font color="#0099ff">文件/目录类</font></h1><p>注：目录或称文件夹。</p>
+<h2 id="新建文件"><a href="#新建文件" class="headerlink" title="新建文件"></a>新建文件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch xxxfile</span><br></pre></td></tr></table></figure>
+
+<p>新建xxxfile文件。</p>
+<h2 id="新建目录"><a href="#新建目录" class="headerlink" title="新建目录"></a>新建目录</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir xxxdir</span><br></pre></td></tr></table></figure>
+
+<p>新建xxxdir目录</p>
+<ul>
+<li>mkdir /home/workdir 在/home目录下创建workdir目录。</li>
+<li>mkdir -p /home/workdir/dir1/dir2 连续创建，若中间目录不存在则强制创建。</li>
+</ul>
+<h2 id="查看文件-目录"><a href="#查看文件-目录" class="headerlink" title="查看文件/目录"></a>查看文件/目录</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls</span><br></pre></td></tr></table></figure>
+
+<p>显示当前目录中的文件与目录（不包含隐藏文件）。</p>
+<ul>
+<li>ls -a 可以显示隐藏文件。</li>
+<li>ls -l 显示详细信息。</li>
+<li>ls -al 包含-a和-l的功能。</li>
+</ul>
+<h2 id="查看目录大小"><a href="#查看目录大小" class="headerlink" title="查看目录大小"></a>查看目录大小</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>du /bin 查看bin目录大小。</li>
+</ul>
+<h2 id="查看当前路径"><a href="#查看当前路径" class="headerlink" title="查看当前路径"></a>查看当前路径</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pwd</span><br></pre></td></tr></table></figure>
+
+<p>显示当前工作目录的绝对路径。</p>
+<h2 id="改变工作目录"><a href="#改变工作目录" class="headerlink" title="改变工作目录"></a>改变工作目录</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd xxx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>cd /home 进入home目录。</li>
+<li>cd - 回退到上一次的目录。</li>
+<li>cd .. 回到上一级。</li>
+<li>cd ../.. 连退两级。</li>
+</ul>
+<h2 id="复制文件"><a href="#复制文件" class="headerlink" title="复制文件"></a>复制文件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp xxx xxx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>cp /home/test /tmp/ 将/home文件夹下的test文件复制到/tmp目录下。</li>
+<li>cp -r /home/dir1 /tmp/ 将/home文件夹下的dir1文件夹复制到/tmp目录下。</li>
+</ul>
+<h2 id="移动或重命名文件"><a href="#移动或重命名文件" class="headerlink" title="移动或重命名文件"></a>移动或重命名文件</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv xxx xxx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>mv /home/test /home/test1 将/home目录下的test文件更名为test1。</li>
+<li>mv /home/dir1 /tmp/ 将/home目录下的dir1文件夹复制到/tmp文件夹下。</li>
+</ul>
+<h2 id="删除文件-目录"><a href="#删除文件-目录" class="headerlink" title="删除文件/目录"></a>删除文件/目录</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rm xxx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>rm /home/test 删除/home目录下的test文件。</li>
+<li>rm -r /home/dir1 删除/home目录下的dir1目录。</li>
+<li>rm -f txt 强制删除当前目录下的txt文件。</li>
+</ul>
+<h2 id="修改问价权限"><a href="#修改问价权限" class="headerlink" title="修改问价权限"></a>修改问价权限</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod</span><br></pre></td></tr></table></figure>
+
+<p>chmod g+w hello.c 用户组内对hello.c文件添加写权限。</p>
+<ul>
+<li>u(user), g(group), o(other), a(all)。</li>
+<li>+(增加某个权限)，-(去除某个权限)，=(赋予给定的权限)。</li>
+<li>r(read), w(write), x(execute)。</li>
+</ul>
+<h1 id="用户管理类"><a href="#用户管理类" class="headerlink" title="用户管理类"></a><font color="#0099ff">用户管理类</font></h1><h2 id="添加用户"><a href="#添加用户" class="headerlink" title="添加用户"></a>添加用户</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">useradd xxx -m</span><br></pre></td></tr></table></figure>
+
+<p>添加xxx用户，在/home目录下会生成与用户名同名的目录。<br>在etc/passwd的最后一行会有新添加的信息。<br>切换用户后若命令行的开头只显示$符号，将passwd中的/bin/sh改为/bin/bash。</p>
+<ul>
+<li>who 查看当前登陆的所有用户。</li>
+<li>whoami 查看自己账户名称。</li>
+</ul>
+<h2 id="删除用户"><a href="#删除用户" class="headerlink" title="删除用户"></a>删除用户</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">user -r xxx</span><br></pre></td></tr></table></figure>
+
+<p>删除xxx用户，-r参数会使/home目录下该用户的目录也一并删除，不加-r则只删除用户登录。</p>
+<h2 id="修改密码"><a href="#修改密码" class="headerlink" title="修改密码"></a>修改密码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">passwd xxx</span><br></pre></td></tr></table></figure>
+
+<p>修改xxx用户的密码，需要sudo权限。</p>
+<h2 id="切换用户"><a href="#切换用户" class="headerlink" title="切换用户"></a>切换用户</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">su - xxx</span><br></pre></td></tr></table></figure>
+
+<p>切换到xxx用户，并将xxx用户的环境变量同时带入。</p>
+<ul>
+<li>使用exit可返回切换。</li>
+<li>切换到超级管理员（root)需使用sudo -s命令。</li>
+<li>注意命令行中root后符号为#，普通用户为$。</li>
+</ul>
+<h2 id="添加用户组"><a href="#添加用户组" class="headerlink" title="添加用户组"></a>添加用户组</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">groupadd xxx</span><br></pre></td></tr></table></figure>
+
+<p>xxx为用户组名。</p>
+<h2 id="删除用户组"><a href="#删除用户组" class="headerlink" title="删除用户组"></a>删除用户组</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">groupdel xxx</span><br></pre></td></tr></table></figure>
+
+<h1 id="压缩打包类"><a href="#压缩打包类" class="headerlink" title="压缩打包类"></a><font color="#0099ff">压缩打包类</font></h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar</span><br></pre></td></tr></table></figure>
+
+<h2 id="只打包"><a href="#只打包" class="headerlink" title="只打包"></a>只打包</h2><ul>
+<li>tar cvf tmp.tar /tmp 将/tmp目录打包为tmp.tar文件。</li>
+<li>tar xvf tmp.tar 解包tmp.tar文件（-c 可指定解包路径）。</li>
+</ul>
+<h2 id="打包且压缩"><a href="#打包且压缩" class="headerlink" title="打包且压缩"></a>打包且压缩</h2><ul>
+<li>tar zcvf tmp.tar /tmp 将/tmp目录压缩打包为tmp.tar文件。</li>
+<li>tar zxvf tmp.tar 解压缩tmp.tar文件。</li>
+</ul>
+<h1 id="查找类"><a href="#查找类" class="headerlink" title="查找类"></a><font color="#0099ff">查找类</font></h1><h2 id="查找文件-目录"><a href="#查找文件-目录" class="headerlink" title="查找文件/目录"></a>查找文件/目录</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find xxxdir -name xxxfile</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>find /root/ -name install.log 在root目录下查找名为install.log的文件。</li>
+</ul>
+<h2 id="查找字符串"><a href="#查找字符串" class="headerlink" title="查找字符串"></a>查找字符串</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -r &quot;xxxstr&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>grep -r “hello” ./ 在当前路径下寻找包含”hello”字符串的文件。</li>
+</ul>
+<h2 id="查看帮助"><a href="#查看帮助" class="headerlink" title="查看帮助"></a>查看帮助</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man xxx</span><br></pre></td></tr></table></figure>
+
+<p>查看xxx命令的帮助信息。</p>
+<h1 id="进程管理类"><a href="#进程管理类" class="headerlink" title="进程管理类"></a><font color="#0099ff">进程管理类</font></h1><h2 id="查看进程"><a href="#查看进程" class="headerlink" title="查看进程"></a>查看进程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>ps 查看当前进程。</li>
+<li>ps -aux 查看所有进程。</li>
+</ul>
+<h2 id="结束进程"><a href="#结束进程" class="headerlink" title="结束进程"></a>结束进程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kill idxxx</span><br></pre></td></tr></table></figure>
+
+<p>结束某个id号进程。</p>
+<h2 id="查看内存"><a href="#查看内存" class="headerlink" title="查看内存"></a>查看内存</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">free</span><br></pre></td></tr></table></figure>
+
+<h2 id="查看CPU占用"><a href="#查看CPU占用" class="headerlink" title="查看CPU占用"></a>查看CPU占用</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">top</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>q键可退出查看。</li>
+</ul>
+<h1 id="磁盘管理类"><a href="#磁盘管理类" class="headerlink" title="磁盘管理类"></a><font color="#0099ff">磁盘管理类</font></h1><h2 id="查看磁盘"><a href="#查看磁盘" class="headerlink" title="查看磁盘"></a>查看磁盘</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>df -hl 可查看带具体单位的信息。</li>
+</ul>
+<h2 id="文件链接"><a href="#文件链接" class="headerlink" title="文件链接"></a>文件链接</h2><p>类似于“快捷方式”，分为硬链接与软链接。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ln xxxfile1 xxxfile2</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>ln oldfie1 hlinkfile1 为oldfie1文件创建一个硬链接文件hlinkfile1（原文件删除后文件还在）。</li>
+<li>ln -s oldfie1 slinkfile1 为oldfie1文件创建一个软链接文件slinkfile1（与原文件共存亡）。</li>
+</ul>
+<h1 id="关机类"><a href="#关机类" class="headerlink" title="关机类"></a><font color="#0099ff">关机类</font></h1><h2 id="注销"><a href="#注销" class="headerlink" title="注销"></a>注销</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exit</span><br></pre></td></tr></table></figure>
+
+<h2 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reboot</span><br></pre></td></tr></table></figure>
+
+<h2 id="关机"><a href="#关机" class="headerlink" title="关机"></a>关机</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shutdown now -P 立刻关机并关闭电源。</span><br></pre></td></tr></table></figure>
+
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Linux/">Linux</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Linux/">Linux</a><a href="/tags/命令/">命令</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://xxpcb.github.io/2019/07/20/Linux常用命令/" data-title="Linux常用命令 | xxpcb&#39;s Blog" data-tsina="" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2019/07/07/简易答题卡识别/"  title="简易答题卡识别">
+ <strong>下一篇：</strong><br/> 
+ <span>简易答题卡识别
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#文件-目录类"><span class="toc-number">1.</span> <span class="toc-text">文件/目录类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#新建文件"><span class="toc-number">1.1.</span> <span class="toc-text">新建文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#新建目录"><span class="toc-number">1.2.</span> <span class="toc-text">新建目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看文件-目录"><span class="toc-number">1.3.</span> <span class="toc-text">查看文件/目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看目录大小"><span class="toc-number">1.4.</span> <span class="toc-text">查看目录大小</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看当前路径"><span class="toc-number">1.5.</span> <span class="toc-text">查看当前路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#改变工作目录"><span class="toc-number">1.6.</span> <span class="toc-text">改变工作目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#复制文件"><span class="toc-number">1.7.</span> <span class="toc-text">复制文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#移动或重命名文件"><span class="toc-number">1.8.</span> <span class="toc-text">移动或重命名文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除文件-目录"><span class="toc-number">1.9.</span> <span class="toc-text">删除文件/目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改问价权限"><span class="toc-number">1.10.</span> <span class="toc-text">修改问价权限</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#用户管理类"><span class="toc-number">2.</span> <span class="toc-text">用户管理类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#添加用户"><span class="toc-number">2.1.</span> <span class="toc-text">添加用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除用户"><span class="toc-number">2.2.</span> <span class="toc-text">删除用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#修改密码"><span class="toc-number">2.3.</span> <span class="toc-text">修改密码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#切换用户"><span class="toc-number">2.4.</span> <span class="toc-text">切换用户</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#添加用户组"><span class="toc-number">2.5.</span> <span class="toc-text">添加用户组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除用户组"><span class="toc-number">2.6.</span> <span class="toc-text">删除用户组</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#压缩打包类"><span class="toc-number">3.</span> <span class="toc-text">压缩打包类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#只打包"><span class="toc-number">3.1.</span> <span class="toc-text">只打包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#打包且压缩"><span class="toc-number">3.2.</span> <span class="toc-text">打包且压缩</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#查找类"><span class="toc-number">4.</span> <span class="toc-text">查找类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#查找文件-目录"><span class="toc-number">4.1.</span> <span class="toc-text">查找文件/目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查找字符串"><span class="toc-number">4.2.</span> <span class="toc-text">查找字符串</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看帮助"><span class="toc-number">4.3.</span> <span class="toc-text">查看帮助</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#进程管理类"><span class="toc-number">5.</span> <span class="toc-text">进程管理类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#查看进程"><span class="toc-number">5.1.</span> <span class="toc-text">查看进程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结束进程"><span class="toc-number">5.2.</span> <span class="toc-text">结束进程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看内存"><span class="toc-number">5.3.</span> <span class="toc-text">查看内存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看CPU占用"><span class="toc-number">5.4.</span> <span class="toc-text">查看CPU占用</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#磁盘管理类"><span class="toc-number">6.</span> <span class="toc-text">磁盘管理类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#查看磁盘"><span class="toc-number">6.1.</span> <span class="toc-text">查看磁盘</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文件链接"><span class="toc-number">6.2.</span> <span class="toc-text">文件链接</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#关机类"><span class="toc-number">7.</span> <span class="toc-text">关机类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#注销"><span class="toc-number">7.1.</span> <span class="toc-text">注销</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重启"><span class="toc-number">7.2.</span> <span class="toc-text">重启</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关机"><span class="toc-number">7.3.</span> <span class="toc-text">关机</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="xxpcb" data-theme="medium"></div>
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Linux/" title="Linux">Linux<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/图像识别/" title="图像识别">图像识别<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/建站/" title="建站">建站<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/算法/" title="算法">算法<sup>2</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/算法/" title="算法">算法<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/C/" title="C++">C++<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/CNZZ/" title="CNZZ">CNZZ<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/搜索/" title="搜索">搜索<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/swiftype/" title="swiftype">swiftype<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/命令/" title="命令">命令<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/查找/" title="查找">查找<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/分类/" title="分类">分类<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/tensorflow/" title="tensorflow">tensorflow<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/OpenCV/" title="OpenCV">OpenCV<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/答题卡/" title="答题卡">答题卡<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/识别/" title="识别">识别<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  
+  <div class="tagcloudlist">
+    <p class="asidetitle">标签云</p>
+    <div class="tagcloudlist clearfix">
+       <a href="/tags/C/" style="font-size: 20px;">C++</a> <a href="/tags/CNZZ/" style="font-size: 10px;">CNZZ</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/OpenCV/" style="font-size: 10px;">OpenCV</a> <a href="/tags/swiftype/" style="font-size: 10px;">swiftype</a> <a href="/tags/tensorflow/" style="font-size: 10px;">tensorflow</a> <a href="/tags/分类/" style="font-size: 10px;">分类</a> <a href="/tags/命令/" style="font-size: 10px;">命令</a> <a href="/tags/排序/" style="font-size: 10px;">排序</a> <a href="/tags/搜索/" style="font-size: 10px;">搜索</a> <a href="/tags/查找/" style="font-size: 10px;">查找</a> <a href="/tags/答题卡/" style="font-size: 10px;">答题卡</a> <a href="/tags/算法/" style="font-size: 20px;">算法</a> <a href="/tags/识别/" style="font-size: 10px;">识别</a>
+    </div>
+  </div>
+
+
+  
+  <div class="archiveslist">
+    <p class="asidetitle"><a href="/archives">归档</a></p>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">4</span></li></ul>
+  </div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://www.instructables.com/" target="_blank" title="Yours for the making">Instructables</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://bbs.mydigit.cn/index.php" target="_blank" title="数码之家－拆机DIY玩家社区">MyDigit.cn</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.arduino.cn/" target="_blank" title="Arduino中文社区">Arduino中文社区</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m xxpcb in CJLU. <br/>
+			This is my blog ^_^</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/xxpcb" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		<a href="http://www.zhihu.com/people/xxpcb" target="_blank" class="icon-zhihu" title="知乎"></a>
+		
+		
+		<a href="http://space.bilibili.com/146899653" target="_blank" class="icon-bilibili" title="bilibili"></a>
+		
+		
+		
+		<a href="mailto:xxpcb2018@126.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="xxpcb">xxpcb</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+
+
+  <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1277776467'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s23.cnzz.com/z_stat.php%3Fid%3D1277776467%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script>
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
