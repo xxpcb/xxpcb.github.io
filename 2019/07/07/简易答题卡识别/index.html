@@ -19,15 +19,15 @@
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
 <meta property="og:description" content="参考自：Bubble sheet multiple choice scanner and test grader using OMR, Python and OpenCV 一个简易的答题卡识别与分数判断小程序 修改说明： 1.不import imutils库,直接找mutils的源码，复制需要的函数的源码过来，分析算法原理 2.在jupter notebook中测试，可以方便地分阶段测试 引入必要">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190707/aw2L7WGJQcCb.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190707/xxJaqM5tUCdy.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190707/3E8jrUfEaCfe.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190707/3GPYsMEnObrF.png?imageslim">
-<meta property="og:updated_time" content="2019-07-07T03:26:14.953Z">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_3.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_4.png">
+<meta property="og:updated_time" content="2019-08-01T07:38:11.977Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="简易答题卡识别">
 <meta name="twitter:description" content="参考自：Bubble sheet multiple choice scanner and test grader using OMR, Python and OpenCV 一个简易的答题卡识别与分数判断小程序 修改说明： 1.不import imutils库,直接找mutils的源码，复制需要的函数的源码过来，分析算法原理 2.在jupter notebook中测试，可以方便地分阶段测试 引入必要">
-<meta name="twitter:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190707/aw2L7WGJQcCb.png?imageslim">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_1.png">
 
     
     
@@ -133,12 +133,12 @@
 
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(-0.5, 524.5, 699.5, -0.5)</span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190707/aw2L7WGJQcCb.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_1.png" alt="mark"></p>
 <h2 id="检测到图片中的答题卡"><a href="#检测到图片中的答题卡" class="headerlink" title="检测到图片中的答题卡"></a>检测到图片中的答题卡</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 【2】检测到图片中的答题卡（python2 用：cnts,_ ）</span></span><br><span class="line">_,cnts,_ = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)<span class="comment"># 从边缘图中寻找轮廓</span></span><br><span class="line">docCnt = <span class="literal">None</span> <span class="comment"># 初始化答题卡轮廓</span></span><br><span class="line"><span class="comment"># 确保至少有一个轮廓被找到</span></span><br><span class="line"><span class="keyword">if</span> len(cnts) &gt; <span class="number">0</span>:</span><br><span class="line">    cnts = sorted(cnts, key=cv2.contourArea, reverse=<span class="literal">True</span>)<span class="comment"># 将轮廓按大小降序排序</span></span><br><span class="line"> </span><br><span class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> cnts:<span class="comment"># 对排序后的轮廓循环处理</span></span><br><span class="line">        <span class="comment"># 获取近似的轮廓</span></span><br><span class="line">        peri = cv2.arcLength(c, <span class="literal">True</span>)</span><br><span class="line">        approx = cv2.approxPolyDP(c, <span class="number">0.02</span> * peri, <span class="literal">True</span>)<span class="comment"># 多边形近似</span></span><br><span class="line"> </span><br><span class="line">        <span class="comment"># 如果我们的近似轮廓有四个顶点，那么就认为找到了答题卡</span></span><br><span class="line">        <span class="keyword">if</span> len(approx) == <span class="number">4</span>:</span><br><span class="line">            docCnt = approx <span class="comment"># 保存答题卡轮廓</span></span><br><span class="line">            <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="透视变换来提取答题卡"><a href="#透视变换来提取答题卡" class="headerlink" title="透视变换来提取答题卡"></a>透视变换来提取答题卡</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 【3】应用透视变换来提取图中的答题卡</span></span><br><span class="line">paper = four_point_transform(image, docCnt.reshape(<span class="number">4</span>, <span class="number">2</span>))<span class="comment"># 对原始图进行四点透视变换</span></span><br><span class="line">warped = four_point_transform(gray, docCnt.reshape(<span class="number">4</span>, <span class="number">2</span>))<span class="comment"># 对灰度图进行四点透视变换</span></span><br><span class="line"><span class="comment">#cv2.imshow("warped", warped)# 透视变换图</span></span><br><span class="line"><span class="comment">#cv2.waitKey()</span></span><br><span class="line">fig = plt.figure(figsize=(<span class="number">8</span>, <span class="number">8</span>))</span><br><span class="line">plt.imshow(warped,cmap =<span class="string">'gray'</span>)</span><br><span class="line">plt.axis(<span class="string">'off'</span>)</span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190707/xxJaqM5tUCdy.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_2.png" alt="mark"></p>
 <h2 id="提取气泡-圆点"><a href="#提取气泡-圆点" class="headerlink" title="提取气泡/圆点"></a>提取气泡/圆点</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 【4】从透视变换后的答题卡中提取气泡/圆点</span></span><br><span class="line">thresh = cv2.threshold(warped, <span class="number">0</span>, <span class="number">255</span>, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[<span class="number">1</span>]<span class="comment"># OTSU二值化</span></span><br><span class="line">_,cnts,_ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)<span class="comment"># 在二值图像中查找轮廓</span></span><br><span class="line">questionCnts = [] <span class="comment"># 初始化气泡轮廓</span></span><br><span class="line"> </span><br><span class="line"><span class="comment"># 对每一个轮廓进行循环处理</span></span><br><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> cnts:</span><br><span class="line">    (x, y, w, h) = cv2.boundingRect(c) <span class="comment"># 计算轮廓的边界框</span></span><br><span class="line">    ar = w / float(h)<span class="comment"># 计算宽高比</span></span><br><span class="line"> </span><br><span class="line">    <span class="comment"># 轮廓是气泡-&gt;边至少是20个像素，且宽高比近似为1</span></span><br><span class="line">    <span class="keyword">if</span> w &gt;= <span class="number">20</span> <span class="keyword">and</span> h &gt;= <span class="number">20</span> <span class="keyword">and</span> ar &gt;= <span class="number">0.9</span> <span class="keyword">and</span> ar &lt;= <span class="number">1.1</span>:</span><br><span class="line">        questionCnts.append(c)<span class="comment"># 存储气泡轮廓</span></span><br></pre></td></tr></table></figure>
 
 <h1 id="答案判断部分"><a href="#答案判断部分" class="headerlink" title="答案判断部分"></a>答案判断部分</h1><h2 id="构建答案字典"><a href="#构建答案字典" class="headerlink" title="构建答案字典"></a>构建答案字典</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 构建答案字典，键为题目号，值为正确答案</span></span><br><span class="line">ANSWER_KEY = &#123;<span class="number">0</span>: <span class="number">1</span>, <span class="number">1</span>: <span class="number">4</span>, <span class="number">2</span>: <span class="number">0</span>, <span class="number">3</span>: <span class="number">3</span>, <span class="number">4</span>: <span class="number">1</span>&#125;</span><br></pre></td></tr></table></figure>
@@ -147,12 +147,12 @@
 
 <h2 id="循环判断"><a href="#循环判断" class="headerlink" title="循环判断"></a>循环判断</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 每个题目有5个选项，所以5个气泡一组循环处理</span></span><br><span class="line">fig = plt.figure(figsize=(<span class="number">15</span>,<span class="number">15</span>))</span><br><span class="line">n = <span class="number">1</span></span><br><span class="line"><span class="keyword">for</span> (q, i) <span class="keyword">in</span> enumerate(np.arange(<span class="number">0</span>, len(questionCnts), <span class="number">5</span>)):</span><br><span class="line">    cnts = sort_contours(questionCnts[i:i + <span class="number">5</span>])[<span class="number">0</span>]<span class="comment"># 从左到右为当前题目的气泡轮廓排序</span></span><br><span class="line">    bubbled = <span class="literal">None</span> <span class="comment"># 初始化被涂画的气泡变量</span></span><br><span class="line"><span class="comment"># 【6】判断每行中被标记/涂的答案</span></span><br><span class="line">    <span class="keyword">for</span> (j, c) <span class="keyword">in</span> enumerate(cnts):<span class="comment"># 对一行从左到右排列好的气泡轮廓进行遍历</span></span><br><span class="line">        mask = np.zeros(thresh.shape, dtype=<span class="string">"uint8"</span>)<span class="comment"># 构造只有当前气泡轮廓区域的掩模图像</span></span><br><span class="line">        cv2.drawContours(mask, [c], <span class="number">-1</span>, <span class="number">255</span>, <span class="number">-1</span>)</span><br><span class="line"> </span><br><span class="line">        mask = cv2.bitwise_and(thresh, thresh, mask=mask)<span class="comment"># 对二值图像应用掩模图像</span></span><br><span class="line">        total = cv2.countNonZero(mask)<span class="comment"># 计算气泡区域内的非零像素点</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">#cv2.imshow("mask", mask)</span></span><br><span class="line">        <span class="comment">#cv2.waitKey(100)</span></span><br><span class="line">        plt.subplot(<span class="number">5</span>, <span class="number">5</span>, n)  <span class="comment"># 5 rows, 5 per row</span></span><br><span class="line">        plt.axis(<span class="string">'off'</span>)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        plt.imshow(mask,cmap =<span class="string">'gray'</span>)</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">if</span> bubbled <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">or</span> total &gt; bubbled[<span class="number">0</span>]:<span class="comment"># 如果像素点数最大</span></span><br><span class="line">            bubbled = (total, j) <span class="comment"># 同气泡选项序号一起记录下来</span></span><br><span class="line">    </span><br><span class="line">    color = (<span class="number">0</span>, <span class="number">0</span>, <span class="number">255</span>) <span class="comment"># 初始化轮廓颜色为红色</span></span><br><span class="line">    k = ANSWER_KEY[q] <span class="comment"># 获取正确答案序号</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 【7】在我答案字典中查找正确的答案来判断答题是否正确 </span></span><br><span class="line">    <span class="keyword">if</span> k == bubbled[<span class="number">1</span>]: <span class="comment"># 检查由填充气泡获得的答案是否正确</span></span><br><span class="line">        color = (<span class="number">0</span>, <span class="number">255</span>, <span class="number">0</span>)<span class="comment"># 正确则将轮廓颜色设置为绿色</span></span><br><span class="line">        correct += <span class="number">1</span></span><br><span class="line"> </span><br><span class="line">    <span class="comment"># 画出正确答案的轮廓线。</span></span><br><span class="line">    cv2.drawContours(paper, [cnts[k]], <span class="number">-1</span>, color, <span class="number">3</span>)</span><br><span class="line"><span class="comment">#cv2.waitKey()</span></span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190707/3E8jrUfEaCfe.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_3.png" alt="mark"></p>
 <h2 id="计算分数并打分"><a href="#计算分数并打分" class="headerlink" title="计算分数并打分"></a>计算分数并打分</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 【8】计算分数并打分</span></span><br><span class="line"></span><br><span class="line">score = (correct / <span class="number">5.0</span>) * <span class="number">100</span></span><br><span class="line">print(<span class="string">"[INFO] score: &#123;:.2f&#125;%"</span>.format(score))</span><br><span class="line">cv2.putText(paper, <span class="string">"&#123;:.2f&#125;%"</span>.format(score), (<span class="number">10</span>, <span class="number">30</span>), cv2.FONT_HERSHEY_SIMPLEX, <span class="number">0.9</span>, (<span class="number">0</span>, <span class="number">0</span>, <span class="number">255</span>), <span class="number">2</span>)</span><br><span class="line"><span class="comment">#cv2.imshow("Exam", paper)</span></span><br><span class="line"><span class="comment">#cv2.waitKey(0)</span></span><br><span class="line">fig = plt.figure(figsize=(<span class="number">8</span>, <span class="number">8</span>))</span><br><span class="line">plt.imshow(cv2.cvtColor(paper, cv2.COLOR_BGR2RGB))</span><br><span class="line">plt.axis(<span class="string">'off'</span>)</span><br></pre></td></tr></table></figure>
 
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[INFO] score: 80.00%</span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190707/3GPYsMEnObrF.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/answersheet_4.png" alt="mark"></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -273,18 +273,6 @@
 			
 		
 			
-				<li><a href="/tags/CNZZ/" title="CNZZ">CNZZ<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/swiftype/" title="swiftype">swiftype<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/查找/" title="查找">查找<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
 			
 		
@@ -293,11 +281,23 @@
 			
 		
 			
-				<li><a href="/tags/命令/" title="命令">命令<sup>1</sup></a></li>
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
+				<li><a href="/tags/CNZZ/" title="CNZZ">CNZZ<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/查找/" title="查找">查找<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/swiftype/" title="swiftype">swiftype<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/命令/" title="命令">命令<sup>1</sup></a></li>
 			
 		
 			

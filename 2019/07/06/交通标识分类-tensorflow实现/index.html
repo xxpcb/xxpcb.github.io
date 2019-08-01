@@ -19,16 +19,16 @@
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
 <meta property="og:description" content="翻译自：waleedka/traffic-signs-tensorflow交通标识分类-tensorflow实现 首先引入必要的库 1234567891011import osimport randomimport skimage.dataimport skimage.transformimport matplotlibimport matplotlib.pyplot as pltimport n">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190706/6IsolCHvkRUo.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190706/GLpA4OzjrWLT.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190706/uSIiqrdjRXQf.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190706/VfXCi7U2aECd.png?imageslim">
-<meta property="og:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190706/hAxWd814kdie.png?imageslim">
-<meta property="og:updated_time" content="2019-07-06T09:11:44.101Z">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_3.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_4.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_5.png">
+<meta property="og:updated_time" content="2019-08-01T07:39:19.547Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="交通标识分类-tensorflow实现">
 <meta name="twitter:description" content="翻译自：waleedka/traffic-signs-tensorflow交通标识分类-tensorflow实现 首先引入必要的库 1234567891011import osimport randomimport skimage.dataimport skimage.transformimport matplotlibimport matplotlib.pyplot as pltimport n">
-<meta name="twitter:image" content="http://pty934f18.bkt.clouddn.com/pic2019/20190706/6IsolCHvkRUo.png?imageslim">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_1.png">
 
     
     
@@ -135,11 +135,11 @@
 <p>显示每类标签的第一个图片</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">display_images_and_labels</span><span class="params">(images, labels)</span>:</span></span><br><span class="line">    <span class="string">"""Display the first image of each label."""</span></span><br><span class="line">    unique_labels = set(labels) <span class="comment"># set：不重复出现</span></span><br><span class="line">    plt.figure(figsize=(<span class="number">15</span>, <span class="number">15</span>)) <span class="comment"># figure size</span></span><br><span class="line">    i = <span class="number">1</span></span><br><span class="line">    <span class="keyword">for</span> label <span class="keyword">in</span> unique_labels:</span><br><span class="line">        <span class="comment"># Pick the first image for each label.</span></span><br><span class="line">        image = images[labels.index(label)] <span class="comment">#每个label在整个labels表中的位置</span></span><br><span class="line">        <span class="comment"># str1.index(str2, beg=0, end=len(string)) str2在str1中的索引值</span></span><br><span class="line">        <span class="comment"># print(labels.index(label))</span></span><br><span class="line">        plt.subplot(<span class="number">8</span>, <span class="number">8</span>, i)  <span class="comment"># A grid of 8 rows x 8 columns</span></span><br><span class="line">        plt.axis(<span class="string">'off'</span>)</span><br><span class="line">        plt.title(<span class="string">"Label &#123;0&#125; (&#123;1&#125;)"</span>.format(label, labels.count(label)))<span class="comment"># label，totalnum</span></span><br><span class="line">        i += <span class="number">1</span></span><br><span class="line">        _ = plt.imshow(image)</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line">display_images_and_labels(images, labels)</span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190706/6IsolCHvkRUo.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_1.png" alt="mark"></p>
 <p>图片虽然是方形的，但是每一种图片的长宽比都不一样。而神经网络的输入大小是固定的，所以需要做一些处理工作。处理之前先拿一个标签图片出来，多看几张该标签下的图片，比如标签32，如下：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">display_label_images</span><span class="params">(images, label)</span>:</span></span><br><span class="line">    <span class="string">"""Display images of a specific label."""</span></span><br><span class="line">    limit = <span class="number">24</span>  <span class="comment"># show a max of 24 images</span></span><br><span class="line">    plt.figure(figsize=(<span class="number">15</span>, <span class="number">5</span>))</span><br><span class="line">    i = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    start = labels.index(label)</span><br><span class="line">    end = start + labels.count(label)<span class="comment"># count:统计字符串里某个字符出现的次数</span></span><br><span class="line">    <span class="keyword">for</span> image <span class="keyword">in</span> images[start:end][:limit]:</span><br><span class="line">        plt.subplot(<span class="number">3</span>, <span class="number">8</span>, i)  <span class="comment"># 3 rows, 8 per row</span></span><br><span class="line">        plt.axis(<span class="string">'off'</span>)</span><br><span class="line">        i += <span class="number">1</span></span><br><span class="line">        plt.imshow(image)</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line">display_label_images(images, <span class="number">32</span>)</span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190706/GLpA4OzjrWLT.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_2.png" alt="mark"></p>
 <p>从上述图片中，我们可以发现虽然限速大小不同，但是都被归纳到同一类了。这非常好，后续的程序中，我们就可以忽略数字这个概念了。这就是为什么事先理解你的数据集是如此重要，可以在后续工作中为你节省很多的痛苦和混乱。</p>
 <p>那么原始图片的大小到底是什么呢？让我们先来打印一些看看：<br>（小技巧：打印min()和max()值。这是一种简单的方法来验证您的数据的范围并及早发现错误）</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> image <span class="keyword">in</span> images[:<span class="number">5</span>]:</span><br><span class="line">    print(<span class="string">"shape: &#123;0&#125;, min: &#123;1&#125;, max: &#123;2&#125;"</span>.format(image.shape, image.min(), image.max()))</span><br></pre></td></tr></table></figure>
@@ -149,7 +149,7 @@
 <p>图片的尺寸大约在 128 * 128 左右，那么我们可以使用这个尺寸来保存图片，这样可以保存尽可能多的信息。但是，在早期的开发中，使用更小的尺寸，训练模型将很快，能够更快的迭代。<br>选择 32 * 32 的尺寸，这在肉眼下很容易识别图片（见下图），并且我们是要保证缩小的比例是 128 * 128 的倍数。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Resize images</span></span><br><span class="line">images32 = [skimage.transform.resize(image, (<span class="number">32</span>, <span class="number">32</span>))</span><br><span class="line">                <span class="keyword">for</span> image <span class="keyword">in</span> images]</span><br><span class="line">display_images_and_labels(images32, labels)</span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190706/uSIiqrdjRXQf.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_3.png" alt="mark"></p>
 <p>32x32的图像不是那么清晰，但仍然可以辨认。请注意，上面的显示显示了大于实际大小的图像，因为matplotlib库试图将它们与网格大小相匹配。</p>
 <p>下面打印一些图像的大小来验证我们是否正确。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> image <span class="keyword">in</span> images32[:<span class="number">5</span>]:</span><br><span class="line">    print(<span class="string">"shape: &#123;0&#125;, min: &#123;1&#125;, max: &#123;2&#125;"</span>.format(image.shape, image.min(), image.max()))</span><br></pre></td></tr></table></figure>
@@ -184,14 +184,14 @@
 
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Display the predictions and the ground truth visually.</span></span><br><span class="line">fig = plt.figure(figsize=(<span class="number">10</span>, <span class="number">10</span>))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(sample_images)):</span><br><span class="line">    truth = sample_labels[i]</span><br><span class="line">    prediction = predicted[i]</span><br><span class="line">    plt.subplot(<span class="number">5</span>, <span class="number">2</span>,<span class="number">1</span>+i)</span><br><span class="line">    plt.axis(<span class="string">'off'</span>)</span><br><span class="line">    color=<span class="string">'green'</span> <span class="keyword">if</span> truth == prediction <span class="keyword">else</span> <span class="string">'red'</span></span><br><span class="line">    plt.text(<span class="number">40</span>, <span class="number">10</span>, <span class="string">"Truth:        &#123;0&#125;\nPrediction: &#123;1&#125;"</span>.format(truth, prediction), </span><br><span class="line">             fontsize=<span class="number">12</span>, color=color)</span><br><span class="line">    plt.imshow(sample_images[i])</span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190706/VfXCi7U2aECd.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_4.png" alt="mark"></p>
 <p>上图truth后的数字为真实的标签，Prediction后的数字为预测的标签。<br>现在的分类测试还是训练集中的图片，所以还不知道模型在未知数据集上面的效果如何。<br>接下来在测试集上面进行评测。</p>
 <h1 id="模型评估-验证测试集上的准确率"><a href="#模型评估-验证测试集上的准确率" class="headerlink" title="模型评估-验证测试集上的准确率"></a>模型评估-验证测试集上的准确率</h1><p>可视化结果很直观，但是需要更精确的方法来测量模型的准确性，这就是验证集发挥作用的地方。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 加载测试集图片</span></span><br><span class="line">test_images, test_labels = load_data(test_data_dir)</span><br></pre></td></tr></table></figure>
 
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 转换图片尺寸</span></span><br><span class="line">test_images32 = [skimage.transform.resize(image, (<span class="number">32</span>, <span class="number">32</span>))</span><br><span class="line">                 <span class="keyword">for</span> image <span class="keyword">in</span> test_images]</span><br><span class="line"><span class="comment">#显示转换后的图片</span></span><br><span class="line">display_images_and_labels(test_images32, test_labels)</span><br></pre></td></tr></table></figure>
 
-<p><img src="http://pty934f18.bkt.clouddn.com/pic2019/20190706/hAxWd814kdie.png?imageslim" alt="mark"></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/traffic_5.png" alt="mark"></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Run predictions against the full test set.</span></span><br><span class="line">predicted = session.run([predicted_labels], </span><br><span class="line">                        feed_dict=&#123;images_ph: test_images32&#125;)[<span class="number">0</span>]</span><br><span class="line"><span class="comment"># 计算准确度</span></span><br><span class="line">match_count = sum([int(y == y_) <span class="keyword">for</span> y, y_ <span class="keyword">in</span> zip(test_labels, predicted)])</span><br><span class="line">accuracy = match_count / len(test_labels)</span><br><span class="line"><span class="comment"># 输出测试集上的准确度</span></span><br><span class="line">print(<span class="string">"Accuracy: &#123;:.3f&#125;"</span>.format(accuracy))</span><br></pre></td></tr></table></figure>
 
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Accuracy: 0.534</span><br></pre></td></tr></table></figure>
@@ -316,18 +316,6 @@
 			
 		
 			
-				<li><a href="/tags/CNZZ/" title="CNZZ">CNZZ<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/swiftype/" title="swiftype">swiftype<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/查找/" title="查找">查找<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
 			
 		
@@ -336,11 +324,23 @@
 			
 		
 			
-				<li><a href="/tags/命令/" title="命令">命令<sup>1</sup></a></li>
+				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/排序/" title="排序">排序<sup>1</sup></a></li>
+				<li><a href="/tags/CNZZ/" title="CNZZ">CNZZ<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/查找/" title="查找">查找<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/swiftype/" title="swiftype">swiftype<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/命令/" title="命令">命令<sup>1</sup></a></li>
 			
 		
 			
