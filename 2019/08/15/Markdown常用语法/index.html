@@ -21,7 +21,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://xxpcb.github.io/img/logo.png">
 <meta property="og:image" content="https://xxpcb.github.io/img/logo.png">
-<meta property="og:updated_time" content="2019-08-15T14:29:12.278Z">
+<meta property="og:updated_time" content="2019-08-16T01:34:51.178Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Markdown常用语法">
 <meta name="twitter:description" content="各级标题【示例】：  123# 这是一级标题## 这是二级标题### 这是三级标题  【效果】：  这是一级标题这是二级标题这是三级标题&amp;nbsp; 字体设置斜体 加粗 删除线 下划线【示例】：  12345*这是倾斜的文字***这是加粗的文字*****这是斜体加粗的文字***~~这是加删除线的文字~~&amp;lt;u&amp;gt;带下划线文本（html语法）&amp;lt;/u&amp;gt;  【效果】：  这是倾斜的文">
@@ -154,14 +154,18 @@
 <h2 id="调整大小位置（html语法）"><a href="#调整大小位置（html语法）" class="headerlink" title="调整大小位置（html语法）"></a><font color="#0099ff" size="4">调整大小位置（html语法）</font></h2><p><font color="#0000ff">【示例】：</font> </p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">align</span>=<span class="string">"center"</span>&gt;</span> <span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span> = <span class="string">"https://xxpcb.github.io/img/logo.png"</span> <span class="attr">width</span> = <span class="string">'100'</span> <span class="attr">height</span> =<span class="string">'100'</span> <span class="attr">alt</span>=<span class="string">"Mardown测试图片"</span> /&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-<p><font color="#0000ff">【效果】：</font><br>注：貌似当前博客主题不太支持对齐方式。。。</p>
+<p><font color="#0000ff">【效果】：</font><br>注：貌似当前博客主题不太支持图片对齐方式。。。</p>
 <div align="left"> <img src="https://xxpcb.github.io/img/logo.png" width="100" height="100" alt="Mardown测试图片"></div>
 
 <p>&nbsp;</p>
 <h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a><font color="#0099ff">代码</font></h1><p><font color="#0000ff">【示例】：</font> </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">`main()` 函数</span><br><span class="line"></span><br><span class="line">​```</span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">​```</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">`main()` 函数</span><br><span class="line"></span><br><span class="line">(```)</span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">   return 0;</span><br><span class="line">&#125;</span><br><span class="line">(```)</span><br></pre></td></tr></table></figure>
 
-<p>注：此处我用Markdown写这篇文字时，上面起始是两层的代码块嵌套，最外层我用了连用了4个反引号<kbd><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">&lt;font color=#0000ff&gt;【效果】：&lt;/font&gt; </span><br><span class="line"></span><br><span class="line">`main()` 函数</span><br><span class="line"></span><br><span class="line">```C++</span><br><span class="line">int main(void)</span><br><span class="line">&#123;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></kbd></p>
+<p>注：3个反引号两侧的括号是多余的！！！（当前博客中由于用到了代码结构嵌套，不加括号会显示混乱）</p>
+<p><font color="#0000ff">【效果】：</font> </p>
+<p><code>main()</code> 函数</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>&nbsp;</p>
 <h1 id="列表"><a href="#列表" class="headerlink" title="列表"></a><font color="#0099ff">列表</font></h1><h2 id="无序列表"><a href="#无序列表" class="headerlink" title="无序列表"></a><font color="#0099ff" size="4">无序列表</font></h2><p><font color="#0000ff">【示例】：</font> </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- 列表内容a</span><br><span class="line">+ 列表内容b</span><br><span class="line">* 列表内容c</span><br></pre></td></tr></table></figure>
@@ -229,11 +233,11 @@
 <hr>
 <p>&nbsp;</p>
 <h1 id="表格"><a href="#表格" class="headerlink" title="表格"></a><font color="#0099ff">表格</font></h1><p><font color="#0000ff">【示例】：</font> </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">|  表头   | 表头  |</span><br><span class="line">|  ----  | ----  |</span><br><span class="line">| 单元格  | 单元格 |</span><br><span class="line">| 单元格  | 单元格 |</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">| 左对齐 | 右对齐 | 居中对齐 |</span><br><span class="line">| :----- | -----: | :------: |</span><br><span class="line">| 单元格 | 单元格 |  单元格  |</span><br><span class="line">| 单元格 | 单元格 |  单元格  |</span><br></pre></td></tr></table></figure>
 
 <p>注：<br><code>|</code> ：分隔不同的单元格<br><code>-</code> ：分隔表头和其他行<br><code>-:</code>： 设置内容和标题栏居右对齐<br><code>:-</code> ：设置内容和标题栏居左对齐<br><code>:-:</code>： 设置内容和标题栏居中对齐</p>
 <p><font color="#0000ff">【效果】：</font> </p>
-<p>注：貌似当前博客主题不太支持表格显示。。。</p>
+<p>注：貌似当前博客主题不太支持表格对齐方式。。。</p>
 <table>
 <thead>
 <tr>
@@ -258,7 +262,8 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">这是脚注示例[^1]</span><br><span class="line">[^1]:撰写时间20190815</span><br></pre></td></tr></table></figure>
 
 <p><font color="#0000ff">【效果】：</font> </p>
-<p>这是脚注示例[^1]<br>[^1]:撰写时间20190815</p>
+<p>注：貌似当前博客主题不太支持表格对齐方式。。。</p>
+<p>这是脚注示例<a href="撰写时间20190815">^1</a></p>
 <h1 id="特殊转义显示"><a href="#特殊转义显示" class="headerlink" title="特殊转义显示"></a>特殊转义显示</h1><p><font color="#0000ff">【示例】：</font> </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;code&gt;Ctrl + &amp;#96;&lt;/code&gt;</span><br><span class="line"></span><br><span class="line">&lt;kbd&gt;Ctrl&lt;/kbd&gt;&lt;kbd&gt;`&lt;/kbd&gt;</span><br><span class="line"></span><br><span class="line">``Ctrl + ` ``</span><br></pre></td></tr></table></figure>
 
@@ -378,19 +383,7 @@
 			
 		
 			
-				<li><a href="/tags/搜索/" title="搜索">搜索<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/查找/" title="查找">查找<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Markdown/" title="Markdown">Markdown<sup>1</sup></a></li>
+				<li><a href="/tags/swiftype/" title="swiftype">swiftype<sup>1</sup></a></li>
 			
 		
 			
@@ -398,7 +391,7 @@
 			
 		
 			
-				<li><a href="/tags/CNZZ/" title="CNZZ">CNZZ<sup>1</sup></a></li>
+				<li><a href="/tags/Markdown/" title="Markdown">Markdown<sup>1</sup></a></li>
 			
 		
 			
@@ -406,7 +399,19 @@
 			
 		
 			
-				<li><a href="/tags/swiftype/" title="swiftype">swiftype<sup>1</sup></a></li>
+				<li><a href="/tags/查找/" title="查找">查找<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/搜索/" title="搜索">搜索<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Linux/" title="Linux">Linux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/CNZZ/" title="CNZZ">CNZZ<sup>1</sup></a></li>
 			
 		
 			
