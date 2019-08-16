@@ -4,24 +4,25 @@
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="UTF-8">
   
-    <title>My new Post | xxpcb&#39;s Blog</title>
+    <title>LeetCode题解-2.两数相加(链表 进位) | xxpcb&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="xxpcb">
     
 
     
-    <meta name="description" content="Hello">
+    <meta name="description" content="原题链接：https://leetcode-cn.com/problems/add-two-numbers/ 题目给出两个非空的链表用来表示两个非负的整数。其中，它们各自的位数是按照逆序的方式存储的，并且它们的每个节点只能存储 一位数字。 如果，我们将这两个数相加起来，则会返回一个新的链表来表示它们的和。 您可以假设除了数字 0 之外，这两个数都不会以 0 开头。 示例 : 123输入：(2 -&amp;">
+<meta name="keywords" content="LeetCode,算法">
 <meta property="og:type" content="article">
-<meta property="og:title" content="My new Post">
-<meta property="og:url" content="https://xxpcb.github.io/2019/06/27/My-new-Post/index.html">
+<meta property="og:title" content="LeetCode题解-2.两数相加(链表 进位)">
+<meta property="og:url" content="https://xxpcb.github.io/2019/08/16/LeetCode题解-2-两数相加-链表-进位/index.html">
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
-<meta property="og:description" content="Hello">
+<meta property="og:description" content="原题链接：https://leetcode-cn.com/problems/add-two-numbers/ 题目给出两个非空的链表用来表示两个非负的整数。其中，它们各自的位数是按照逆序的方式存储的，并且它们的每个节点只能存储 一位数字。 如果，我们将这两个数相加起来，则会返回一个新的链表来表示它们的和。 您可以假设除了数字 0 之外，这两个数都不会以 0 开头。 示例 : 123输入：(2 -&amp;">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-28T02:45:52.787Z">
+<meta property="og:updated_time" content="2019-08-16T01:52:13.298Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="My new Post">
-<meta name="twitter:description" content="Hello">
+<meta name="twitter:title" content="LeetCode题解-2.两数相加(链表 进位)">
+<meta name="twitter:description" content="原题链接：https://leetcode-cn.com/problems/add-two-numbers/ 题目给出两个非空的链表用来表示两个非负的整数。其中，它们各自的位数是按照逆序的方式存储的，并且它们的每个节点只能存储 一位数字。 如果，我们将这两个数相加起来，则会返回一个新的链表来表示它们的和。 您可以假设除了数字 0 之外，这两个数都不会以 0 开头。 示例 : 123输入：(2 -&amp;">
 
     
     
@@ -90,14 +91,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2019/06/27/My-new-Post/" title="My new Post" itemprop="url">My new Post</a>
+      <a href="/2019/08/16/LeetCode题解-2-两数相加-链表-进位/" title="LeetCode题解-2.两数相加(链表 进位)" itemprop="url">LeetCode题解-2.两数相加(链表 进位)</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="xxpcb" target="_blank" itemprop="author">xxpcb</a>
 		
   <p class="article-time">
-    <time datetime="2019-06-27T14:23:37.000Z" itemprop="datePublished"> 发表于 2019-06-27</time>
+    <time datetime="2019-08-16T01:50:05.000Z" itemprop="datePublished"> 发表于 2019-08-16</time>
     
   </p>
 </header>
@@ -106,15 +107,43 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hello"><span class="toc-number">1.</span> <span class="toc-text">Hello</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#题目"><span class="toc-number">1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#分析"><span class="toc-number">2.</span> <span class="toc-text">分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#C-实现"><span class="toc-number">3.</span> <span class="toc-text">C++实现</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#运行结果"><span class="toc-number">4.</span> <span class="toc-text">运行结果</span></a></li></ol>
 		
 		</div>
 		
-		<h2 id="Hello"><a href="#Hello" class="headerlink" title="Hello"></a>Hello</h2>  
+		<p>原题链接：<a href="https://leetcode-cn.com/problems/add-two-numbers/" target="_blank" rel="noopener">https://leetcode-cn.com/problems/add-two-numbers/</a></p>
+<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>给出两个<strong>非空</strong>的链表用来表示两个非负的整数。其中，它们各自的位数是按照<strong>逆序</strong>的方式存储的，并且它们的每个节点只能存储 <strong>一位</strong>数字。</p>
+<p>如果，我们将这两个数相加起来，则会返回一个新的链表来表示它们的和。</p>
+<p>您可以假设除了数字 0 之外，这两个数都不会以 0 开头。</p>
+<p><strong>示例 :</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">输入：(2 -&gt; 4 -&gt; 3) + (5 -&gt; 6 -&gt; 4)</span><br><span class="line">输出：7 -&gt; 0 -&gt; 8</span><br><span class="line">原因：342 + 465 = 807</span><br></pre></td></tr></table></figure>
+
+<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>两个链表以及相加结果均为逆序存储方式（低位在链表前），利于从前到后计算结果，通过一个while循环不断计算每位的相加结果，循环退出条件为所有数都计算完毕。</p>
+<p>每次计算的中间结果用一个临时变量保存，并计算对10的取余值和进位值，将该位结果保存到新建的链表中。</p>
+<p>最后一步可能会有进位值（进位值只能是1）需单独添加。</p>
+<h1 id="C-实现"><a href="#C-实现" class="headerlink" title="C++实现"></a>C++实现</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * struct ListNode &#123;</span></span><br><span class="line"><span class="comment"> *     int val;</span></span><br><span class="line"><span class="comment"> *     ListNode *next;</span></span><br><span class="line"><span class="comment"> *     ListNode(int x) : val(x), next(NULL) &#123;&#125;</span></span><br><span class="line"><span class="comment"> * &#125;;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">ListNode* <span class="title">addTwoNumbers</span><span class="params">(ListNode* l1, ListNode* l2)</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        ListNode* res=<span class="keyword">new</span> ListNode(<span class="literal">NULL</span>);<span class="comment">// 新建一个空链表</span></span><br><span class="line">        ListNode* cur=res;<span class="comment">// 新建一个当前指针指向该链表</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> tmp=<span class="number">0</span>;<span class="comment">// 每次计算的中间结果</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span>(l1!=<span class="literal">NULL</span>||l2!=<span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// l1与l2的链表头为最低位（个位）</span></span><br><span class="line">            <span class="keyword">if</span>(l1!=<span class="literal">NULL</span>) &#123;tmp+=l1-&gt;val;l1=l1-&gt;next;&#125;</span><br><span class="line">            <span class="keyword">if</span>(l2!=<span class="literal">NULL</span>) &#123;tmp+=l2-&gt;val;l2=l2-&gt;next;&#125;</span><br><span class="line">            <span class="comment">// 结果链表依然是低位在前</span></span><br><span class="line">            cur-&gt;next=<span class="keyword">new</span> ListNode(tmp%<span class="number">10</span>);<span class="comment">// 取余数</span></span><br><span class="line">            tmp/=<span class="number">10</span>;<span class="comment">// 进位数用于下次计算</span></span><br><span class="line">            cur=cur-&gt;next;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(tmp!=<span class="number">0</span>)<span class="comment">//（两个1位数和的进位）只可能是1</span></span><br><span class="line">            cur-&gt;next=<span class="keyword">new</span> ListNode(<span class="number">1</span>);<span class="comment">// tmp=1</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> res-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h1 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h1><p>输入 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[2,4,3]</span><br><span class="line">[5,6,4]</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[7,0,8]</span><br></pre></td></tr></table></figure>
+
+  
 	</div>
 		<footer class="article-footer clearfix">
 <div class="article-catetags">
 
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/算法/">算法</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/LeetCode/">LeetCode</a><a href="/tags/算法/">算法</a>
+  </div>
 
 </div>
 
@@ -122,7 +151,7 @@
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="https://xxpcb.github.io/2019/06/27/My-new-Post/" data-title="My new Post | xxpcb&#39;s Blog" data-tsina="" class="share clearfix">
+	  <div data-url="https://xxpcb.github.io/2019/08/16/LeetCode题解-2-两数相加-链表-进位/" data-title="LeetCode题解-2.两数相加(链表 进位) | xxpcb&#39;s Blog" data-tsina="" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -136,18 +165,18 @@
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2019/06/29/排序算法笔记/" title="排序算法笔记（C++版）">
+ <a href="/2019/08/16/LeetCode题解-43-字符串相乘-双层循环-进位/" title="LeetCode题解-43.字符串相乘(双层循环 进位)">
   <strong>上一篇：</strong><br/>
   <span>
-  排序算法笔记（C++版）</span>
+  LeetCode题解-43.字符串相乘(双层循环 进位)</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2019/06/27/hello-world/"  title="Hello World">
+<a href="/2019/08/15/Markdown常用语法/"  title="Markdown常用语法">
  <strong>下一篇：</strong><br/> 
- <span>Hello World
+ <span>Markdown常用语法
 </span>
 </a>
 </div>
@@ -164,7 +193,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hello"><span class="toc-number">1.</span> <span class="toc-text">Hello</span></a></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#题目"><span class="toc-number">1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#分析"><span class="toc-number">2.</span> <span class="toc-text">分析</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#C-实现"><span class="toc-number">3.</span> <span class="toc-text">C++实现</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#运行结果"><span class="toc-number">4.</span> <span class="toc-text">运行结果</span></a></li></ol>
  
   </div>
 
