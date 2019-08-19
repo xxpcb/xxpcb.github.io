@@ -55,19 +55,21 @@
   };
 </script>
 
-  <meta name="description" content="原题链接：https://leetcode-cn.com/problems/binary-tree-level-order-traversal-ii/ 题目给定一个二叉树，返回其节点值自底向上的层次遍历。 （即按从叶子节点所在层到根节点所在的层，逐层从左向右遍历）">
-<meta name="keywords" content="LeetCode,算法">
+  <meta name="description" content="平面曲线属于非线性函数，至少需要 3 层的神经网络（输入层，隐藏层x1，输出层）来实现，为达到较好的效果，可尝试更多层，下面的例子使用了2层隐藏层，采用最基本的全连接形式，隐藏层的神经元个数没有严格要求，根据实际项目选择，下面例子选用8个。">
+<meta name="keywords" content="拟合,TensorFlow">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LeetCode题解-107. 二叉树的层次遍历 II(树 队列)">
-<meta property="og:url" content="https://xxpcb.github.io/2019/08/16/LeetCode题解-107-二叉树的层次遍历-II-树-队列/index.html">
+<meta property="og:title" content="TensorFlow-平面曲线拟合">
+<meta property="og:url" content="https://xxpcb.github.io/2019/08/19/TensorFlow-平面曲线拟合/index.html">
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
-<meta property="og:description" content="原题链接：https://leetcode-cn.com/problems/binary-tree-level-order-traversal-ii/ 题目给定一个二叉树，返回其节点值自底向上的层次遍历。 （即按从叶子节点所在层到根节点所在的层，逐层从左向右遍历）">
+<meta property="og:description" content="平面曲线属于非线性函数，至少需要 3 层的神经网络（输入层，隐藏层x1，输出层）来实现，为达到较好的效果，可尝试更多层，下面的例子使用了2层隐藏层，采用最基本的全连接形式，隐藏层的神经元个数没有严格要求，根据实际项目选择，下面例子选用8个。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-16T07:23:46.759Z">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/example3-show%20-test.gif">
+<meta property="og:updated_time" content="2019-08-19T09:04:05.408Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LeetCode题解-107. 二叉树的层次遍历 II(树 队列)">
-<meta name="twitter:description" content="原题链接：https://leetcode-cn.com/problems/binary-tree-level-order-traversal-ii/ 题目给定一个二叉树，返回其节点值自底向上的层次遍历。 （即按从叶子节点所在层到根节点所在的层，逐层从左向右遍历）">
-  <link rel="canonical" href="https://xxpcb.github.io/2019/08/16/LeetCode题解-107-二叉树的层次遍历-II-树-队列/">
+<meta name="twitter:title" content="TensorFlow-平面曲线拟合">
+<meta name="twitter:description" content="平面曲线属于非线性函数，至少需要 3 层的神经网络（输入层，隐藏层x1，输出层）来实现，为达到较好的效果，可尝试更多层，下面的例子使用了2层隐藏层，采用最基本的全连接形式，隐藏层的神经元个数没有严格要求，根据实际项目选择，下面例子选用8个。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/example3-show%20-test.gif">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/08/19/TensorFlow-平面曲线拟合/">
 
 
 <script id="page-configurations">
@@ -81,7 +83,7 @@
   };
 </script>
 
-  <title>LeetCode题解-107. 二叉树的层次遍历 II(树 队列) | xxpcb's Blog</title>
+  <title>TensorFlow-平面曲线拟合 | xxpcb's Blog</title>
   
 
 
@@ -256,7 +258,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/16/LeetCode题解-107-二叉树的层次遍历-II-树-队列/">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/19/TensorFlow-平面曲线拟合/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="xxpcb">
@@ -268,7 +270,7 @@
       <meta itemprop="name" content="xxpcb's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">LeetCode题解-107. 二叉树的层次遍历 II(树 队列)
+        <h1 class="post-title" itemprop="name headline">TensorFlow-平面曲线拟合
 
           
         </h1>
@@ -284,7 +286,7 @@
                 
               
 
-              <time title="创建时间：2019-08-16 14:13:13 / 修改时间：15:23:46" itemprop="dateCreated datePublished" datetime="2019-08-16T14:13:13+08:00">2019-08-16</time>
+              <time title="创建时间：2019-08-19 17:01:02 / 修改时间：17:04:05" itemprop="dateCreated datePublished" datetime="2019-08-19T17:01:02+08:00">2019-08-19</time>
             </span>
           
             
@@ -297,7 +299,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/算法/" itemprop="url" rel="index"><span itemprop="name">算法</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Tensorflow/" itemprop="url" rel="index"><span itemprop="name">Tensorflow</span></a></span>
 
                 
                 
@@ -316,28 +318,65 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>原题链接：<a href="https://leetcode-cn.com/problems/binary-tree-level-order-traversal-ii/" target="_blank" rel="noopener">https://leetcode-cn.com/problems/binary-tree-level-order-traversal-ii/</a></p>
-<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>给定一个二叉树，返回其节点值自底向上的层次遍历。 （即按从叶子节点所在层到根节点所在的层，逐层从左向右遍历）</p>
+        <p>平面曲线属于非线性函数，至少需要 3 层的神经网络（输入层，隐藏层x1，输出层）来实现，为达到较好的效果，可尝试更多层，下面的例子使用了2层隐藏层，采用最基本的全连接形式，隐藏层的神经元个数没有严格要求，根据实际项目选择，下面例子选用8个。</p>
 <a id="more"></a>
 
-<p>例如：<br>给定二叉树<code>[3,9,20,null,null,15,7]</code>,</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  3</span><br><span class="line"> / \</span><br><span class="line">9  20</span><br><span class="line">  /  \</span><br><span class="line"> 15   7</span><br></pre></td></tr></table></figure>
+<p>下面通过代码实现：</p>
+<ul>
+<li>引入相关库，定义神经网络层</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 构造添加一个神经层的函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add_layer</span><span class="params">(inputs, in_size, out_size, activation_function=None)</span>:</span></span><br><span class="line">    Weights = tf.Variable(tf.random_normal([in_size, out_size])) <span class="comment">#权重矩阵[列，行]</span></span><br><span class="line">    biases = tf.Variable(tf.zeros([<span class="number">1</span>, out_size]) + <span class="number">0.1</span>) <span class="comment"># 偏置向量[列，行]</span></span><br><span class="line">    Wx_plus_b = tf.matmul(inputs, Weights) + biases <span class="comment"># w*x+b(未激活)</span></span><br><span class="line">    <span class="keyword">if</span> activation_function <span class="keyword">is</span> <span class="literal">None</span>: <span class="comment"># 线性关系（不使用激活函数）</span></span><br><span class="line">        outputs = Wx_plus_b</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        outputs = activation_function(Wx_plus_b)<span class="comment"># 非线性激活</span></span><br><span class="line">    <span class="keyword">return</span> outputs</span><br></pre></td></tr></table></figure>
 
-<p>返回其自底向上的层次遍历为：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  [15,7],</span><br><span class="line">  [9,20],</span><br><span class="line">  [3]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>生成些输入数据并导入网路</p>
+<p>因为要拟合平面曲线，输入<code>x</code>和输出<code>y</code>均为一维数据</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导入数据，这里的x_data和y_data并不是严格的一元二次函数的关系</span></span><br><span class="line"><span class="comment"># 因为我们多加了一个noise,这样看起来会更像真实情况</span></span><br><span class="line">x_data = np.linspace(<span class="number">-1</span>,<span class="number">1</span>,<span class="number">300</span>, dtype=np.float32)[:, np.newaxis]<span class="comment">#300行，1个特性</span></span><br><span class="line">noise = np.random.normal(<span class="number">0</span>, <span class="number">0.05</span>, x_data.shape).astype(np.float32)<span class="comment"># 均值，方差，形状 </span></span><br><span class="line">y_data = np.power(x_data,<span class="number">3</span>)*<span class="number">10</span> - <span class="number">8</span>*noise <span class="comment"># y = x^2-0.5+noise</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 利用占位符定义我们所需的神经网络的输入</span></span><br><span class="line"><span class="comment"># None代表无论输入有多少都可以，因为输入只有一个特征，所以这里是1</span></span><br><span class="line">xs = tf.placeholder(tf.float32, [<span class="literal">None</span>, <span class="number">1</span>])</span><br><span class="line">ys = tf.placeholder(tf.float32, [<span class="literal">None</span>, <span class="number">1</span>])</span><br></pre></td></tr></table></figure>
 
-<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>树的层次遍历，即一层一层的从左至右扫描每一个元素，题目虽然要求返回自底向上的结果，但扫描时仍可从上至下扫描，存储时倒序存储即可。</p>
-<p>vector向量结构通过insert方法可以从前面插入数据，实现倒序存储。当然，如果想要实现正序存储，即题目：<a href="https://leetcode-cn.com/problems/binary-tree-level-order-traversal/" target="_blank" rel="noopener">102.二叉树的层次遍历</a>中的要求，只需将insert改为push_back方式保存结果即可。</p>
-<p>queue队列结构为先入先出，将以树的各个节点为根节点的子树依次push入队列，再从队列头依次读出并从vector头部insert进vector中。</p>
-<p>实现树的入队过程，可以首先将整棵树放入，读取其根节点后弹出，再将左右子树依次放入，读取根节点后再次弹出，不断循环，直至没有树可以放入队列（左右子树均为空，到达叶子节点）。</p>
-<h1 id="C-实现"><a href="#C-实现" class="headerlink" title="C++实现"></a>C++实现</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for a binary tree node.</span></span><br><span class="line"><span class="comment"> * struct TreeNode &#123;</span></span><br><span class="line"><span class="comment"> *     int val;</span></span><br><span class="line"><span class="comment"> *     TreeNode *left;</span></span><br><span class="line"><span class="comment"> *     TreeNode *right;</span></span><br><span class="line"><span class="comment"> *     TreeNode(int x) : val(x), left(NULL), right(NULL) &#123;&#125;</span></span><br><span class="line"><span class="comment"> * &#125;;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; levelOrderBottom(TreeNode* root) </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; res;<span class="comment">//结果</span></span><br><span class="line">        <span class="keyword">if</span>(root==<span class="literal">NULL</span>) </span><br><span class="line">            <span class="keyword">return</span> res;</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">queue</span>&lt;TreeNode*&gt; q;<span class="comment">//定义一个队列，用来放树</span></span><br><span class="line">        q.push(root);<span class="comment">//先把整棵树放进去</span></span><br><span class="line">        <span class="keyword">while</span>(!q.empty())</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; temp;<span class="comment">//临时变量</span></span><br><span class="line">            <span class="keyword">int</span> len = q.size();<span class="comment">//队列的长度（队列中树的个数）</span></span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;len;i++)</span><br><span class="line">            &#123;</span><br><span class="line">                TreeNode* now = q.front();<span class="comment">//获取队列的第一个</span></span><br><span class="line">                q.pop();<span class="comment">//队列弹出</span></span><br><span class="line">                temp.push_back(now-&gt;val);<span class="comment">//临时变量保存第一颗树的根节点</span></span><br><span class="line">                <span class="keyword">if</span>(now-&gt;left!=<span class="literal">NULL</span>) <span class="comment">//左子树非空</span></span><br><span class="line">                    q.push(now-&gt;left);</span><br><span class="line">                <span class="keyword">if</span>(now-&gt;right!=<span class="literal">NULL</span>)<span class="comment">//右子树非空 </span></span><br><span class="line">                    q.push(now-&gt;right);</span><br><span class="line">            &#125;</span><br><span class="line">            res.insert(res.begin(), temp);<span class="comment">//将临时变量保存到结果中(从前面插入)</span></span><br><span class="line">            <span class="comment">//res.push_back(temp);//如果是从后面push,则为从上至下存储</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>搭建网络<br><code>输入层</code>：神经元个数1(输出1)</p>
+<p><code>隐藏层1</code>：神经元个数8(输入1，输出8)</p>
+<p><code>隐藏层2</code>：神经元个数8(输入8，输出8)</p>
+<p><code>输出层</code>：神经元个数1(输入8，输出1)</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 定义隐藏层【l1】和【l2】,利用之前的add_layer()函数</span></span><br><span class="line">l1 = add_layer(xs, <span class="number">1</span>, <span class="number">8</span>, activation_function=tf.nn.sigmoid) <span class="comment"># 输入层，输入，输出</span></span><br><span class="line">l2 = add_layer(l1, <span class="number">8</span>, <span class="number">8</span>, activation_function=tf.nn.sigmoid) <span class="comment"># 输入层，输入，输出</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义输出层【prediction】。输入就是隐藏层的输出——l1，输入有10层，输出有1层</span></span><br><span class="line">prediction = add_layer(l2, <span class="number">8</span>, <span class="number">1</span>, activation_function=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
 
-<h1 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h1><p>输入 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[3,9,20,null,null,15,7]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>损失函数</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 计算预测值prediction和真实值的误差，对二者差的平方求和再取平均</span></span><br><span class="line">loss = tf.reduce_mean(tf.reduce_sum(tf.square(ys - prediction),reduction_indices=[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
 
-<p>输出</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[15,7],[9,20],[3]]</span><br></pre></td></tr></table></figure>
+<ul>
+<li>梯度下降法</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># tf.train.GradientDescentOptimizer()中的值通常都小于1，</span></span><br><span class="line"><span class="comment"># 这里取的是0.08，学习率，代表以0.08的效率来最小化误差loss</span></span><br><span class="line">train_step = tf.train.GradientDescentOptimizer(<span class="number">0.08</span>).minimize(loss)</span><br></pre></td></tr></table></figure>
 
+<ul>
+<li>训练前的初始化操作</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用变量时，都要对它进行初始化</span></span><br><span class="line">init = tf.global_variables_initializer()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义Session，并用 Session 来执行 init 初始化步骤</span></span><br><span class="line">sess = tf.Session()</span><br><span class="line">sess.run(init)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用matplotlib可视化结果</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">fig = plt.figure() <span class="comment">#先生成一个图片框</span></span><br><span class="line">ax = fig.add_subplot(<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)<span class="comment">#子图位置</span></span><br><span class="line">ax.scatter(x_data,y_data,c = <span class="string">'b'</span>,marker = <span class="string">'.'</span>)</span><br><span class="line">plt.ion() <span class="comment"># plt.ion()用于连续显示</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>训练过程</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 学习1000次。学习内容是train_step, 用Session来run每一次training的数据</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1000</span>):</span><br><span class="line">    sess.run(train_step, feed_dict=&#123;xs: x_data, ys: y_data&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 每50步我们输出一下机器学习的误差</span></span><br><span class="line">    <span class="keyword">if</span> i % <span class="number">50</span> == <span class="number">0</span>:</span><br><span class="line">        print(sess.run(loss, feed_dict=&#123;xs: x_data, ys: y_data&#125;))</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">             ax.lines.remove(lines[<span class="number">0</span>]) <span class="comment">#抹除上一次的第一条线（总共就一条）</span></span><br><span class="line">        <span class="keyword">except</span> Exception:</span><br><span class="line">            <span class="keyword">pass</span>    </span><br><span class="line">        prediction_value = sess.run(prediction,feed_dict=&#123;xs:x_data&#125;)</span><br><span class="line">        <span class="comment"># plot the prediction</span></span><br><span class="line">        lines = ax.plot(x_data,prediction_value,<span class="string">'r-'</span>,lw=<span class="number">5</span>)</span><br><span class="line">        plt.pause(<span class="number">0.2</span>)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>运行结果</p>
+<p>可以看出，随着训练的进行，损失函数的值不断减小，同时拟合出的结果（红线）不断接近原始训练数据（蓝点），增加训练次数可以提高拟合精度。</p>
+<p>注意，每次运行的结果会略有不同，下图结果在最后一轮显示时出现了跳变，同时损失函数值略有增加，原因在于训练参数没有始终朝着最优变化，会有一些抖动，可能是梯度下降时到达某个局部最小点后又向外跳出，可通过重新训练、增加训练次数或调整学习率等方式解决。</p>
+</li>
+</ul>
+<div align="center"> <img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/example3-show%20-test.gif" width="500" "></div>
+
+<p>参考：<a href="https://morvanzhou.github.io/tutorials/machine-learning/tensorflow/3-3-visualize-result/" target="_blank" rel="noopener">莫烦PYTHON-例子3 结果可视化</a></p>
 
     </div>
 
@@ -353,9 +392,9 @@
           
           <div class="post-tags">
             
-              <a href="/tags/LeetCode/" rel="tag"># LeetCode</a>
+              <a href="/tags/拟合/" rel="tag"># 拟合</a>
             
-              <a href="/tags/算法/" rel="tag"># 算法</a>
+              <a href="/tags/TensorFlow/" rel="tag"># TensorFlow</a>
             
           </div>
         
@@ -365,8 +404,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/08/16/LeetCode题解-24-两两交换链表中的节点-链表-递归/" rel="next" title="LeetCode题解-24. 两两交换链表中的节点(链表 递归)">
-                  <i class="fa fa-chevron-left"></i> LeetCode题解-24. 两两交换链表中的节点(链表 递归)
+                <a href="/2019/08/19/C-数据类型占字节大小分析/" rel="next" title="C++数据类型占字节大小分析">
+                  <i class="fa fa-chevron-left"></i> C++数据类型占字节大小分析
                 </a>
               
             </div>
@@ -374,10 +413,6 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-              
-                <a href="/2019/08/19/C-数据类型占字节大小分析/" rel="prev" title="C++数据类型占字节大小分析">
-                  C++数据类型占字节大小分析 <i class="fa fa-chevron-right"></i>
-                </a>
               
             </div>
           </div>
@@ -409,17 +444,8 @@
 
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-inner">
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <div class="site-overview-wrap sidebar-panel">
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
         <div class="site-overview">
 
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -566,23 +592,6 @@
 
         </div>
       </div>
-      <!--noindex-->
-        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-            
-            
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#题目"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分析"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#C-实现"><span class="nav-number">3.</span> <span class="nav-text">C++实现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#运行结果"><span class="nav-number">4.</span> <span class="nav-text">运行结果</span></a></li></ol></div>
-            
-
-          </div>
-        </div>
-      <!--/noindex-->
-      
       
       
         <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
