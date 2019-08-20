@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="本篇文章通过TensorFlow搭建最基础的全连接网络，使用MNIST数据集实现基础的模型训练和测试。 MNIST数据集MNIST数据集 ：包含7万张黑底白字手写数字图片，其中55000张为训练集，5000张为验证集，10000张为测试集。 每张图片大小为28X28像素，图片中纯黑色像素值为0，纯白色像素值为1。数据集的标签是长度为10的一维数组，数组中每个元素索引号表示对应数字出现的概率 。">
+<meta name="keywords" content="TensorFlow,MNIST">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TensorFlow-手写数字识别（一）">
+<meta property="og:url" content="https://xxpcb.github.io/2019/08/20/TensorFlow-手写数字识别（一）/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="本篇文章通过TensorFlow搭建最基础的全连接网络，使用MNIST数据集实现基础的模型训练和测试。 MNIST数据集MNIST数据集 ：包含7万张黑底白字手写数字图片，其中55000张为训练集，5000张为验证集，10000张为测试集。 每张图片大小为28X28像素，图片中纯黑色像素值为0，纯白色像素值为1。数据集的标签是长度为10的一维数组，数组中每个元素索引号表示对应数字出现的概率 。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-08-20T12:30:16.610Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TensorFlow-手写数字识别（一）">
+<meta name="twitter:description" content="本篇文章通过TensorFlow搭建最基础的全连接网络，使用MNIST数据集实现基础的模型训练和测试。 MNIST数据集MNIST数据集 ：包含7万张黑底白字手写数字图片，其中55000张为训练集，5000张为验证集，10000张为测试集。 每张图片大小为28X28像素，图片中纯黑色像素值为0，纯白色像素值为1。数据集的标签是长度为10的一维数组，数组中每个元素索引号表示对应数字出现的概率 。">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/08/20/TensorFlow-手写数字识别（一）/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>TensorFlow-手写数字识别（一） | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/20/TensorFlow-手写数字识别（一）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird gets the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">TensorFlow-手写数字识别（一）
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-20 19:54:56 / 修改时间：20:30:16" itemprop="dateCreated datePublished" datetime="2019-08-20T19:54:56+08:00">2019-08-20</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/TensorFlow/" itemprop="url" rel="index"><span itemprop="name">TensorFlow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇文章通过TensorFlow搭建最基础的全连接网络，使用MNIST数据集实现基础的模型训练和测试。</p>
+<h1 id="MNIST数据集"><a href="#MNIST数据集" class="headerlink" title="MNIST数据集"></a>MNIST数据集</h1><p><strong>MNIST数据集</strong> ：包含7万张<strong>黑底白字</strong>手写数字图片，其中<strong>55000张为训练集</strong>，<strong>5000张为验证集</strong>，<strong>10000张为测试集</strong>。
+每张图片大小为<strong>28X28</strong>像素，图片中纯黑色像素值为0，纯白色像素值为1。<br>数据集的标签是长度为10的一维数组，数组中每个元素索引号表示对应数字出现的概率 。</p>
+<a id="more"></a>
+
+<p>在将MNIST数据集作为输入喂入神经网络时，需先将数据集中每张图片变为长度784 一维数组，将该数组作为神经网络输入特征喂入神经网络。</p>
+<p>例如：</p>
+<p>一张数字手写体图片变成长度为 784 的一维数组<code>[0.0.0.0.0.231 0.235 0.459……0.219 0.0.0.0.]</code>输入神经网络。<br>该图片对应的标签为<code>[0.0.0.0.0.0.1.0.0.0]</code>，标签中索引号为 6 的元素为 1，表示是数字 6 出现的概率为 100%，则该图片对应的识别结果是 6。</p>
+<p>使用input_data 模块中的<code>read_data_sets()</code>函数加载MNIST数据集：  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> tensorflow.examples.tutorials.mnist <span class="keyword">import</span> input_data</span><br><span class="line">mnist = input_data.read_data_sets(<span class="string">"./data/"</span>, one_hot=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>read_data_sets()</code>函数中有两个参数，第一个参数表示数据集存放路径，第二个参数表示数据集的存取形式。<br>当第二个参数为 Ture 时，表示以独热码形式存取数据集。<br><code>read_data_sets()</code>函数运行时，会检查指定路径内是否已经有数据集，若指定路径中没有数据集，则自动下载，<br>并将MNIST数据集分为<strong>训练集train</strong>、<strong>验证集validation</strong>和<strong>测试集test</strong>存放。</p>
+<h2 id="MNIST数据集结构"><a href="#MNIST数据集结构" class="headerlink" title="MNIST数据集结构"></a>MNIST数据集结构</h2><p>在 Tensorflow中用以下函数返回子集样本数：</p>
+<p>① 返回训练集train样本数</p>
+<p>print(“train data size:”,mnist.train.num_examples)</p>
+<p>② 返回验证集validation样本数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(<span class="string">"validation data size:"</span>,mnist.validation.num_examples)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">validation data size: 5000</span><br></pre></td></tr></table></figure>
+
+<p>③ 返回测试集test样本数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(<span class="string">"test data size:"</span>,mnist.test.num_examples)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">test data size: 10000</span><br></pre></td></tr></table></figure>
+
+<h2 id="数据集标签"><a href="#数据集标签" class="headerlink" title="数据集标签"></a>数据集标签</h2><p>例如：<br>在MNIST数据集中，若想要查看训练集中第0张图片的标签，则使用如下函数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mnist.train.labels[<span class="number">0</span>]</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">array([0., 0., 0., 0., 0., 0., 0., 1., 0., 0.])</span><br></pre></td></tr></table></figure>
+
+<h2 id="MNIST数据集图片像素值"><a href="#MNIST数据集图片像素值" class="headerlink" title="MNIST数据集图片像素值"></a>MNIST数据集图片像素值</h2><p>例如：<br>在MNIST数据集中，若想要查看训练集中第0张图片像素值，则使用如下函数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mnist.train.images[<span class="number">0</span>]</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">array([0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       ...略去中间部分，太多了</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.34901962, 0.9843138 , 0.9450981 ,</span><br><span class="line">       0.3372549 , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.01960784,</span><br><span class="line">       0.8078432 , 0.96470594, 0.6156863 , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.01568628, 0.45882356, 0.27058825,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        , 0.        ,</span><br><span class="line">       0.        , 0.        , 0.        , 0.        ], dtype=float32)</span><br></pre></td></tr></table></figure>
+
+<h2 id="将数据输入神经网络"><a href="#将数据输入神经网络" class="headerlink" title="将数据输入神经网络"></a>将数据输入神经网络</h2><p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BATCH_SIZE = <span class="number">200</span></span><br><span class="line">xs,ys = mnist.train.next_batch(BATCH_SIZE)</span><br><span class="line">print(<span class="string">"xs shape:"</span>,xs.shape)</span><br><span class="line">print(<span class="string">"ys shape:"</span>,ys.shape)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xs shape: (200, 784)</span><br><span class="line">ys shape: (200, 10)</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>mnist.train.next_batch()</code>函数包含一个参数<code>BATCH_SIZE</code>，表示随机从训练集中抽取<code>BATCH_SIZE</code>个样本输入神经网络，并将样本的像素值和标签分别赋给<code>xs</code>和<code>ys</code>。
+在本例中，<code>BATCH_SIZE</code>设置为200，表示一次将200个样本的像素值和标签分别赋值给<code>xs</code>和<code>ys</code>，故<code>xs</code>的形状为(200,784)，对应的<code>ys</code>的形状为(200,10)。</p>
+<h1 id="TensorFlow模型搭建基础"><a href="#TensorFlow模型搭建基础" class="headerlink" title="TensorFlow模型搭建基础"></a>TensorFlow模型搭建基础</h1><h2 id="实现“MNIST数据集手写数字识别-”的常用函数"><a href="#实现“MNIST数据集手写数字识别-”的常用函数" class="headerlink" title="实现“MNIST数据集手写数字识别 ”的常用函数"></a>实现“MNIST数据集手写数字识别 ”的常用函数</h2><p>① <code>tf.get_collection(&quot;&quot;)</code> 函数表示从collection集合中取出全部变量生成一个列表 。</p>
+<p>② <code>tf.add()</code>函数表示将参数列表中对应元素相加 。<br>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line">x=tf.constant([[<span class="number">1</span>,<span class="number">2</span>],[<span class="number">1</span>,<span class="number">2</span>]])</span><br><span class="line">y=tf.constant([[<span class="number">1</span>,<span class="number">1</span>],[<span class="number">1</span>,<span class="number">2</span>]])</span><br><span class="line">z=tf.add(x,y)</span><br><span class="line"><span class="keyword">with</span> tf.Session( ) <span class="keyword">as</span> sess:</span><br><span class="line">    print(sess.run(z))</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[[2 3]</span><br><span class="line"> [2 4]]</span><br></pre></td></tr></table></figure>
+
+<p>③ <code>tf.cast(x,dtype)</code>函数表示将参数x转换为指定数据类型 </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">A = tf.convert_to_tensor(np.array([[<span class="number">1</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">4</span>], [<span class="number">3</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">5</span>]]))</span><br><span class="line">print(A.dtype)</span><br><span class="line">b = tf.cast(A, tf.float32)</span><br><span class="line">print(b.dtype)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;dtype: &apos;int32&apos;&gt;</span><br><span class="line">&lt;dtype: &apos;float32&apos;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>从输出结果看出，将矩阵A由整数型变为32位浮点型。</p>
+<p>④ <code>tf.equal()</code>函数表示对比两个矩阵或者向量的元素。若对应元素相等，则返回True,若对应元素不相等，则返回False。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">A = [[<span class="number">1</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>]]</span><br><span class="line">B = [[<span class="number">1</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">3</span>,<span class="number">2</span>]]</span><br><span class="line"><span class="keyword">with</span> tf.Session( ) <span class="keyword">as</span> sess:</span><br><span class="line">    print(sess.run(tf.equal(A, B)))</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[ True  True  True False False]]</span><br></pre></td></tr></table></figure>
+
+<p>在矩阵A和B中，第1、2、3个元素相等，第4、5个元素不等，故输出结果中，第1、2、3个元素取值为 True，第4、5个元素取值为 False。</p>
+<p>⑤<code>tf.reduce_mean(x,axis)</code>函数表示求取矩阵或张量指定维度的平均值。</p>
+<ul>
+<li>若不指定第二个参数，则在所有元素中取平均值</li>
+<li>若指定第二个参数为0，则在第一维元素上取平均值，即每一列求平均值</li>
+<li>若指定第二个参数为1，则在第二维元素上取平均值，即每一行求平均值</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">x = [[<span class="number">1.</span>, <span class="number">1.</span>],</span><br><span class="line">     [<span class="number">2.</span>, <span class="number">2.</span>]]</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    print(sess.run(tf.reduce_mean(x)))</span><br><span class="line">    print(sess.run(tf.reduce_mean(x,<span class="number">0</span>)))</span><br><span class="line">    print(sess.run(tf.reduce_mean(x,<span class="number">1</span>)))</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.5</span><br><span class="line">[1.5 1.5]</span><br><span class="line">[1. 2.]</span><br></pre></td></tr></table></figure>
+
+<p>⑥ <code>tf.argmax(x,axis)</code>函数表示返回指定维度axis下，参数<code>x</code>中最大值索引号。</p>
+<p>例如：</p>
+<p>在<code>tf.argmax([1,0,0],1)</code>函数中，axis为1，参数<code>x</code>为<code>[1,0,0]</code>，表示在参数<code>x</code>的第一个维度取最大值对应的索引号，故返回 0。</p>
+<p>⑦ <code>os.path.join()</code>函数表示把参数字符串按照路径命名规则拼接。</p>
+<p>例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line">os.path.join(<span class="string">'/hello/'</span>,<span class="string">'good/boy/'</span>,<span class="string">'doiido'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&apos;/hello/good/boy/doiido&apos;</span><br></pre></td></tr></table></figure>
+
+<p>⑧ <code>字符串.split()</code>函数表示定按照指定“拆分符”对字符串拆分，返回拆分列表。</p>
+<p>例如：<br><code>&#39;./model/mnist_model-1001&#39;.split(&#39;/&#39;)[-1].split(&#39;-&#39;)[-1]</code><br>在该例子中，共进行两次拆分。</p>
+<ul>
+<li>拆分符为<code>/</code>，返回拆分列表，并提取列表中索引为-1 的元素即倒数第一个元素；</li>
+<li>拆分符为<code>-</code>，返回拆分列表，并提取列表中索引为-1 的元素即倒数第一个元素，故函数返回值为 1001。</li>
+</ul>
+<p>⑨ <code>tf.Graph( ).as_default( )</code>函数表示将当前图设置成为默认图，并返回一个上下文管理器。 </p>
+<p>该函数一般与with关键字搭配使用，应用于将已经定义好的神经网络在计算图中复现。</p>
+<p>例如：<br><code>with tf.Graph().as_default() as g</code>，表示将在<code>Graph()</code>内定义的节点加入到<code>计算图g</code>中。</p>
+<h2 id="神经网络模型的保存"><a href="#神经网络模型的保存" class="headerlink" title="神经网络模型的保存"></a>神经网络模型的保存</h2><p>在反向传播过程中，一般会间隔一定轮数保存一次神经网络模型，并产生三个文件:</p>
+<ul>
+<li>保存当前图结构的<code>.meta</code>文件</li>
+<li>保存当前参数名的<code>.index</code>文件</li>
+<li>保存当前参数的<code>.data</code>文件</li>
+</ul>
+<p>在Tensorflow中如下表示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">saver = tf.train.Saver()</span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(STEPS):</span><br><span class="line">        <span class="keyword">if</span> i %  轮数 == <span class="number">0</span>:</span><br><span class="line">            saver.save(sess, os.path.join(MODEL_SAVE_PATH,MODEL_NAME), global_step=global_step)</span><br></pre></td></tr></table></figure>
+
+<p>其中，<code>tf.train.Saver()</code>用来实例化<code>saver</code>对象。<br>上述代码表示，神经网络每循环规定的轮数，将神经网络模型中所有的参数等信息保存到指定的路径中，并在存放网络模型的文件夹名称中注明保存模型时的训练轮数。</p>
+<h2 id="神经网络模型的加载"><a href="#神经网络模型的加载" class="headerlink" title="神经网络模型的加载"></a>神经网络模型的加载</h2><p>在测试网络效果时，需要将训练好的神经网络模型加载，在TensorFlow 中这样表示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    ckpt = tf.train.get_checkpoint_state(存储路径)</span><br><span class="line">    <span class="keyword">if</span> ckpt <span class="keyword">and</span> ckpt.model_checkpoint_path:</span><br><span class="line">        saver.restore(sess, ckpt.model_checkpoint_path)</span><br></pre></td></tr></table></figure>
+
+<p>在<code>with</code>结构中进行加载保存的神经网络模型，若<code>ckpt</code>和保存的模型在指定路径中存在，则将保存的神经网络模型加载到当前会话中。</p>
+<h2 id="加载模型中参数的滑动平均值"><a href="#加载模型中参数的滑动平均值" class="headerlink" title="加载模型中参数的滑动平均值"></a>加载模型中参数的滑动平均值</h2><p>在保存模型时，若模型中采用滑动平均，则参数的滑动平均值会保存在相应文件中。通过实例化<code>saver</code>对象，实现参数滑动平均值的加载，<br>在TensorFlow中如下表示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ema = tf.train.ExponentialMovingAverage(滑动平均基数)</span><br><span class="line">ema_restore = ema.variables_to_restore()</span><br><span class="line">saver = tf.train.Saver(ema_restore)</span><br></pre></td></tr></table></figure>
+
+<h2 id="神经网络模型准确率评估方法"><a href="#神经网络模型准确率评估方法" class="headerlink" title="神经网络模型准确率评估方法"></a>神经网络模型准确率评估方法</h2><p>在网络评估时，一般通过计算在一组数据上的识别准确率，评估神经网络的效果。在TensorFlow 中这样表示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">correct_prediction = tf.equal(tf.argmax(y, <span class="number">1</span>),tf.argmax(y_, <span class="number">1</span>))</span><br><span class="line">accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>y</code>:表示在一组数据（即<code>batch_size</code>个数据）上神经网络模型的预测结果，<code>y</code>的形状为<code>[batch_size,10]</code>，每一行表示一张图片的识别结果。</li>
+<li><code>tf.argmax()</code>:取出每张图片对应向量中最大值元素对应的索引值，组成长度为输入数据<code>batch_size</code>个的一维数组。</li>
+<li><code>tf.equal()</code>:判断预测结果张量和实际标签张量的每个维度是否相等，若相等则返回 True，不相等则返回 False。</li>
+<li><code>tf.cast()</code>:将得到的布尔型数值转化为实数型，再通过<code>tf.reduce_mean()</code>函数求平均值，最终得到神经网络模型在本组数据上的准确率。</li>
+</ul>
+<h1 id="网络模型分析"><a href="#网络模型分析" class="headerlink" title="网络模型分析"></a>网络模型分析</h1><p>神经网络包括前向传播过程和反向传播过程。</p>
+<p>反向传播过程中用到的正则化、指数衰减学习率、滑动平均方法的设置、以及测试模块。</p>
+<h2 id="前向传播过程（forward-py-）"><a href="#前向传播过程（forward-py-）" class="headerlink" title="前向传播过程（forward.py ）"></a>前向传播过程（forward.py ）</h2><p>前向传播过程完成神经网络的搭建，结构如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(x, regularizer)</span>:</span></span><br><span class="line">    w=</span><br><span class="line">    b=</span><br><span class="line">    y=</span><br><span class="line">    <span class="keyword">return</span> y</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_weight</span><span class="params">(shape,  regularizer)</span>:</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_bias</span><span class="params">(shape)</span>:</span></span><br></pre></td></tr></table></figure>
+
+<p>前向传播过程中，需要定义神经网络中的参数<code>w</code>和偏置<code>b</code>，定义由输入到输出的网络结构。</p>
+<p>通过定义函数<code>get_weight()</code>实现对参数<code>w</code>的设置，包括参数<code>w</code>的形状和是否正则化的标志。<br>同样，通过定义函数<code>get_bias()</code>实现对偏置<code>b</code>的设置。</p>
+<h2 id="反向传播过程（-back-word-py-）"><a href="#反向传播过程（-back-word-py-）" class="headerlink" title="反向传播过程（ back word.py ）"></a>反向传播过程（ back word.py ）</h2><p>反向传播过程完成网络参数的训练，结构如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">backward</span><span class="params">( mnist )</span>:</span></span><br><span class="line">    x =  tf.placeholder(dtype,shape)</span><br><span class="line">    y_ =  tf.placeholder(dtype,shape)</span><br><span class="line">    <span class="comment">#定义前向传播函数</span></span><br><span class="line">    y = forward()</span><br><span class="line">    global_step =</span><br><span class="line">    loss =</span><br><span class="line">    train_step = tf.train .GradientDescentOptimizer( learning_rate).minimize(loss, global_step=global_step)</span><br><span class="line">    <span class="comment">#实例化saver对象</span></span><br><span class="line">    saver = tf.train.Saver()</span><br><span class="line">    <span class="keyword">with</span>  tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">        <span class="comment">#初始化所有模型参数</span></span><br><span class="line">        tf.initialize_all_variables().run()</span><br><span class="line">        <span class="comment">#训练模型</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(STEPS):</span><br><span class="line">            sess.run(train_step, feed_dict=&#123;x: , y_: &#125;)</span><br><span class="line">            <span class="keyword">if</span> i %  轮数 == <span class="number">0</span>:</span><br><span class="line">                <span class="keyword">print</span></span><br><span class="line">                saver.save( )</span><br></pre></td></tr></table></figure>
+
+<p>反向传播过程中：</p>
+<ul>
+<li><p><code>tf.placeholder(dtype, shape)</code>：实现训练样本<code>x</code>和样本标签<code>y_</code>占位</p>
+<ul>
+<li>参数<code>dtype</code>表示数据的类型</li>
+<li>参数<code>shape</code>表示数据的形状</li>
+</ul>
+</li>
+<li><p><code>y</code>：定义的前向传播函数 forward</p>
+</li>
+<li><p><code>loss</code>：定义的损失函数，一般为预测值与样本标签的交叉熵（或均方误差）与正则化损失之和</p>
+</li>
+<li><p><code>train_step</code>：利用优化算法对模型参数进行优化</p>
+<p>常用优化算法有<code>GradientDescentOptimizer</code>、<code>AdamOptimizer</code>、<code>MomentumOptimizer</code>，在上述代码中使用的<code>GradientDescentOptimizer</code>优化算法。</p>
+</li>
+</ul>
+<p>接着实例化<code>saver</code>对象：</p>
+<ul>
+<li><code>tf.initialize_all_variables().run()</code>：实例化所有参数模型</li>
+<li><code>sess.run( )</code>：实现模型的训练优化过程，并每间隔一定轮数保存一次模型</li>
+</ul>
+<h2 id="正则化、指数衰减学习率、滑动平均方法的设置"><a href="#正则化、指数衰减学习率、滑动平均方法的设置" class="headerlink" title="正则化、指数衰减学习率、滑动平均方法的设置"></a>正则化、指数衰减学习率、滑动平均方法的设置</h2><p>① 正则化项 regularization</p>
+<p>当在前向传播过程中即<code>forward.py</code>文件中，设置正则化参数<code>regularization</code>为1 时，则表明在反向传播过程中优化模型参数时，需要在损失函数中加入正则化项。<br>结构如下：</p>
+<p>首先，需要在前向传播过程即<code>forward.py</code>文件中加入</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> regularizer != <span class="literal">None</span>: </span><br><span class="line">    tf.add_to_collection(<span class="string">'losses'</span>,tf.contrib.layers.l2_regularizer(regularizer)(w))</span><br></pre></td></tr></table></figure>
+
+<p>其次，需要在反向传播过程即<code>byackword.py</code>文件中加入</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y,labels=tf.argmax(y_, <span class="number">1</span>))</span><br><span class="line">cem = tf.reduce_mean(ce)</span><br><span class="line">loss = cem + tf.add_n(tf.get_collection(<span class="string">'losses'</span>))</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>tf.nn.sparse_softmax_cross_entropy_with_logits()</code>：表示<code>softmax()</code>函数与交叉熵一起使用。</li>
+</ul>
+<p>②指数衰减学习率</p>
+<p>在训练模型时，使用指数衰减学习率可以使模型在训练的前期快速收敛接近较优解，又可以保证模型在训练后期不会有太大波动。</p>
+<p>运用指数衰减学习率，需要在反向传播过程即<code>backword.py</code>文件中加入：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">learning_rate = tf.train.exponential_decay(LEARNING_RATE_BASE,global_step,LEARNING_RATE_STEP, LEARNING_RATE_DECAY,staircase=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+
+<p>③ 滑动平均</p>
+<p>在模型训练时引入滑动平均可以使模型在测试数据上表现的更加健壮。</p>
+<p>需要在反向传播过程即<code>backword.py</code>文件中加入：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ema = tf.train .ExponentialMovingAverage(MOVING_AVERAGE_DECAY,global_step)</span><br><span class="line">ema_op = ema.apply(tf.trainable_variables())</span><br><span class="line"><span class="keyword">with</span> tf.control_dependencies([train_step, ema_op]):</span><br><span class="line">    train_op = tf.no_op(name=<span class="string">'train'</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="测试过程（-test-py-）"><a href="#测试过程（-test-py-）" class="headerlink" title="测试过程（ test .py ）"></a>测试过程（ test .py ）</h2><p>当神经网络模型训练完成后，便可用于测试数据集，验证神经网络的性能。结构如下：</p>
+<p>首先，制定模型测试函数<code>test()</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">( mnist )</span>:</span></span><br><span class="line">    <span class="keyword">with</span> tf.Graph( ).as_default( ) <span class="keyword">as</span> g:</span><br><span class="line">        </span><br><span class="line">    <span class="comment">#给x y_ 占位</span></span><br><span class="line">    x = tf.placeholder( dtype, , shape) )</span><br><span class="line">    y_ = tf.placeholder( dtype, , shape) )</span><br><span class="line"></span><br><span class="line">    <span class="comment">#前向传播得到预测结果y</span></span><br><span class="line">    y = mnist_forward.forward(x, <span class="literal">None</span> )</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#实例化可还原滑动平均的saver</span></span><br><span class="line">    ema =  tf.train.ExponentialMovingAverage(滑动衰减率)</span><br><span class="line">    ema_restore = ema.variables_to_restore()</span><br><span class="line">    saver = tf.train.Saver(ema_restore)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#计算正确率</span></span><br><span class="line">    correct_prediction = tf.equal(tf.argmax(y,<span class="number">1</span>),tf.argmax(y_,<span class="number">1</span>))</span><br><span class="line">    accuracy = tf.reduce_mean(tf.cast( correct_prediction,tf.float32))</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">            <span class="comment">#加载训练好的模型</span></span><br><span class="line">            ckpt = tf.train.get_checkpoint_state( 存储路径) )</span><br><span class="line">            <span class="comment">#如果已有ckpt模型则恢复</span></span><br><span class="line">            <span class="keyword">if</span> ckpt <span class="keyword">and</span> ckpt.model_checkpoint_path:</span><br><span class="line">                <span class="comment">#恢复会话</span></span><br><span class="line">                saver.restore(sess, ckpt.model_checkpoint_path)</span><br><span class="line">                <span class="comment">#恢复轮数</span></span><br><span class="line">                global_ste = = ckpt.model_checkpoint_path.split(<span class="string">'/'</span>)[<span class="number">-1</span>].split(<span class="string">'- '</span>)[<span class="number">-1</span>]</span><br><span class="line">                <span class="comment">#计算准确率</span></span><br><span class="line">                accuracy_score = sess.run(accuracy, feed_dict=&#123;x: 测试数据 , y_: 测试数据标签 &#125;)</span><br><span class="line">                <span class="comment">#打印提示</span></span><br><span class="line">                print(<span class="string">"After %s training step(s), test accuracy=</span></span><br><span class="line"><span class="string">                %g"</span> % (global_step, accuracy_score ))</span><br><span class="line">            <span class="comment">#如果没有模型</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                print(<span class="string">'No checkpoint file found'</span>) <span class="comment"># # 模型不存在 提示</span></span><br><span class="line">                <span class="keyword">return</span></span><br></pre></td></tr></table></figure>
+
+<p>其次，制定<code>main()</code>函数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment">#加载测试数据集</span></span><br><span class="line">    mnist = input_data.read_data_sets (<span class="string">"./data/"</span>, one_hot=<span class="literal">True</span>)</span><br><span class="line">    <span class="comment">#调用定义好的测试函数test ()</span></span><br><span class="line">    test(mnist)</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>通过对测试数据的预测得到准确率，从而判断出训练出的神经网络模型的性能好坏。</p>
+<p>当准确率低时，可能原因有模型需要改进，或者是训练数据量太少导致过拟合。</p>
+<h1 id="网络模型搭建与测试"><a href="#网络模型搭建与测试" class="headerlink" title="网络模型搭建与测试"></a>网络模型搭建与测试</h1><p>实现手写体MNIST数据集的识别任务，共分为三个模块文件，分别是:</p>
+<ul>
+<li>描述网络结构的前向传播过程文件（mnist_forward.py)</li>
+<li>描述网络参数优化方法的反向传播过程文件（mnist_backward.py）、  </li>
+<li>验证模型准确率的测试过程文件（mnist_test.py ）。</li>
+</ul>
+<h2 id="前向传播过程文件（-mnist-forward-py-）"><a href="#前向传播过程文件（-mnist-forward-py-）" class="headerlink" title="前向传播过程文件（ mnist_forward.py ）"></a>前向传播过程文件（ mnist_forward.py ）</h2><p>在前向传播过程中，需要定义网络模型输入层个数、隐藏层节点数、输出层个数，定义网络参数 w、偏置 b，定义由输入到输出的神经网络架构。</p>
+<p>实现手写体MNIST数据集的识别任务前向传播过程如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">INPUT_NODE = <span class="number">784</span></span><br><span class="line">OUTPUT_NODE = <span class="number">10</span></span><br><span class="line">LAYER1_NODE = <span class="number">500</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_weight</span><span class="params">(shape, regularizer)</span>:</span></span><br><span class="line">    w = tf.Variable(tf.truncated_normal(shape,stddev=<span class="number">0.1</span>))</span><br><span class="line">    <span class="keyword">if</span> regularizer != <span class="literal">None</span>: tf.add_to_collection(<span class="string">'losses'</span>, tf.contrib.layers.l2_regularizer(regularizer)(w))</span><br><span class="line">    <span class="keyword">return</span> w</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_bias</span><span class="params">(shape)</span>:</span>  </span><br><span class="line">    b = tf.Variable(tf.zeros(shape))  </span><br><span class="line">    <span class="keyword">return</span> b</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(x, regularizer)</span>:</span></span><br><span class="line">    w1 = get_weight([INPUT_NODE, LAYER1_NODE], regularizer)</span><br><span class="line">    b1 = get_bias([LAYER1_NODE])</span><br><span class="line">    y1 = tf.nn.relu(tf.matmul(x, w1) + b1)</span><br><span class="line"></span><br><span class="line">    w2 = get_weight([LAYER1_NODE, OUTPUT_NODE], regularizer)</span><br><span class="line">    b2 = get_bias([OUTPUT_NODE])</span><br><span class="line">    y = tf.matmul(y1, w2) + b2</span><br><span class="line">    <span class="keyword">return</span> y</span><br></pre></td></tr></table></figure>
+
+<p>由上述代码可知，在前向传播过程中，规定网络:</p>
+<ul>
+<li><p><code>输入结点</code>：784个（代表每张输入图片的像素个数）</p>
+</li>
+<li><p><code>隐藏层节点</code>：500 个</p>
+</li>
+<li><p><code>输出节点</code>：10个（表示输出为数字 0-9的十分类）</p>
+</li>
+<li><p><code>w1</code>：由输入层到隐藏层的参数,形状为<code>[784,500]</code></p>
+</li>
+<li><p><code>w2</code>：由隐藏层到输出层的参数，形状为<code>[500,10]</code><br>（参数满足截断正态分布，并使用正则化，将每个参数的正则化损失加到总损失中）</p>
+</li>
+<li><p><code>b1</code>：由输入层到隐藏层的偏置，形状为长度为 500的一维数组</p>
+</li>
+<li><p><code>b2</code>：由隐藏层到输出层的偏置，形状为长度为10的一维数组，初始化值为全 0。</p>
+</li>
+<li><p><code>y1</code>：隐藏层输出，由前向传播结构第一层为输入<code>x</code>与参数<code>w1</code>矩阵相乘加上偏置<code>b1</code>，再经过<code>relu</code>函数得到</p>
+</li>
+<li><p><code>y</code>：输出，由前向传播结构第二层为隐藏层输出<code>y1</code>与参数<code>w2</code>矩阵相乘加上偏置<code>b2</code>得到<br>（由于输出<code>y</code>要经过<code>softmax</code>函数，使其符合概率分布，故输出<code>y</code>不经过<code>relu</code>函数）</p>
+</li>
+</ul>
+<h2 id="反向传播过程文件（mnist-backward-py-）"><a href="#反向传播过程文件（mnist-backward-py-）" class="headerlink" title="反向传播过程文件（mnist_backward.py ）"></a>反向传播过程文件（mnist_backward.py ）</h2><p>反向传播过程实现利用训练数据集对神经网络模型训练，通过降低损失函数值，实现网络模型参数的优化，从而得到准确率高且泛化能力强的神经网络模型。</p>
+<p>实现手写体MNIST数据集的识别任务反向传播过程如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">from</span> tensorflow.examples.tutorials.mnist <span class="keyword">import</span> input_data</span><br><span class="line"><span class="keyword">import</span> mnist_forward</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line">BATCH_SIZE = <span class="number">200</span></span><br><span class="line">LEARNING_RATE_BASE = <span class="number">0.1</span></span><br><span class="line">LEARNING_RATE_DECAY = <span class="number">0.99</span></span><br><span class="line">REGULARIZER = <span class="number">0.0001</span></span><br><span class="line">STEPS = <span class="number">500</span> <span class="comment">#50000</span></span><br><span class="line">MOVING_AVERAGE_DECAY = <span class="number">0.99</span></span><br><span class="line">MODEL_SAVE_PATH=<span class="string">"./model/"</span></span><br><span class="line">MODEL_NAME=<span class="string">"mnist_model"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">backward</span><span class="params">(mnist)</span>:</span></span><br><span class="line"></span><br><span class="line">    x = tf.placeholder(tf.float32, [<span class="literal">None</span>, mnist_forward.INPUT_NODE])</span><br><span class="line">    y_ = tf.placeholder(tf.float32, [<span class="literal">None</span>, mnist_forward.OUTPUT_NODE])</span><br><span class="line">    y = mnist_forward.forward(x, REGULARIZER)</span><br><span class="line">    global_step = tf.Variable(<span class="number">0</span>, trainable=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">    ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y, labels=tf.argmax(y_, <span class="number">1</span>))</span><br><span class="line">    cem = tf.reduce_mean(ce)</span><br><span class="line">    loss = cem + tf.add_n(tf.get_collection(<span class="string">'losses'</span>))</span><br><span class="line"></span><br><span class="line">    learning_rate = tf.train.exponential_decay(</span><br><span class="line">        LEARNING_RATE_BASE,</span><br><span class="line">        global_step,</span><br><span class="line">        mnist.train.num_examples / BATCH_SIZE, </span><br><span class="line">        LEARNING_RATE_DECAY,</span><br><span class="line">        staircase=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss, global_step=global_step)</span><br><span class="line"></span><br><span class="line">    ema = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)</span><br><span class="line">    ema_op = ema.apply(tf.trainable_variables())</span><br><span class="line">    <span class="keyword">with</span> tf.control_dependencies([train_step, ema_op]):</span><br><span class="line">        train_op = tf.no_op(name=<span class="string">'train'</span>)</span><br><span class="line"></span><br><span class="line">    saver = tf.train.Saver()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">        init_op = tf.global_variables_initializer()</span><br><span class="line">        sess.run(init_op)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(STEPS):</span><br><span class="line">            xs, ys = mnist.train.next_batch(BATCH_SIZE)</span><br><span class="line">            _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict=&#123;x: xs, y_: ys&#125;)</span><br><span class="line">            <span class="keyword">if</span> i % <span class="number">1000</span> == <span class="number">0</span>:</span><br><span class="line">                print(<span class="string">"After %d training step(s), loss on training batch is %g."</span> % (step, loss_value))</span><br><span class="line">                saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step)</span><br><span class="line">                </span><br><span class="line">                </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    mnist = input_data.read_data_sets(<span class="string">"./data/"</span>, one_hot=<span class="literal">True</span>)</span><br><span class="line">    backward(mnist)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br><span class="line">After 1 training step(s), loss on training batch is 3.47547.</span><br><span class="line">After 1001 training step(s), loss on training batch is 0.283958.</span><br><span class="line">After 2001 training step(s), loss on training batch is 0.304716.</span><br><span class="line">After 3001 training step(s), loss on training batch is 0.266811.</span><br><span class="line">...省略</span><br><span class="line">After 47001 training step(s), loss on training batch is 0.128592.</span><br><span class="line">After 48001 training step(s), loss on training batch is 0.125534.</span><br><span class="line">After 49001 training step(s), loss on training batch is 0.123577.</span><br></pre></td></tr></table></figure>
+
+<p>由上述代码可知，在反向传播过程中:</p>
+<ul>
+<li>引入<code>tensorflow</code>、<code>input_data</code>、前向传播<code>mnist_forward</code> 和<code>os</code>模块</li>
+<li>定义每轮喂入神经网络的图片数、初始学习率、学习率衰减率、正则化系数、训练轮数、模型保存路径以及模型保存名称等相关信息</li>
+<li>反向传播函数<code>backword</code>中：<ul>
+<li>读入<code>mnist</code>，用<code>placeholder</code>给<strong>训练数据</strong><code>x</code>和<strong>标签</strong><code>y_</code>占位</li>
+<li>调用<code>mnist_forward</code>文件中的前向传播过程<code>forword()</code>函数，并设置正则化，计算训练数据集上的<strong>预测结果</strong><code>y</code></li>
+<li>并给当前计算轮数计数器赋值，设定为不可训练类型</li>
+<li>调用包含所有参数正则化损失的损失函数<code>loss</code>，并设定指数衰减学习率<code>learning_rate</code></li>
+<li>使用梯度衰减算法对模型优化，降低损失函数，并定义参数的滑动平均</li>
+<li>在<code>with</code>结构中:<ul>
+<li>实现所有参数初始化</li>
+<li>每次喂入<code>batch_size</code>组（即 200 组）训练数据和对应标签，循环迭代<code>steps</code>轮</li>
+<li>并每隔 1000 轮打印出一次损失函数值信息，并将当前会话加载到指定路径</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通过主函数<code>main()</code>，加载指定路径下的训练数据集，并调用规定的<code>backward()</code>函数训练模型</li>
+</ul>
+<h2 id="测试过程文件（mnist-test-py-）"><a href="#测试过程文件（mnist-test-py-）" class="headerlink" title="测试过程文件（mnist_ test .py ）"></a>测试过程文件（mnist_ test .py ）</h2><p>当训练完模型后，给神经网络模型输入测试集验证网络的准确性和泛化性。<br>注意，所用的测试集和训练集是相互独立的。</p>
+<p>实现手写体MNIST数据集的识别任务测试传播过程如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">from</span> tensorflow.examples.tutorials.mnist <span class="keyword">import</span> input_data</span><br><span class="line"><span class="keyword">import</span> mnist_forward</span><br><span class="line"><span class="keyword">import</span> mnist_backward</span><br><span class="line">TEST_INTERVAL_SECS = <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(mnist)</span>:</span></span><br><span class="line">    <span class="keyword">with</span> tf.Graph().as_default() <span class="keyword">as</span> g:</span><br><span class="line">        x = tf.placeholder(tf.float32, [<span class="literal">None</span>, mnist_forward.INPUT_NODE])</span><br><span class="line">        y_ = tf.placeholder(tf.float32, [<span class="literal">None</span>, mnist_forward.OUTPUT_NODE])</span><br><span class="line">        y = mnist_forward.forward(x, <span class="literal">None</span>)</span><br><span class="line"></span><br><span class="line">        ema = tf.train.ExponentialMovingAverage(mnist_backward.MOVING_AVERAGE_DECAY)</span><br><span class="line">        ema_restore = ema.variables_to_restore()</span><br><span class="line">        saver = tf.train.Saver(ema_restore)</span><br><span class="line"></span><br><span class="line">        correct_prediction = tf.equal(tf.argmax(y, <span class="number">1</span>), tf.argmax(y_, <span class="number">1</span>))</span><br><span class="line">        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">                ckpt = tf.train.get_checkpoint_state(mnist_backward.MODEL_SAVE_PATH)</span><br><span class="line">                <span class="keyword">if</span> ckpt <span class="keyword">and</span> ckpt.model_checkpoint_path:</span><br><span class="line">                    saver.restore(sess, ckpt.model_checkpoint_path)</span><br><span class="line">                    global_step = ckpt.model_checkpoint_path.split(<span class="string">'/'</span>)[<span class="number">-1</span>].split(<span class="string">'-'</span>)[<span class="number">-1</span>]</span><br><span class="line">                    accuracy_score = sess.run(accuracy, feed_dict=&#123;x: mnist.test.images, y_: mnist.test.labels&#125;)</span><br><span class="line">                    print(<span class="string">"After %s training step(s), test accuracy = %g"</span> % (global_step, accuracy_score))</span><br><span class="line">                    <span class="keyword">return</span></span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    print(<span class="string">'No checkpoint file found'</span>)</span><br><span class="line">                    <span class="keyword">return</span></span><br><span class="line">            time.sleep(TEST_INTERVAL_SECS)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    mnist = input_data.read_data_sets(<span class="string">"./data/"</span>, one_hot=<span class="literal">True</span>)</span><br><span class="line">    test(mnist)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br><span class="line">After 49001 training step(s), test accuracy = 0.98</span><br></pre></td></tr></table></figure>
+
+<p>在上述代码中，</p>
+<ul>
+<li>引入time模块、tensorflow、input_data、前向传播mnist_forward、反向传播 mnist_backward 模块和 os 模块</li>
+<li>规定程序 5 秒的循环间隔时间</li>
+<li>定义测试函数<code>test()</code>,读入mnist数据集:<ul>
+<li>利用<code>tf.Graph()</code>复现之前定义的计算图</li>
+<li>利用<code>placeholder</code>给训练数据<code>x</code>和标签<code>y_</code>占位</li>
+<li>调用mnist_forward文件中的前向传播过程<code>forword()函数</code>，计算训练数据集上的预测结果<code>y</code></li>
+<li>实例化具有滑动平均的<code>saver</code>对象，从而在会话被加载时模型中的所有参数被赋值为各自的滑动平均值，增强模型的稳定性</li>
+<li>计算模型在测试集上的准确率</li>
+<li>在<code>with</code>结构中，加载指定路径下的<code>ckpt</code>:<ul>
+<li>若模型存在，则加载出模型到当前对话，在测试数据集上进行准确率验证，并打印出当前轮数下的准确率</li>
+<li>若模型不存在，则打印出模型不存在的提示，从而<code>test()</code>函数完成</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>通过主函数<code>main()</code>，加载指定路径下的测试数据集，并调用规定的<code>test</code>函数，进行模型在测试集上的准确率验证</li>
+</ul>
+<p>从上面的运行结果可以看出，最终在测试集上的准确率在98%，模型训练mnist_backward.py与模型测试mnist_test.py可同时执行，这里可以更加直观看出：随着训练轮数的增加，网络模型的损失函数值在不断降低，并且在测试集上的准确率在不断提升，有较好的泛化能力。</p>
+<p>参考：<a href="https://www.icourse163.org/course/PKU-1002536002?tid=1002700003" target="_blank" rel="noopener">人工智能实践：Tensorflow笔记</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/TensorFlow/" rel="tag"># TensorFlow</a>
+            
+              <a href="/tags/MNIST/" rel="tag"># MNIST</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/08/19/TensorFlow-平面曲线拟合/" rel="next" title="TensorFlow-平面曲线拟合">
+                  <i class="fa fa-chevron-left"></i> TensorFlow-平面曲线拟合
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird gets the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#MNIST数据集"><span class="nav-number">1.</span> <span class="nav-text">MNIST数据集</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MNIST数据集结构"><span class="nav-number">1.1.</span> <span class="nav-text">MNIST数据集结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据集标签"><span class="nav-number">1.2.</span> <span class="nav-text">数据集标签</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MNIST数据集图片像素值"><span class="nav-number">1.3.</span> <span class="nav-text">MNIST数据集图片像素值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将数据输入神经网络"><span class="nav-number">1.4.</span> <span class="nav-text">将数据输入神经网络</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TensorFlow模型搭建基础"><span class="nav-number">2.</span> <span class="nav-text">TensorFlow模型搭建基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#实现“MNIST数据集手写数字识别-”的常用函数"><span class="nav-number">2.1.</span> <span class="nav-text">实现“MNIST数据集手写数字识别 ”的常用函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#神经网络模型的保存"><span class="nav-number">2.2.</span> <span class="nav-text">神经网络模型的保存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#神经网络模型的加载"><span class="nav-number">2.3.</span> <span class="nav-text">神经网络模型的加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加载模型中参数的滑动平均值"><span class="nav-number">2.4.</span> <span class="nav-text">加载模型中参数的滑动平均值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#神经网络模型准确率评估方法"><span class="nav-number">2.5.</span> <span class="nav-text">神经网络模型准确率评估方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网络模型分析"><span class="nav-number">3.</span> <span class="nav-text">网络模型分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向传播过程（forward-py-）"><span class="nav-number">3.1.</span> <span class="nav-text">前向传播过程（forward.py ）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反向传播过程（-back-word-py-）"><span class="nav-number">3.2.</span> <span class="nav-text">反向传播过程（ back word.py ）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正则化、指数衰减学习率、滑动平均方法的设置"><span class="nav-number">3.3.</span> <span class="nav-text">正则化、指数衰减学习率、滑动平均方法的设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试过程（-test-py-）"><span class="nav-number">3.4.</span> <span class="nav-text">测试过程（ test .py ）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网络模型搭建与测试"><span class="nav-number">4.</span> <span class="nav-text">网络模型搭建与测试</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向传播过程文件（-mnist-forward-py-）"><span class="nav-number">4.1.</span> <span class="nav-text">前向传播过程文件（ mnist_forward.py ）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反向传播过程文件（mnist-backward-py-）"><span class="nav-number">4.2.</span> <span class="nav-text">反向传播过程文件（mnist_backward.py ）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试过程文件（mnist-test-py-）"><span class="nav-number">4.3.</span> <span class="nav-text">测试过程文件（mnist_ test .py ）</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
