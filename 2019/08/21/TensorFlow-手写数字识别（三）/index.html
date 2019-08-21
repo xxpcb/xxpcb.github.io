@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="本篇文章在上篇TensorFlow-手写数字识别（二）的基础上，将全连接网络改为LeNet-5卷积神经网络，实现手写数字识别。">
+<meta name="keywords" content="TensorFlow,MNIST">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TensorFlow-手写数字识别（三）">
+<meta property="og:url" content="https://xxpcb.github.io/2019/08/21/TensorFlow-手写数字识别（三）/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="本篇文章在上篇TensorFlow-手写数字识别（二）的基础上，将全连接网络改为LeNet-5卷积神经网络，实现手写数字识别。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/handwriting_test.png">
+<meta property="og:updated_time" content="2019-08-21T10:20:24.734Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TensorFlow-手写数字识别（三）">
+<meta name="twitter:description" content="本篇文章在上篇TensorFlow-手写数字识别（二）的基础上，将全连接网络改为LeNet-5卷积神经网络，实现手写数字识别。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/handwriting_test.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/08/21/TensorFlow-手写数字识别（三）/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>TensorFlow-手写数字识别（三） | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/21/TensorFlow-手写数字识别（三）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird gets the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">TensorFlow-手写数字识别（三）
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-21 18:10:12 / 修改时间：18:20:24" itemprop="dateCreated datePublished" datetime="2019-08-21T18:10:12+08:00">2019-08-21</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/TensorFlow/" itemprop="url" rel="index"><span itemprop="name">TensorFlow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本篇文章在上篇<a href="https://xxpcb.github.io/2019/08/20/TensorFlow-%E6%89%8B%E5%86%99%E6%95%B0%E5%AD%97%E8%AF%86%E5%88%AB%EF%BC%88%E4%BA%8C%EF%BC%89/">TensorFlow-手写数字识别（二）</a>的基础上，将全连接网络改为<strong>LeNet-5卷积神经网络</strong>，实现手写数字识别。</p>
+<a id="more"></a>
+
+<h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>全连接网络：每个神经元与前后相邻层的每一个神经元都有连接关系，输入是特征，输出为预测的结果。</p>
+<p>参数个数：<code>Σ(前层x后层+后层)</code></p>
+<p>如之前用于手写识别的3层全连接网络，输入层784个节点，隐藏层500个节点，输出层10个节点。则：</p>
+<ul>
+<li>隐藏层参数：748*500+500</li>
+<li>输出层参数：500*10+10</li>
+<li>总计：397510≈40万</li>
+</ul>
+<p>注：这里说的某层的参数是指该层与前一层之间的参数，因而输入层没有参数。</p>
+<p>所以，一张分辨率仅仅是<strong>28x28</strong>的黑白图像，就有近<strong>40万</strong>个待优化的参数。<br>现实生活中高分辨率的彩色图像，像素点更多，且为红绿蓝三通道信息。</p>
+<p>待优化的参数过多， 容易导致模型过拟合。<br>为避免这种现象，实际应用中一般不会将原始图片直接喂入全连接网络。<br>而是先对原始图像进行特征提取，把提取到的特征喂给全连接网络，再让全连接网络计算出分类评估值。</p>
+<h1 id="CNN基础"><a href="#CNN基础" class="headerlink" title="CNN基础"></a>CNN基础</h1><h2 id="卷积-Convolutional"><a href="#卷积-Convolutional" class="headerlink" title="卷积 Convolutional"></a>卷积 Convolutional</h2><p>卷积是一种有效提取图片特征的方法。<br>一般用一个正方形卷积核，遍历图片上的每一个像素点。<br>图片与卷积核重合区域内相对应的每一个像素值乘卷积核内相对应点的权重，然后求和，再加上偏置后，<br>最后得到输出图片中的一个像素值。</p>
+<h2 id="全零填充-Pdding"><a href="#全零填充-Pdding" class="headerlink" title="全零填充 Pdding"></a>全零填充 Pdding</h2><p>有时会在输入图片周围进行全零填充，这样可以保证输出图片的尺寸和输入图片一致。</p>
+<p>输出数据的尺寸=<code>(w+2*p-k)/s+1</code></p>
+<ul>
+<li><code>w</code>:输入尺寸</li>
+<li><code>p</code>:padding尺寸</li>
+<li><code>k</code>:卷积核大小（有时也用<code>f</code>表示）</li>
+<li><code>s</code>:核滑动步长</li>
+</ul>
+<p>如：输入量是<code>32x32x3</code>，核是<code>5x5x3</code>，不用全零填充，则输出为<code>(32-5+1)/1=28</code>。  </p>
+<p>如果要让输出量保持在32x32x3，可根据公式计算出需要填充几层零。<br>32=(32+2P-5)/1 +1，计算出P=2，即需填充2层（圈）零。</p>
+<h2 id="TensorFlow中卷积计算函数"><a href="#TensorFlow中卷积计算函数" class="headerlink" title="TensorFlow中卷积计算函数"></a>TensorFlow中卷积计算函数</h2><p><code>tf.nn.conv2d(输入,卷积核,步长,padding=&#39;VALID&#39;)</code></p>
+<ul>
+<li>输入：eg.<code>[batch,5,5,1]</code><ul>
+<li>用 batch 给出一次喂入多少张图片</li>
+<li>每张图片的分辨率大小，比如<strong>5行5列</strong></li>
+<li>这些图片包含几个通道的信息（单通道灰度图:1，红绿蓝三通道彩图:3)</li>
+</ul>
+</li>
+<li>卷积核：eg.<code>[3,3,1,16]</code><ul>
+<li>卷积核行列分辨率分别为<strong>3行3列</strong>  </li>
+<li>卷积核是1通道的，通道数由输入图片的通道数决定，它等于输入图片的通道数，所以也是1。   </li>
+<li>一共有16个这样的卷积核，说明卷积操作后输出图片的深度是16，也就是<strong>输出为16通道</strong>。</li>
+</ul>
+</li>
+<li>步长：eg.<code>[1,1,1,1]</code><ul>
+<li><strong>第二个</strong>参数表示<strong>横向</strong>滑动步长</li>
+<li><strong>第三个</strong>参数表示<strong>纵向</strong>滑动步长。   </li>
+<li>第一个和最后一个1这里固定的,表示横向纵向都以1为步长。</li>
+</ul>
+</li>
+<li>padding：是否使用padding,默认用的是VALID，注意这里是以字符串的形式给出VALID。</li>
+</ul>
+<h2 id="多通道图片求卷积"><a href="#多通道图片求卷积" class="headerlink" title="多通道图片求卷积"></a>多通道图片求卷积</h2><p>多数情况下，输入的图片是RGB三个颜色组成的彩色图，输入的图片包含了红、绿、蓝三层数据，<br>卷积核的深度应该等于输入图片的通道数，所以使用<strong>3x3x3的卷积核</strong>，
+最后一个3表示匹配输入图像的3个通道，这样这个卷积核有三层，<br>每层会随机生成9个待优化的参数，<strong>一共有27个待优化参数w和一个偏置b</strong>。</p>
+<p>卷积计算方法和单层卷积核相似，卷积核为了匹配<strong>RGB</strong>三个颜色，把三层的卷积核套在三层的彩色图片上，<br>重合的27个像素进行<strong>对应点的乘加运算，最后的结果再加上偏置项b，求得输出图片中的一个值</strong>。</p>
+<p>如5x5x3的输入图片加了1圈全零填充，使用3x3x3的卷积核，所有27个点与<br>对应的待优化参数相乘，乘积求和再加上偏置b得到输出图片中的一个值。</p>
+<h2 id="池化-Polling"><a href="#池化-Polling" class="headerlink" title="池化 Polling"></a>池化 Polling</h2><p>TensorFlow给出了计算池化的函数。<br>最大池化用<code>tf.nn.max_pool</code>函数，平均用池化用<code>tf.nn.avg_pool</code>函数。</p>
+<p><code>pool=tf.nn.max_pool(输入,池化核,核步长,padding=&#39;SAME&#39;)</code></p>
+<ul>
+<li>输入：eg.<code>[batch,28,28,6]</code>，给出一次输入batch张图片、行列分辨率、输入通道的个数。</li>
+<li>池化核：eg.<code>[1,2,2,1]</code>，只描述行分辨率和列分辨率，第一个和最后一个参数固定是1</li>
+<li>核步长：eg.<code>[1,2,2,1]</code>，池化核滑动步长，只描述横向滑动步长和纵向滑动步长，第一个和最后一个参数固定是1</li>
+<li>padding ：是否使用零填充padding，可以是使用SAME或不使用充VALID</li>
+</ul>
+<h2 id="舍弃-Dropout"><a href="#舍弃-Dropout" class="headerlink" title="舍弃 Dropout"></a>舍弃 Dropout</h2><p>在神经网络训练过程中，为了减少过多参数常使用 dropout 的方法，将一部分神经元按照一定概率从神经网络中舍弃。<br>这种舍弃是临时性的，仅在训练时舍弃一些神经元；<br>在使用神经网络时，会把所有的神经元恢复到神经网络中。</p>
+<p>在实际应用中，常常在前向传播构建神经网络时使用dropout来<strong>减小过拟合</strong>以及<strong>加快模型训练速度</strong>，
+dropout一般会放到全连接网络中。</p>
+<p>TensorFlow提供的dropout函数：<code>tf.nn.dropout(上层输出,暂时舍弃的神经元的概率)</code></p>
+<p>如：在训练参数的过程中，<code>输出=tf.nn.dropout(上层输出，舍弃概率)</code>，
+这样就有指定概率的神经元被随机置零，置零的神经元不参加当前轮的参数优化。</p>
+<h2 id="卷积神经网络-CNN"><a href="#卷积神经网络-CNN" class="headerlink" title="卷积神经网络 CNN"></a>卷积神经网络 CNN</h2><p>卷积神经网络可以认为由两部分组成，一部分是对输入图片进行特征提取，另一部分就是全连接网络，<br>只不过喂入全连接网络的不再是原始图片，而是经过若干次卷积、激活和池化后的特征信息。</p>
+<p>卷积神经网络从诞生到现在，已经出现了许多经典网络结构，比如<strong>Lenet-5、Alenet、VGGNet、GoogleNet</strong>和<strong>ResNet</strong>等。<br>每一种网络结构都是以卷积、激活、池化、全连接这四种操作为基础进行扩展。</p>
+<p>LeNet-5是最早出现的卷积神经网络，它有效解决了手写数字的识别问题。</p>
+<h1 id="LeNet-5网络分析"><a href="#LeNet-5网络分析" class="headerlink" title="LeNet-5网络分析"></a>LeNet-5网络分析</h1><p><a href="http://yann.lecun.com/exdb/lenet/" target="_blank" rel="noopener">LeNet-5</a>神经网络是Yann LeCun等人在 1998 年提出的，该神经网络充分考虑图像的相关性。</p>
+<h2 id="LeNet-5神经网络结构"><a href="#LeNet-5神经网络结构" class="headerlink" title="LeNet-5神经网络结构"></a>LeNet-5神经网络结构</h2><ul>
+<li><strong>输入</strong>为<code>32*32*1</code>的图片大小，为<code>单通道</code>的输入；</li>
+<li>进行<strong>卷积</strong>，卷积核大小为<code>5*5*1</code>，个数为<code>6</code>，步长为<code>1</code>，<code>非全零</code>填充模式；</li>
+<li>将卷积结果通过非线性<strong>激活</strong>函数；</li>
+<li>进行<strong>池化</strong>，池化大小为<code>2*2</code>，步长为<code>1</code>，<code>全零</code>填充模式；</li>
+<li>进行<strong>卷积</strong>，卷积核大小为<code>5*5*6</code>，个数为<code>16</code>，步长为<code>1</code>，<code>非全零</code>填充模式；</li>
+<li>将卷积结果通过非线性<strong>激活</strong>函数；</li>
+<li>进行<strong>池化</strong>，池化大小为<code>2*2</code>，步长为<code>1</code>，<code>全零</code>填充模式；</li>
+<li><strong>全连接</strong>层进行<code>10</code>分类 </li>
+</ul>
+<p>分析：</p>
+<p>LeNet-5神经网络的输入是<code>32*32*1</code>，经过<code>5*5*1</code>的卷积核，卷积核个数<code>6</code>，<code>非全零</code>填充，步长<code>1</code>：
+<code>输出=(32+0-5)/1+1=28</code>,故经过卷积后输出为<code>28*28*6</code>。</p>
+<p>经过第一层池化层，池化大小为<code>2*2</code>，<code>全零</code>填充，步长<code>2</code>：
+<code>输出=输入/步长=28/2=14</code>，池化层不改变深度，深度仍为<code>6</code>。</p>
+<p>用同样计算方法，得到第二层池化后的输出为<code>5*5*16</code>。
+将第二池化层后的输出拉直送入全连接层。</p>
+<p>特点;</p>
+<ul>
+<li>卷积(Conv)、池化(ave-pooling)、非线性激活函数(sigmoid)相互交替；</li>
+<li>层与层之间稀疏连接，减少计算复杂度</li>
+</ul>
+<h2 id="微调LeNet-5结构，适应MNIST数据"><a href="#微调LeNet-5结构，适应MNIST数据" class="headerlink" title="微调LeNet-5结构，适应MNIST数据"></a>微调LeNet-5结构，适应MNIST数据</h2><p>由于MNIST数据集中图片大小为<code>28*28*1</code>的灰度图片，而 LeNet-5神经网络的输入为<code>32*32*1</code>，故需要对LeNet-5结构进行微调。</p>
+<p>调整后结构：</p>
+<ul>
+<li><strong>输入</strong>为<del><code>32*32*1</code></del><code>28*28*1</code>的图片大小，为<code>单通道</code>的输入；</li>
+<li>进行<strong>卷积</strong>，卷积核大小为<code>5*5*1</code>，个数为<del><code>6</code></del><code>32</code>，步长为<code>1</code>，<del><code>非全零</code></del><code>全零</code>填充模式；</li>
+<li>将卷积结果通过非线性<strong>激活</strong>函数；</li>
+<li>进行<strong>池化</strong>，池化大小为<code>2*2</code>，步长为<del><code>1</code></del><code>2</code>，<code>全零</code>填充模式；</li>
+<li>进行<strong>卷积</strong>，卷积核大小为<del><code>5*5*6</code></del><code>5*5*32</code>，个数为<del><code>16</code></del><code>64</code>，步长为<code>1</code>，<del><code>非全零</code></del><code>全零</code>填充模式；</li>
+<li>将卷积结果通过非线性<strong>激活</strong>函数；</li>
+<li>进行<strong>池化</strong>，池化大小为<code>2*2</code>，步长为<del><code>1</code></del><code>2</code>，<code>全零</code>填充模式；</li>
+<li><strong>全连接</strong>层进行<code>10</code>分类 </li>
+</ul>
+<h1 id="代码实现LeNet-5"><a href="#代码实现LeNet-5" class="headerlink" title="代码实现LeNet-5"></a>代码实现LeNet-5</h1><p>LeNet-5神经网络在MNIST数据集上的实现，主要分为三个部分：</p>
+<ul>
+<li>前向传播过程（mnist_ lenet5_forward.py）</li>
+<li>反向传播过程（mnist_ lenet5_backword.py）</li>
+<li>测试过程（mnist_ lenet5_test.py）</li>
+</ul>
+<h2 id="前向传播过程（mnist-lenet5-forward-py）"><a href="#前向传播过程（mnist-lenet5-forward-py）" class="headerlink" title="前向传播过程（mnist_lenet5_forward.py）"></a>前向传播过程（mnist_lenet5_forward.py）</h2><p>实现对网络中参数和偏置的初始化、定义卷积结构和池化结构、定义前向传播程。</p>
+<p>具体代码如下所示：</p>
+<ul>
+<li>定义前向传播过程中常用到的参数</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="comment">#输入图片的尺寸和通道数</span></span><br><span class="line">IMAGE_SIZE = <span class="number">28</span></span><br><span class="line">NUM_CHANNELS = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#第一层卷积核的大小和个数</span></span><br><span class="line">CONV1_SIZE = <span class="number">5</span></span><br><span class="line">CONV1_KERNEL_NUM = <span class="number">32</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#第二层卷积核的大小和个数</span></span><br><span class="line">CONV2_SIZE = <span class="number">5</span></span><br><span class="line">CONV2_KERNEL_NUM = <span class="number">64</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#第三层全连接层的神经元个数</span></span><br><span class="line">FC_SIZE = <span class="number">512</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#第四层全连接层的神经元个数</span></span><br><span class="line">OUTPUT_NODE = <span class="number">10</span></span><br></pre></td></tr></table></figure>
+
+<p>权重w生成函数和偏置b生成函数与之前的定义相同</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_weight</span><span class="params">(shape, regularizer)</span>:</span> <span class="comment">#生成张量的维度，正则化项的权重</span></span><br><span class="line">    <span class="comment"># tf.truncated_normal：生成去掉过大偏离点的正态分布随机数的张量，stddev是指标准差</span></span><br><span class="line">    w = tf.Variable(tf.truncated_normal(shape,stddev=<span class="number">0.1</span>))</span><br><span class="line">    <span class="comment">#  为权重加入L2正则化</span></span><br><span class="line">    <span class="keyword">if</span> regularizer != <span class="literal">None</span>:</span><br><span class="line">        tf.add_to_collection(<span class="string">'losses'</span>, tf.contrib.layers.l2_regularizer(regularizer)(w)) </span><br><span class="line">    <span class="keyword">return</span> w</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_bias</span><span class="params">(shape)</span>:</span> </span><br><span class="line">    b = tf.Variable(tf.zeros(shape))  </span><br><span class="line">    <span class="keyword">return</span> b</span><br></pre></td></tr></table></figure>
+
+<p>卷积层与池化计算函数如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">conv2d</span><span class="params">(x,w)</span>:</span>  <span class="comment">#一个输入 batch，卷积层的权重   'SAME' 表示使用全 0  填充，而'VALID'</span></span><br><span class="line">    <span class="keyword">return</span> tf.nn.conv2d(x, w, strides=[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>], padding=<span class="string">'SAME'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">max_pool_2x2</span><span class="params">(x)</span>:</span>  <span class="comment">#ksize表示池化过滤器的边长为2 strides表示过滤器移动步长是2 'SAME'提供使用全0填充</span></span><br><span class="line">    <span class="keyword">return</span> tf.nn.max_pool(x, ksize=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>], strides=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>], padding=<span class="string">'SAME'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>定义前向传播过程</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(x, train, regularizer)</span>:</span></span><br><span class="line">    <span class="comment">#【卷积池化】</span></span><br><span class="line">    conv1_w = get_weight([CONV1_SIZE, CONV1_SIZE, NUM_CHANNELS, CONV1_KERNEL_NUM], regularizer) <span class="comment">#初始化卷积核</span></span><br><span class="line">    conv1_b = get_bias([CONV1_KERNEL_NUM]) <span class="comment">#初始化偏置项</span></span><br><span class="line">    conv1 = conv2d(x, conv1_w) </span><br><span class="line">    relu1 = tf.nn.relu(tf.nn.bias_add(conv1, conv1_b)) <span class="comment">#非线性激活，相比sigmoid和tanh函数，relu函数可快速收敛</span></span><br><span class="line">    pool1 = max_pool_2x2(relu1) </span><br><span class="line"></span><br><span class="line">    <span class="comment">#【卷积池化】</span></span><br><span class="line">    conv2_w = get_weight([CONV2_SIZE, CONV2_SIZE, CONV1_KERNEL_NUM, CONV2_KERNEL_NUM],regularizer) </span><br><span class="line">    conv2_b = get_bias([CONV2_KERNEL_NUM])</span><br><span class="line">    conv2 = conv2d(pool1, conv2_w) </span><br><span class="line">    relu2 = tf.nn.relu(tf.nn.bias_add(conv2, conv2_b))</span><br><span class="line">    pool2 = max_pool_2x2(relu2)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#将上一池化层的输出pool2（矩阵）转化为下一层全连接层的输入格式（向量）</span></span><br><span class="line">    pool_shape = pool2.get_shape().as_list() <span class="comment">#得到pool2输出矩阵的维度，并存入list中，注意pool_shape[0]是一个batch的值 </span></span><br><span class="line">    nodes = pool_shape[<span class="number">1</span>] * pool_shape[<span class="number">2</span>] * pool_shape[<span class="number">3</span>] <span class="comment">#从list中依次取出矩阵的长宽及深度，并求三者的乘积就得到矩阵被拉长后的长度</span></span><br><span class="line">    reshaped = tf.reshape(pool2, [pool_shape[<span class="number">0</span>], nodes]) <span class="comment">#将pool2转换为一个batch的向量再传入后续的全连接</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#【全连接】</span></span><br><span class="line">    fc1_w = get_weight([nodes, FC_SIZE], regularizer) </span><br><span class="line">    fc1_b = get_bias([FC_SIZE]) </span><br><span class="line">    fc1 = tf.nn.relu(tf.matmul(reshaped, fc1_w) + fc1_b) </span><br><span class="line">    <span class="keyword">if</span> train:</span><br><span class="line">        fc1 = tf.nn.dropout(fc1, <span class="number">0.5</span>)<span class="comment">#如果是训练阶段，则对该层输出使用dropout，随机将该层输出中的一半神经元置为无效</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">##全连接</span></span><br><span class="line">    fc2_w = get_weight([FC_SIZE, OUTPUT_NODE], regularizer)</span><br><span class="line">    fc2_b = get_bias([OUTPUT_NODE])</span><br><span class="line">    y = tf.matmul(fc1, fc2_w) + fc2_b</span><br><span class="line">    <span class="keyword">return</span> y</span><br></pre></td></tr></table></figure>
+
+<h2 id="反向传播过程（mnist-lenet5-backward-py）"><a href="#反向传播过程（mnist-lenet5-backward-py）" class="headerlink" title="反向传播过程（mnist_lenet5_backward.py）"></a>反向传播过程（mnist_lenet5_backward.py）</h2><p>用于完成神经网络参数的训练</p>
+<ul>
+<li>定义训练过程中的超参数</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line">BATCH_SIZE = <span class="number">50</span><span class="comment">#100 #batch</span></span><br><span class="line">LEARNING_RATE_BASE =  <span class="number">0.005</span> <span class="comment">#学习率</span></span><br><span class="line">LEARNING_RATE_DECAY = <span class="number">0.99</span> <span class="comment">#学习率的衰减率</span></span><br><span class="line">REGULARIZER = <span class="number">0.0001</span> <span class="comment">#正则化项权重</span></span><br><span class="line">STEPS = <span class="number">50000</span> <span class="comment">#迭代次数</span></span><br><span class="line">MOVING_AVERAGE_DECAY = <span class="number">0.99</span> <span class="comment">#滑动平均衰减率</span></span><br><span class="line">MODEL_SAVE_PATH=<span class="string">"./model/"</span> <span class="comment">#保存模型的路径</span></span><br><span class="line">MODEL_NAME=<span class="string">"mnist_model"</span> <span class="comment">#模型命名</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>完成反向传播过程<ul>
+<li>给x, y_ 是占位</li>
+<li>调用前向传播过程</li>
+<li>求含有正则化的损失值</li>
+<li>实现指数衰减学习率</li>
+<li>实现滑动平均模型</li>
+<li>将train_step和ema_op两个训练操作绑定到train_op上</li>
+<li>实例化一个保存和恢复变量的saver，并创建一个会话</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">backward</span><span class="params">(mnist)</span>:</span></span><br><span class="line">    <span class="comment">#x,y_占位</span></span><br><span class="line">    x = tf.placeholder(tf.float32,[</span><br><span class="line">	BATCH_SIZE,</span><br><span class="line">	mnist_lenet5_forward.IMAGE_SIZE,</span><br><span class="line">	mnist_lenet5_forward.IMAGE_SIZE,</span><br><span class="line">	mnist_lenet5_forward.NUM_CHANNELS]) </span><br><span class="line">    y_ = tf.placeholder(tf.float32, [<span class="literal">None</span>, mnist_lenet5_forward.OUTPUT_NODE])</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#前向传播</span></span><br><span class="line">    y = mnist_lenet5_forward.forward(x,<span class="literal">True</span>, REGULARIZER)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#声明一个全局计数器，并输出化为0</span></span><br><span class="line">    global_step = tf.Variable(<span class="number">0</span>, trainable=<span class="literal">False</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#先是对网络最后一层的输出y做softmax，再将此向量和实际标签值做交叉熵</span></span><br><span class="line">    ce = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=y, labels=tf.argmax(y_, <span class="number">1</span>))</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#再对得到的向量求均值就得到 loss</span></span><br><span class="line">    cem = tf.reduce_mean(ce)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#添加正则化中的 losses</span></span><br><span class="line">    loss = cem + tf.add_n(tf.get_collection(<span class="string">'losses'</span>))</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#实现指数级的减小学习率</span></span><br><span class="line">    learning_rate = tf.train.exponential_decay( </span><br><span class="line">        LEARNING_RATE_BASE,</span><br><span class="line">        global_step,</span><br><span class="line">        mnist.train.num_examples / BATCH_SIZE, </span><br><span class="line">		LEARNING_RATE_DECAY,</span><br><span class="line">        staircase=<span class="literal">True</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#传入学习率，构造一个实现梯度下降算法的优化器，再通过使用minimize更新存储要训练的变量的列表来减小loss</span></span><br><span class="line">    train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss, global_step=global_step)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#实现滑动平均模型，参数MOVING_AVERAGE_DECAY用于控制模型更新的速度</span></span><br><span class="line">    ema = tf.train.ExponentialMovingAverage(MOVING_AVERAGE_DECAY, global_step)</span><br><span class="line">    ema_op = ema.apply(tf.trainable_variables())</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#将train_step和ema_op两个训练操作绑定到train_op </span></span><br><span class="line">    <span class="keyword">with</span> tf.control_dependencies([train_step, ema_op]): </span><br><span class="line">        train_op = tf.no_op(name=<span class="string">'train'</span>)</span><br><span class="line">        </span><br><span class="line">    <span class="comment">#实例化一个保存和恢复变量的saver</span></span><br><span class="line">    saver = tf.train.Saver() </span><br><span class="line"></span><br><span class="line">    <span class="comment">#创建一个会话，并通过python中的上下文管理器来管理这个会话</span></span><br><span class="line">    <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess: </span><br><span class="line">        init_op = tf.global_variables_initializer() </span><br><span class="line">        sess.run(init_op) </span><br><span class="line"></span><br><span class="line">        <span class="comment">#  通过checkpoint文件定位到最新保存的模型</span></span><br><span class="line">        ckpt = tf.train.get_checkpoint_state(MODEL_SAVE_PATH) </span><br><span class="line">        <span class="keyword">if</span> ckpt <span class="keyword">and</span> ckpt.model_checkpoint_path:</span><br><span class="line">        	saver.restore(sess, ckpt.model_checkpoint_path) </span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(STEPS):</span><br><span class="line">            <span class="comment">#读取一个batch的数据</span></span><br><span class="line">            xs, ys = mnist.train.next_batch(BATCH_SIZE) </span><br><span class="line">            <span class="comment">#将输入数据xs转换成与网络输入相同形状的矩阵</span></span><br><span class="line">            reshaped_xs = np.reshape(xs,(  </span><br><span class="line">		    BATCH_SIZE,</span><br><span class="line">        	mnist_lenet5_forward.IMAGE_SIZE,</span><br><span class="line">        	mnist_lenet5_forward.IMAGE_SIZE,</span><br><span class="line">        	mnist_lenet5_forward.NUM_CHANNELS))</span><br><span class="line">            <span class="comment">#喂入训练图像和标签，开始训练</span></span><br><span class="line">            _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict=&#123;x: reshaped_xs, y_: ys&#125;) </span><br><span class="line">            <span class="keyword">if</span> i % <span class="number">100</span> == <span class="number">0</span>: </span><br><span class="line">                print(<span class="string">"After %d training step(s), loss on training batch is %g."</span> % (step, loss_value))</span><br><span class="line">                saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">RESTART: G:\...\lenet5\mnist_lenet5_backward.py </span><br><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br><span class="line">After 19312 training step(s), loss on training batch is 0.650531.</span><br><span class="line">After 19412 training step(s), loss on training batch is 0.699633.</span><br><span class="line">After 19512 training step(s), loss on training batch is 0.686086.</span><br><span class="line">After 19612 training step(s), loss on training batch is 0.725393.</span><br><span class="line">After 19712 training step(s), loss on training batch is 0.788735.</span><br><span class="line">After 19812 training step(s), loss on training batch is 0.697031.</span><br><span class="line">After 19912 training step(s), loss on training batch is 0.712534.</span><br><span class="line">After 20012 training step(s), loss on training batch is 0.746723.</span><br><span class="line">After 20112 training step(s), loss on training batch is 0.776782.</span><br><span class="line">After 20212 training step(s), loss on training batch is 0.791459.</span><br><span class="line">After 20312 training step(s), loss on training batch is 0.731853.</span><br><span class="line">After 20412 training step(s), loss on training batch is 0.666092.</span><br></pre></td></tr></table></figure>
+
+<p>损失函数值在0.7左右徘徊，继续调节训练参数应该可以得到更好的结果。</p>
+<h2 id="测试过程（mnist-lenet5-test-py）"><a href="#测试过程（mnist-lenet5-test-py）" class="headerlink" title="测试过程（mnist_lenet5_test.py）"></a>测试过程（mnist_lenet5_test.py）</h2><p>对MNIST数据集中的测试数据进行预测，测试模型准确率。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">from</span> tensorflow.examples.tutorials.mnist <span class="keyword">import</span> input_data</span><br><span class="line"><span class="keyword">import</span> mnist_lenet5_forward</span><br><span class="line"><span class="keyword">import</span> mnist_lenet5_backward</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">TEST_INTERVAL_SECS = <span class="number">5</span></span><br><span class="line"><span class="comment">#+++++++++++++++++++++++++++++++修改读入的大小</span></span><br><span class="line">BATCH_SIZE = <span class="number">500</span><span class="comment">#0 #batch</span></span><br><span class="line">STEPS = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">(mnist)</span>:</span></span><br><span class="line">    <span class="keyword">with</span> tf.Graph().as_default() <span class="keyword">as</span> g: </span><br><span class="line">        x = tf.placeholder(tf.float32,[</span><br><span class="line">            BATCH_SIZE,<span class="comment">#mnist.test.num_examples,</span></span><br><span class="line">            mnist_lenet5_forward.IMAGE_SIZE,</span><br><span class="line">            mnist_lenet5_forward.IMAGE_SIZE,</span><br><span class="line">            mnist_lenet5_forward.NUM_CHANNELS]) </span><br><span class="line">        y_ = tf.placeholder(tf.float32, [<span class="literal">None</span>, mnist_lenet5_forward.OUTPUT_NODE])</span><br><span class="line">        y = mnist_lenet5_forward.forward(x,<span class="literal">False</span>,<span class="literal">None</span>)</span><br><span class="line"></span><br><span class="line">        ema = tf.train.ExponentialMovingAverage(mnist_lenet5_backward.MOVING_AVERAGE_DECAY)</span><br><span class="line">        ema_restore = ema.variables_to_restore()</span><br><span class="line">        saver = tf.train.Saver(ema_restore)</span><br><span class="line"></span><br><span class="line">	<span class="comment">#判断预测值和实际值是否相同	</span></span><br><span class="line">        correct_prediction = tf.equal(tf.argmax(y, <span class="number">1</span>), tf.argmax(y_, <span class="number">1</span>))</span><br><span class="line">        <span class="comment">#求平均得到准确率</span></span><br><span class="line">        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32)) </span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">                ckpt = tf.train.get_checkpoint_state(mnist_lenet5_backward.MODEL_SAVE_PATH)</span><br><span class="line">                <span class="keyword">if</span> ckpt <span class="keyword">and</span> ckpt.model_checkpoint_path:</span><br><span class="line">                    saver.restore(sess, ckpt.model_checkpoint_path)</span><br><span class="line"></span><br><span class="line">		    <span class="comment">#根据读入的模型名字切分出该模型是属于迭代了多少次保存的		</span></span><br><span class="line">                    global_step = ckpt.model_checkpoint_path.split(<span class="string">'/'</span>)[<span class="number">-1</span>].split(<span class="string">'-'</span>)[<span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">for</span> i <span class="keyword">in</span> range(STEPS):</span><br><span class="line">                    <span class="comment">#读取一个batch的数据</span></span><br><span class="line">                        xs, ys = mnist.test.next_batch(BATCH_SIZE) </span><br><span class="line">                        reshaped_x = np.reshape(xs,(</span><br><span class="line">                        BATCH_SIZE,<span class="comment">#mnist.test.num_examples,</span></span><br><span class="line">                        mnist_lenet5_forward.IMAGE_SIZE,</span><br><span class="line">                        mnist_lenet5_forward.IMAGE_SIZE,</span><br><span class="line">                        mnist_lenet5_forward.NUM_CHANNELS))</span><br><span class="line">                        <span class="comment">#计算出测试集上准确率</span></span><br><span class="line">                        accuracy_score = sess.run(accuracy, feed_dict=&#123;x:reshaped_x,y_:ys&#125;) </span><br><span class="line">                        print(<span class="string">"After %s training step(s), test accuracy = %g"</span> % (global_step, accuracy_score))</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    print(<span class="string">'No checkpoint file found'</span>)</span><br><span class="line">                    <span class="keyword">return</span></span><br><span class="line">            <span class="comment">#每隔5秒寻找一次是否有最新的模型</span></span><br><span class="line">            time.sleep(TEST_INTERVAL_SECS) </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    mnist = input_data.read_data_sets(<span class="string">"./data/"</span>, one_hot=<span class="literal">True</span>)</span><br><span class="line">    test(mnist)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">RESTART: G:\TestProject\python\tensorflow\peking_caojian\7CNNbase\lenet5\mnist_lenet5_test2.py </span><br><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br><span class="line">After 21512 training step(s), test accuracy = 0.9842</span><br><span class="line">After 21512 training step(s), test accuracy = 0.9802</span><br></pre></td></tr></table></figure>
+
+<p>测试集上的准确率在98%左右。</p>
+<h2 id="测试真实图片数据"><a href="#测试真实图片数据" class="headerlink" title="测试真实图片数据"></a>测试真实图片数据</h2><p>修改之前的<code>mnist_app.py</code>文件，主要有两点改变：</p>
+<ul>
+<li>读取图片的格式：原来是<code>[1,784]</code>这种形式,现在使用的是<code>[1,28,28,1]</code>。</li>
+<li>读取图片的方式：原来是手动输入文件名，现在修改为自动读取整个文件夹里的图片，<br>图片按自定义的格式命名，还可以直接判断出知否预测准确，并给出总的准确率。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"><span class="keyword">import</span> mnist_lenet5_backward <span class="keyword">as</span> mnist_backward</span><br><span class="line"><span class="keyword">import</span> mnist_lenet5_forward <span class="keyword">as</span> mnist_forward</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line">filedir = os.getcwd()+ <span class="string">'\\pic'</span></span><br><span class="line">m = <span class="number">0</span></span><br><span class="line">n = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">restore_model</span><span class="params">(testPicArr)</span>:</span></span><br><span class="line">    <span class="keyword">with</span> tf.Graph().as_default() <span class="keyword">as</span> tg:</span><br><span class="line">        x = tf.placeholder(tf.float32,[</span><br><span class="line">            <span class="number">1</span>,</span><br><span class="line">            mnist_forward.IMAGE_SIZE,</span><br><span class="line">            mnist_forward.IMAGE_SIZE,</span><br><span class="line">            mnist_forward.NUM_CHANNELS]) </span><br><span class="line">        y = mnist_forward.forward(x,<span class="literal">False</span>,<span class="literal">None</span>)</span><br><span class="line">        preValue = tf.argmax(y, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        variable_averages = tf.train.ExponentialMovingAverage(mnist_backward.MOVING_AVERAGE_DECAY)</span><br><span class="line">        variables_to_restore = variable_averages.variables_to_restore()</span><br><span class="line">        saver = tf.train.Saver(variables_to_restore)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">            ckpt = tf.train.get_checkpoint_state(mnist_backward.MODEL_SAVE_PATH)</span><br><span class="line">            <span class="keyword">if</span> ckpt <span class="keyword">and</span> ckpt.model_checkpoint_path:</span><br><span class="line">                saver.restore(sess, ckpt.model_checkpoint_path)</span><br><span class="line">                preValue = sess.run(preValue, feed_dict=&#123;x:testPicArr&#125;)</span><br><span class="line">                <span class="keyword">return</span> preValue</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                print(<span class="string">"No checkpoint file found"</span>)</span><br><span class="line">                <span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">pre_pic</span><span class="params">(picName)</span>:</span></span><br><span class="line">    img = Image.open(picName)   <span class="comment">#加载待测试图片（白底）</span></span><br><span class="line">    reIm = img.resize((<span class="number">28</span>,<span class="number">28</span>), Image.ANTIALIAS) <span class="comment">#调整大小到28x28</span></span><br><span class="line">    im_arr = np.array(reIm.convert(<span class="string">'L'</span>))</span><br><span class="line">    threshold = <span class="number">50</span>  <span class="comment">#二进制阈值</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">28</span>):</span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> range(<span class="number">28</span>):</span><br><span class="line">            im_arr[i][j] = <span class="number">255</span> - im_arr[i][j]  <span class="comment">#反色（黑底）</span></span><br><span class="line">            <span class="keyword">if</span> (im_arr[i][j] &lt; threshold):     <span class="comment">#黑底白字</span></span><br><span class="line">                im_arr[i][j] = <span class="number">0</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                im_arr[i][j] = <span class="number">255</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">#nm_arr = im_arr.reshape([1, 784]) #图片转成1行</span></span><br><span class="line">    nm_arr = np.reshape(im_arr,(</span><br><span class="line">                        <span class="number">1</span>,<span class="comment">#mnist.test.num_examples,</span></span><br><span class="line">                        mnist_forward.IMAGE_SIZE,</span><br><span class="line">                        mnist_forward.IMAGE_SIZE,</span><br><span class="line">                        mnist_forward.NUM_CHANNELS))</span><br><span class="line">    nm_arr = nm_arr.astype(np.float32)</span><br><span class="line">    img_ready = np.multiply(nm_arr, <span class="number">1.0</span>/<span class="number">255.0</span>) <span class="comment">#取值范围限制在0~1之间</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> img_ready</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="string">'''</span></span><br><span class="line"><span class="string">def application():</span></span><br><span class="line"><span class="string">    testNum = input("input the number of test pictures:")</span></span><br><span class="line"><span class="string">    for i in range(int(testNum)):   </span></span><br><span class="line"><span class="string">        testPic = input("the path of test picture:")  </span></span><br><span class="line"><span class="string">        testPicArr = pre_pic(testPic)</span></span><br><span class="line"><span class="string">        preValue = restore_model(testPicArr)</span></span><br><span class="line"><span class="string">        print ("The prediction number is:", preValue)</span></span><br><span class="line"><span class="string">'''</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">application</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> m,n</span><br><span class="line">    <span class="keyword">for</span> root, dirs, files <span class="keyword">in</span> os.walk(filedir): </span><br><span class="line">        <span class="keyword">for</span> file <span class="keyword">in</span> files:  </span><br><span class="line">            <span class="keyword">if</span> os.path.splitext(file)[<span class="number">1</span>] == <span class="string">'.png'</span>:</span><br><span class="line">                n = n+<span class="number">1</span></span><br><span class="line">                imagename = os.path.splitext(file)[<span class="number">0</span>]+<span class="string">'.png'</span></span><br><span class="line">                testPic = os.path.join(root, file)  </span><br><span class="line">                testPicArr = pre_pic(testPic)</span><br><span class="line">                preValue = restore_model(testPicArr)</span><br><span class="line">                <span class="keyword">print</span> (<span class="string">"The %d image name is %s:"</span> % (n,imagename))</span><br><span class="line">                <span class="keyword">print</span> (<span class="string">"The prediction number is:"</span>, preValue)</span><br><span class="line">                <span class="keyword">if</span> int(imagename[<span class="number">0</span>])== preValue:</span><br><span class="line">                    m = m+<span class="number">1</span></span><br><span class="line">                    print(<span class="string">"TRUE"</span>)</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    print(<span class="string">"FALSE!!!!!!!!!!!!!!!!!!!!"</span>)</span><br><span class="line">        print(<span class="string">"m = %d,n = %d"</span> % (m,n))</span><br><span class="line">        print(<span class="string">"test accuracy = %d%%"</span> % (m/n*<span class="number">100</span>))</span><br><span class="line">        </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    application()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">RESTART: G:\...\lenet5\mnist_app.py </span><br><span class="line">The 1 image name is 0.png:</span><br><span class="line">The prediction number is: [0]</span><br><span class="line">TRUE</span><br><span class="line">The 2 image name is 1.png:</span><br><span class="line">The prediction number is: [1]</span><br><span class="line">TRUE</span><br><span class="line">The 3 image name is 2.png:</span><br><span class="line">The prediction number is: [2]</span><br><span class="line">TRUE</span><br><span class="line">The 4 image name is 3.png:</span><br><span class="line">The prediction number is: [3]</span><br><span class="line">TRUE</span><br><span class="line">The 5 image name is 4.png:</span><br><span class="line">The prediction number is: [4]</span><br><span class="line">TRUE</span><br><span class="line">The 6 image name is 5.png:</span><br><span class="line">The prediction number is: [5]</span><br><span class="line">TRUE</span><br><span class="line">The 7 image name is 6.png:</span><br><span class="line">The prediction number is: [6]</span><br><span class="line">TRUE</span><br><span class="line">The 8 image name is 7.png:</span><br><span class="line">The prediction number is: [7]</span><br><span class="line">TRUE</span><br><span class="line">The 9 image name is 8.png:</span><br><span class="line">The prediction number is: [8]</span><br><span class="line">TRUE</span><br><span class="line">The 10 image name is 9.png:</span><br><span class="line">The prediction number is: [9]</span><br><span class="line">TRUE</span><br><span class="line">m = 10,n = 10</span><br><span class="line">test accuracy = 100%</span><br></pre></td></tr></table></figure>
+
+<p>该测试结果用的是下面教程链接中的图片（下图第一排），换成自己手写的数字（下图第二排），准确率为80%（上篇文章使用全连接网络的准确率只有50%）。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/handwriting_test.png" alt></p>
+<p>参考：<a href="https://www.icourse163.org/course/PKU-1002536002?tid=1002700003" target="_blank" rel="noopener">人工智能实践：Tensorflow笔记</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/TensorFlow/" rel="tag"># TensorFlow</a>
+            
+              <a href="/tags/MNIST/" rel="tag"># MNIST</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/08/21/TensorFlow填坑记录/" rel="next" title="TensorFlow填坑记录">
+                  <i class="fa fa-chevron-left"></i> TensorFlow填坑记录
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird gets the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CNN基础"><span class="nav-number">2.</span> <span class="nav-text">CNN基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#卷积-Convolutional"><span class="nav-number">2.1.</span> <span class="nav-text">卷积 Convolutional</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#全零填充-Pdding"><span class="nav-number">2.2.</span> <span class="nav-text">全零填充 Pdding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TensorFlow中卷积计算函数"><span class="nav-number">2.3.</span> <span class="nav-text">TensorFlow中卷积计算函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多通道图片求卷积"><span class="nav-number">2.4.</span> <span class="nav-text">多通道图片求卷积</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#池化-Polling"><span class="nav-number">2.5.</span> <span class="nav-text">池化 Polling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#舍弃-Dropout"><span class="nav-number">2.6.</span> <span class="nav-text">舍弃 Dropout</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#卷积神经网络-CNN"><span class="nav-number">2.7.</span> <span class="nav-text">卷积神经网络 CNN</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#LeNet-5网络分析"><span class="nav-number">3.</span> <span class="nav-text">LeNet-5网络分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#LeNet-5神经网络结构"><span class="nav-number">3.1.</span> <span class="nav-text">LeNet-5神经网络结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#微调LeNet-5结构，适应MNIST数据"><span class="nav-number">3.2.</span> <span class="nav-text">微调LeNet-5结构，适应MNIST数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#代码实现LeNet-5"><span class="nav-number">4.</span> <span class="nav-text">代码实现LeNet-5</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向传播过程（mnist-lenet5-forward-py）"><span class="nav-number">4.1.</span> <span class="nav-text">前向传播过程（mnist_lenet5_forward.py）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反向传播过程（mnist-lenet5-backward-py）"><span class="nav-number">4.2.</span> <span class="nav-text">反向传播过程（mnist_lenet5_backward.py）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试过程（mnist-lenet5-test-py）"><span class="nav-number">4.3.</span> <span class="nav-text">测试过程（mnist_lenet5_test.py）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试真实图片数据"><span class="nav-number">4.4.</span> <span class="nav-text">测试真实图片数据</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
