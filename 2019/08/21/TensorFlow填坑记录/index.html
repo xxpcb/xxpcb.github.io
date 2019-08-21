@@ -55,19 +55,19 @@
   };
 </script>
 
-  <meta name="description" content="原题链接：https://leetcode-cn.com/problems/multiply-strings/ 题目给定两个以字符串形式表示的非负整数 num1 和 num2，返回 num1 和 num2 的乘积，它们的乘积也表示为字符串形式。">
-<meta name="keywords" content="LeetCode,算法">
+  <meta name="description" content="RESTART:Shell(CuDNN 版本问题)问题描述 python IDLE中直接运行某些TensorFlow程序一切正常，运行卷积相关程序时自动退出，现象：">
+<meta name="keywords" content="填坑,TensorFlow">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LeetCode题解-43.字符串相乘(双层循环 进位)">
-<meta property="og:url" content="https://xxpcb.github.io/2019/08/16/LeetCode题解-43-字符串相乘-双层循环-进位/index.html">
+<meta property="og:title" content="TensorFlow填坑记录">
+<meta property="og:url" content="https://xxpcb.github.io/2019/08/21/TensorFlow填坑记录/index.html">
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
-<meta property="og:description" content="原题链接：https://leetcode-cn.com/problems/multiply-strings/ 题目给定两个以字符串形式表示的非负整数 num1 和 num2，返回 num1 和 num2 的乘积，它们的乘积也表示为字符串形式。">
+<meta property="og:description" content="RESTART:Shell(CuDNN 版本问题)问题描述 python IDLE中直接运行某些TensorFlow程序一切正常，运行卷积相关程序时自动退出，现象：">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-16T07:24:32.481Z">
+<meta property="og:updated_time" content="2019-08-21T07:08:57.184Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LeetCode题解-43.字符串相乘(双层循环 进位)">
-<meta name="twitter:description" content="原题链接：https://leetcode-cn.com/problems/multiply-strings/ 题目给定两个以字符串形式表示的非负整数 num1 和 num2，返回 num1 和 num2 的乘积，它们的乘积也表示为字符串形式。">
-  <link rel="canonical" href="https://xxpcb.github.io/2019/08/16/LeetCode题解-43-字符串相乘-双层循环-进位/">
+<meta name="twitter:title" content="TensorFlow填坑记录">
+<meta name="twitter:description" content="RESTART:Shell(CuDNN 版本问题)问题描述 python IDLE中直接运行某些TensorFlow程序一切正常，运行卷积相关程序时自动退出，现象：">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/08/21/TensorFlow填坑记录/">
 
 
 <script id="page-configurations">
@@ -81,7 +81,7 @@
   };
 </script>
 
-  <title>LeetCode题解-43.字符串相乘(双层循环 进位) | xxpcb's Blog</title>
+  <title>TensorFlow填坑记录 | xxpcb's Blog</title>
   
 
 
@@ -256,7 +256,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/16/LeetCode题解-43-字符串相乘-双层循环-进位/">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/21/TensorFlow填坑记录/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="xxpcb">
@@ -268,7 +268,7 @@
       <meta itemprop="name" content="xxpcb's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">LeetCode题解-43.字符串相乘(双层循环 进位)
+        <h1 class="post-title" itemprop="name headline">TensorFlow填坑记录
 
           
         </h1>
@@ -284,7 +284,7 @@
                 
               
 
-              <time title="创建时间：2019-08-16 09:50:27 / 修改时间：15:24:32" itemprop="dateCreated datePublished" datetime="2019-08-16T09:50:27+08:00">2019-08-16</time>
+              <time title="创建时间：2019-08-21 15:07:43 / 修改时间：15:08:57" itemprop="dateCreated datePublished" datetime="2019-08-21T15:07:43+08:00">2019-08-21</time>
             </span>
           
             
@@ -297,7 +297,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/算法/" itemprop="url" rel="index"><span itemprop="name">算法</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/TensorFlow/" itemprop="url" rel="index"><span itemprop="name">TensorFlow</span></a></span>
 
                 
                 
@@ -316,35 +316,45 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>原题链接：<a href="https://leetcode-cn.com/problems/multiply-strings/" target="_blank" rel="noopener">https://leetcode-cn.com/problems/multiply-strings/</a></p>
-<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>给定两个以字符串形式表示的非负整数 <code>num1</code> 和 <code>num2</code>，返回 <code>num1</code> 和 <code>num2</code> 的乘积，它们的乘积也表示为字符串形式。</p>
+        <h1 id="RESTART-Shell-CuDNN-版本问题"><a href="#RESTART-Shell-CuDNN-版本问题" class="headerlink" title="RESTART:Shell(CuDNN 版本问题)"></a>RESTART:Shell(CuDNN 版本问题)</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><ul>
+<li><p>python IDLE中直接运行某些TensorFlow程序一切正常，运行卷积相关程序时自动退出，现象：</p>
 <a id="more"></a>
 
-<p><strong>示例 1:</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: num1 = &quot;2&quot;, num2 = &quot;3&quot;</span><br><span class="line">输出: &quot;6&quot;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; </span><br><span class="line"> RESTART: G:\...\lenet5\mnist_lenet5_backward.py </span><br><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br><span class="line"></span><br><span class="line">=============================== RESTART: Shell ===============================</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在命令行中运行python程序，现象：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">G:\...\lenet5&gt;python mnist_lenet5_backward.py</span><br><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br><span class="line">2019-08-21 13:33:59.248820: I C:\tf_jenkins\workspace\rel-win\M\windows-gpu\PY\36\tensorflow\core\platform\cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX AVX2</span><br><span class="line">2019-08-21 13:33:59.777150: I C:\tf_jenkins\workspace\rel-win\M\windows-gpu\PY\36\tensorflow\core\common_runtime\gpu\gpu_device.cc:1105] Found device 0 with properties:</span><br><span class="line">name: GeForce 940MX major: 5 minor: 0 memoryClockRate(GHz): 0.8605</span><br><span class="line">pciBusID: 0000:01:00.0</span><br><span class="line">totalMemory: 2.00GiB freeMemory: 1.66GiB</span><br><span class="line">2019-08-21 13:33:59.782067: I C:\tf_jenkins\workspace\rel-win\M\windows-gpu\PY\36\tensorflow\core\common_runtime\gpu\gpu_device.cc:1195] Creating TensorFlow device (/device:GPU:0) -&gt; (device: 0, name: GeForce 940MX, pci bus id: 0000:01:00.0, compute capability: 5.0)</span><br><span class="line">2019-08-21 13:34:01.714271: E C:\tf_jenkins\workspace\rel-win\M\windows-gpu\PY\36\tensorflow\stream_executor\cuda\cuda_dnn.cc:378] Loaded runtime CuDNN library: 7501 (compatibility version 7500) but source was compiled with 7003 (compatibility version 7000).  If using a binary install, upgrade your CuDNN library to match.  If building from sources, make sure the library loaded at runtime matches a compatible version specified during compile configuration.</span><br><span class="line">2019-08-21 13:34:01.725498: F C:\tf_jenkins\workspace\rel-win\M\windows-gpu\PY\36\tensorflow\core\kernels\conv_ops.cc:717] Check failed: stream-&gt;parent()-&gt;GetConvolveAlgorithms( conv_parameters.ShouldIncludeWinogradNonfusedAlgo&lt;T&gt;(), &amp;algorithms)</span><br></pre></td></tr></table></figure>
 
-<p><strong>示例 2:</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">输入: num1 = &quot;123&quot;, num2 = &quot;456&quot;</span><br><span class="line">输出: &quot;56088&quot;</span><br></pre></td></tr></table></figure>
+<p>注意后半部分：</p>
+<blockquote>
+<p>Loaded runtime CuDNN library: 7501 (compatibility version 7500) but source was compiled with 7003 (compatibility version 7000). </p>
+</blockquote>
+</li>
+</ul>
+<p>​       说的是当前安装的CuDNN版本为7.5版，但程序运行需要7.0版，即版本不兼容。</p>
+<h2 id="当前情况"><a href="#当前情况" class="headerlink" title="当前情况"></a>当前情况</h2><p>目前使用环境为：</p>
+<ul>
+<li>Win10 + python 3.6.8</li>
+<li>tensorflow-gpu 1.5.0</li>
+<li>cuda 9.0.176 + GeForce940MX</li>
+<li>cudnn-9.0-v7.5.1.10</li>
+</ul>
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>重新下载安装<a href="https://developer.nvidia.com/rdp/cudnn-archive" target="_blank" rel="noopener">CuDNN</a>，目前只能下载<code>[Download cuDNN v7.0.5 (Dec 5, 2017), for CUDA 9.0]</code>这个版本了，下载<a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/v7.0.5/prod/9.0_20171129/cudnn-9.0-windows10-x64-v7" target="_blank" rel="noopener">cuDNN v7.0.5 Library for Windows 10</a>，安装就是将里面的3个文件复制到cuda安装路径即可，一般位置为：<code>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0</code></p>
+<p>安装后就可以正常运行了卷积训练了。</p>
+<ul>
+<li><p>IDLE中运行情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; </span><br><span class="line"> RESTART: G:\...\lenet5\mnist_lenet5_backward.py </span><br><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br><span class="line">After 6803 training step(s), loss on training batch is 0.780407.</span><br><span class="line">After 6903 training step(s), loss on training batch is 0.767262.</span><br><span class="line">After 7003 training step(s), loss on training batch is 0.713715.</span><br><span class="line">After 7103 training step(s), loss on training batch is 0.692996.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>命令行中运行情况</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">G:\TestProject\python\tensorflow\peking_caojian\7CNNbase\lenet5&gt;python mnist_lenet5_backward.py</span><br><span class="line">Extracting ./data/train-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/train-labels-idx1-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-images-idx3-ubyte.gz</span><br><span class="line">Extracting ./data/t10k-labels-idx1-ubyte.gz</span><br><span class="line">2019-08-21 14:46:54.309030: I C:\tf_jenkins\workspace\rel-win\M\windows-gpu\PY\36\tensorflow\core\platform\cpu_feature_guard.cc:137] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX AVX2</span><br><span class="line">2019-08-21 14:46:54.870614: I C:\tf_jenkins\workspace\rel-win\M\windows-gpu\PY\36\tensorflow\core\common_runtime\gpu\gpu_device.cc:1105] Found device 0 with properties:</span><br><span class="line">name: GeForce 940MX major: 5 minor: 0 memoryClockRate(GHz): 0.8605</span><br><span class="line">pciBusID: 0000:01:00.0</span><br><span class="line">totalMemory: 2.00GiB freeMemory: 1.66GiB</span><br><span class="line">2019-08-21 14:46:54.876303: I C:\tf_jenkins\workspace\rel-win\M\windows-gpu\PY\36\tensorflow\core\common_runtime\gpu\gpu_device.cc:1195] Creating TensorFlow device (/device:GPU:0) -&gt; (device: 0, name: GeForce 940MX, pci bus id: 0000:01:00.0, compute capability: 5.0)</span><br><span class="line">After 9006 training step(s), loss on training batch is 0.671621.</span><br><span class="line">After 9106 training step(s), loss on training batch is 0.784085.</span><br><span class="line">After 9206 training step(s), loss on training batch is 0.738665.</span><br><span class="line">After 9306 training step(s), loss on training batch is 0.691877.</span><br></pre></td></tr></table></figure>
 
-<p><strong>说明：</strong></p>
-<ol>
-<li><code>num1</code> 和 <code>num2</code> 的长度小于110。</li>
-<li><code>num1</code> 和 <code>num2</code> 只包含数字 0-9。</li>
-<li><code>num1</code> 和 <code>num2</code> 均不以零开头，除非是数字 0 本身。</li>
-<li><strong>不能使用任何标准库的大数类型（比如 BigInteger）</strong>或<strong>直接将输入转换为整数来处理。</strong></li>
-</ol>
-<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>两数相乘，假设A有n1位，B有n2位，则乘积结果为n1+n2-1位（最高位无进位）或n1+n2位（最高位有进位），即相乘的结果最多有n1+n2位。</p>
-<p>以123与45相乘为例，计算过程实际为错位相乘相加，第2个数的每一位依次与第1个数的每一位错位相乘，再将相乘的结果相加，编程实现就是使用两层for循环，这里使用一个数组来存放最终的字符串形式的结果，在for循环的每一次计算中，都会更新结果数组中的两位，一位是当前计算位，它是某两位置相乘加上本位之前的结果再对10取余，另一位是该结果的进位制，累加到前一位，用于下次计算。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    1 2 3 </span><br><span class="line"> X    4 5</span><br><span class="line">----------</span><br><span class="line">      1 5 → 0 0 0 1 5</span><br><span class="line">    1 0   → 0 0 1 1 5</span><br><span class="line">  0 5     → 0 0 6 1 5</span><br><span class="line">  --------</span><br><span class="line">    1 2   → 0 0 7 3 5</span><br><span class="line">  0 8     → 0 1 5 3 5</span><br><span class="line">0 4       → 0 5 5 1 5</span><br><span class="line">----------</span><br><span class="line">0 5 5 3 5</span><br><span class="line">↑ ↑ ↑ ↑ ↑</span><br><span class="line">0 1 2 3 4 ← index</span><br></pre></td></tr></table></figure>
-
-<h1 id="C-实现"><a href="#C-实现" class="headerlink" title="C++实现"></a>C++实现</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="built_in">string</span> <span class="title">multiply</span><span class="params">(<span class="built_in">string</span> num1, <span class="built_in">string</span> num2)</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n1=num1.size();<span class="comment">// c++中的size()和length()没有区别，length()是C语言保留下来的</span></span><br><span class="line">        <span class="keyword">int</span> n2=num2.size();</span><br><span class="line">        <span class="comment">// A的位数为n1，B的位数为n2，则乘积结果为n1+n2-1位（最高位无进位）或n1+n2位（最高位有进位）</span></span><br><span class="line">        <span class="function"><span class="built_in">string</span> <span class="title">res</span><span class="params">(n1+n2,<span class="string">'0'</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 从低位开始相乘</span></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=n2<span class="number">-1</span>;i&gt;=<span class="number">0</span>;i--)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j=n1<span class="number">-1</span>;j&gt;=<span class="number">0</span>;j--)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">int</span> temp=(res[i+j+<span class="number">1</span>]-<span class="string">'0'</span>)+(num1[j]-<span class="string">'0'</span>)*(num2[i]-<span class="string">'0'</span>);<span class="comment">// 上次该位的结果+两数相乘的结果</span></span><br><span class="line">                res[i+j+<span class="number">1</span>]=temp%<span class="number">10</span>+<span class="string">'0'</span>;<span class="comment">// 当前位赋值（需加'0'）（该位最终结果或用于下次计算）</span></span><br><span class="line">                res[i+j]+=temp/<span class="number">10</span>; <span class="comment">// 将进位值累加到前一位，res[i+j]已经初始化为'0'，只需直接加上int类型</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 去除首位'0'</span></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;n1+n2;i++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(res[i]!=<span class="string">'0'</span>)</span><br><span class="line">                <span class="keyword">return</span> res.substr(i);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> <span class="string">"0"</span>;     </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h1 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h1><p>输入 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&quot;123&quot;</span><br><span class="line">&quot;45&quot;</span><br></pre></td></tr></table></figure>
-
-<p>输出</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;5535&quot;</span><br></pre></td></tr></table></figure>
-
+</li>
+</ul>
+<p>注：上面在命令行中运行python程序，提示的AVX是警告信息，如果是安装了GPU版本的TensorFlow，可以    忽略，原因可以参考下面链接：</p>
+<ul>
+<li><a href="https://stackoverflow.com/questions/47068709/your-cpu-supports-instructions-that-this-tensorflow-binary-was-not-compiled-to-u" target="_blank" rel="noopener">Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX AVX2</a></li>
+<li><a href="https://blog.csdn.net/hq86937375/article/details/79696023" target="_blank" rel="noopener">警告：Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA</a></li>
+</ul>
 
     </div>
 
@@ -360,9 +370,9 @@
           
           <div class="post-tags">
             
-              <a href="/tags/LeetCode/" rel="tag"># LeetCode</a>
+              <a href="/tags/填坑/" rel="tag"># 填坑</a>
             
-              <a href="/tags/算法/" rel="tag"># 算法</a>
+              <a href="/tags/TensorFlow/" rel="tag"># TensorFlow</a>
             
           </div>
         
@@ -372,8 +382,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/08/16/LeetCode题解-2-两数相加-链表-进位/" rel="next" title="LeetCode题解-2.两数相加(链表 进位)">
-                  <i class="fa fa-chevron-left"></i> LeetCode题解-2.两数相加(链表 进位)
+                <a href="/2019/08/20/TensorFlow-手写数字识别（二）/" rel="next" title="TensorFlow-手写数字识别（二）">
+                  <i class="fa fa-chevron-left"></i> TensorFlow-手写数字识别（二）
                 </a>
               
             </div>
@@ -381,10 +391,6 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-              
-                <a href="/2019/08/16/LeetCode题解-19-删除链表的倒数第N个节点-链表-双指针/" rel="prev" title="LeetCode题解-19. 删除链表的倒数第N个节点(链表 双指针)">
-                  LeetCode题解-19. 删除链表的倒数第N个节点(链表 双指针) <i class="fa fa-chevron-right"></i>
-                </a>
               
             </div>
           </div>
@@ -585,7 +591,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#题目"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分析"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#C-实现"><span class="nav-number">3.</span> <span class="nav-text">C++实现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#运行结果"><span class="nav-number">4.</span> <span class="nav-text">运行结果</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#RESTART-Shell-CuDNN-版本问题"><span class="nav-number">1.</span> <span class="nav-text">RESTART:Shell(CuDNN 版本问题)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题描述"><span class="nav-number">1.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#当前情况"><span class="nav-number">1.2.</span> <span class="nav-text">当前情况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方法"><span class="nav-number">1.3.</span> <span class="nav-text">解决方法</span></a></li></ol></li></ol></div>
             
 
           </div>
