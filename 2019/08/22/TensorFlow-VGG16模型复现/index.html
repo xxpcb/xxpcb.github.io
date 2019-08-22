@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="VGG介绍VGG全称是指牛津大学的Oxford Visual Geometry Group，该小组在2014年的ImageNet挑战赛中，设计的VGG神经网络模型在定位和分类跟踪比赛中分别取得了第一名和第二名的成绩。">
+<meta name="keywords" content="TensorFlow,VGG">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TensorFlow-VGG16模型复现">
+<meta property="og:url" content="https://xxpcb.github.io/2019/08/22/TensorFlow-VGG16模型复现/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="VGG介绍VGG全称是指牛津大学的Oxford Visual Geometry Group，该小组在2014年的ImageNet挑战赛中，设计的VGG神经网络模型在定位和分类跟踪比赛中分别取得了第一名和第二名的成绩。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/vgg_test_obj.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/vgg_test_top5.png">
+<meta property="og:updated_time" content="2019-08-22T07:45:23.115Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TensorFlow-VGG16模型复现">
+<meta name="twitter:description" content="VGG介绍VGG全称是指牛津大学的Oxford Visual Geometry Group，该小组在2014年的ImageNet挑战赛中，设计的VGG神经网络模型在定位和分类跟踪比赛中分别取得了第一名和第二名的成绩。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/vgg_test_obj.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/08/22/TensorFlow-VGG16模型复现/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>TensorFlow-VGG16模型复现 | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/22/TensorFlow-VGG16模型复现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">TensorFlow-VGG16模型复现
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-22 15:39:56 / 修改时间：15:45:23" itemprop="dateCreated datePublished" datetime="2019-08-22T15:39:56+08:00">2019-08-22</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/TensorFlow/" itemprop="url" rel="index"><span itemprop="name">TensorFlow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="VGG介绍"><a href="#VGG介绍" class="headerlink" title="VGG介绍"></a>VGG介绍</h1><p>VGG全称是指牛津大学的Oxford Visual Geometry Group，该小组在2014年的<a href="http://image-net.org/challenges/LSVRC/2014/index" target="_blank" rel="noopener">ImageNet挑战赛</a>中，设计的VGG神经网络模型在定位和分类跟踪比赛中分别取得了第一名和第二名的成绩。</p>
+<a id="more"></a>
+
+<ul>
+<li><p>VGG论文</p>
+<p><a href="https://arxiv.org/pdf/1409.1556.pdf" target="_blank" rel="noopener">VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION</a></p>
+</li>
+</ul>
+<p>论文指出其主要贡献在于：利用3*3小卷积核的网络结构对逐渐加深的网络进行全面的评估，结果表明加深网络深度到16至19层可极大超越前人的网络结构。</p>
+<h2 id="VGG结构特点"><a href="#VGG结构特点" class="headerlink" title="VGG结构特点"></a>VGG结构特点</h2><ul>
+<li>训练输入：固定尺寸<code>224*224</code>的<code>RGB</code>图像</li>
+<li>预处理：每个像素值减去训练集上的RGB均值</li>
+<li>卷积核：一系列<code>3*3</code>卷积核堆叠，步长为<code>1</code>，采用<code>padding</code>保持卷积后图像空间分辨率不变</li>
+<li>空间池化：紧随卷积“堆”的最大池化，为<code>2*2</code>滑动窗口，步长为<code>2</code></li>
+<li>全连接层：特征提取完成后，接三个全连接层，前两个为<code>4096</code>通道，第三个为<code>1000</code>通道，最后是一个<code>soft-max</code>层，输出概率</li>
+<li>所有隐藏层都用非线性修正<code>ReLu</code></li>
+</ul>
+<h2 id="详细配置"><a href="#详细配置" class="headerlink" title="详细配置"></a>详细配置</h2><p>表中每列代表不同的网络，只有深度不同（层数计算不包含池化层）。卷积的通道数量很小，第一层仅64通道，每经过一次最大池化，通道数翻倍，直到数量达到512通道。<br>对比每种模型的参数数量，尽管网络加深，但权重并未大幅增加，因为参数量主要集中在全连接层。<br> 最后两列（D列和E列）是效果较好的<strong>VGG-16</strong>和<strong>VGG-19</strong>的模型结构，本文将用TensorFlow代码复现VGG-16模型，并使用训练好的模型参数文件进行图片物体分类测试。   </p>
+<table>
+       <tr>
+           <td bgcolor="#FFF8DC" colspan="6"><center>ConvNet Configuration</center></td>
+       </tr>
+       <tr>
+          <td><center>A</center></td>
+          <td><center>A-LRN</center></td>
+          <td><center>B</center></td>
+          <td><center>C</center></td>
+          <td bgcolor="#6495ED"><center>D</center></td>
+          <td><center>E</center></td>
+       </tr>
+       <tr>
+          <td>11 weight<br>layers</td>
+          <td>11 weight<br>layers</td>
+          <td>13 weight<br>layers</td>
+          <td>16 weight<br>layers</td>
+          <td bgcolor="#6495ED">16 weight<br>layers</td>
+          <td>19 weight<br>layers</td>
+       </tr>
+        <tr>
+           <td bgcolor="#FFF8DC" colspan="6"><center>Number of parameters(in millions)</center></td>
+       </tr>
+       <tr>
+          <td><center>133</center></td>
+          <td><center>133</center></td>
+          <td><center>133</center></td>
+          <td><center>134</center></td>
+          <td bgcolor="#6495ED"><center>138</center></td>
+          <td><center>144</center></td>
+       </tr>
+       <tr>
+          <td colspan="6"></td>
+       </tr>
+       <tr>
+           <td bgcolor="#FFF8DC" colspan="6"><center>input(224x224 RGB image)</center></td>
+       </tr>
+       <tr>
+          <td>conv3-64</td>
+          <td>conv3-64<br>LRN</td>
+          <td>conv3-64<br>conv3-64</td>
+          <td>conv3-64<br>conv3-64</td>
+          <td bgcolor="#F0FFF0">conv3-64<br>conv3-64</td>
+          <td>conv3-64<br>conv3-64</td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>maxpool</center></td>
+       </tr>
+       <tr>
+          <td>conv3-128</td>
+          <td>conv3-128</td>
+          <td>conv3-128<br>conv3-128</td>
+          <td>conv3-128<br>conv3-128</td>
+          <td bgcolor="#F0FFF0">conv3-128<br>conv3-128</td>
+          <td>conv3-128<br>conv3-128</td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>maxpool</center></td>
+       </tr>
+       <tr>
+          <td>conv3-256<br>conv3-256</td>
+          <td>conv3-256<br>conv3-256</td>
+          <td>conv3-256<br>conv3-256</td>
+          <td>conv3-256<br>conv3-256<br>conv1-256</td>
+          <td bgcolor="#F0FFF0">conv3-256<br>conv3-256<br>conv3-256</td>
+          <td>conv3-256<br>conv3-256<br>conv3-256<br>conv3-256</td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>maxpool</center></td>
+       </tr>
+       <tr>
+          <td>conv3-512<br>conv3-512</td>
+          <td>conv3-512<br>conv3-512</td>
+          <td>conv3-512<br>conv3-512</td>
+          <td>conv3-512<br>conv3-512<br>conv1-512</td>
+          <td bgcolor="#F0FFF0">conv3-512<br>conv3-512<br>conv3-512</td>
+          <td>conv3-512<br>conv3-512<br>conv3-512<br>conv3-512</td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>maxpool</center></td>
+       </tr>
+        <tr>
+          <td>conv3-512<br>conv3-512</td>
+          <td>conv3-512<br>conv3-512</td>
+          <td>conv3-512<br>conv3-512</td>
+          <td>conv3-512<br>conv3-512<br>conv1-512</td>
+          <td bgcolor="#F0FFF0">conv3-512<br>conv3-512<br>conv3-512</td>
+          <td>conv3-512<br>conv3-512<br>conv3-512<br>conv3-512</td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>maxpool</center></td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>FC-4096</center></td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>FC-4096</center></td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>FC-1000</center></td>
+       </tr>
+       <tr>
+           <td bgcolor="#F0FFF0" colspan="6"><center>soft-max</center></td>
+       </tr>
+    </table>
+
+<h2 id="论文中介绍的训练方法"><a href="#论文中介绍的训练方法" class="headerlink" title="论文中介绍的训练方法"></a>论文中介绍的训练方法</h2><ul>
+<li>训练方法基本与AlexNet一致，除了多尺度训练图像采样方法不一致</li>
+<li>训练采用mini-batch梯度下降法，batch size=256</li>
+<li>采用动量优化算法，momentum=0.9</li>
+<li>采用L2正则化方法，惩罚系数0.00005，dropout比率设为0.5</li>
+<li>初始学习率为0.001，当验证集准确率不再提高时，学习率衰减为原来的0.1倍，总共下降三次</li>
+<li>总迭代次数为370K（74epochs）</li>
+<li>数据增强采用随机裁剪，水平翻转，RGB颜色变化</li>
+<li>设置训练图片大小的两种方法（定义S代表经过各向同性缩放的训练图像的最小边）：<ul>
+<li>第一种方法针对单尺寸图像训练，S=256或384，输入图片从中随机裁剪224*224大小的图片，原则上S可以取任意不小于224的值</li>
+<li>第二种方法是多尺度训练，每张图像单独从[Smin  ,Smax ]中随机选取S来进行尺寸缩放，由于图像中目标物体尺寸不定，因此训练中采用这种方法是有效的，可看作一种尺寸抖动的训练集数据增强</li>
+</ul>
+</li>
+</ul>
+<p>论文中提到，<strong>网络权重的初始化非常重要</strong>，由于深度网络梯度的不稳定性，不合适的初始化会阻碍网络的学习。因此先训练浅层网络，再用训练好的浅层网络去初始化深层网络.</p>
+<h1 id="VGG-16网络复现"><a href="#VGG-16网络复现" class="headerlink" title="VGG-16网络复现"></a>VGG-16网络复现</h1><h2 id="VGG-16网络结构-前线传播-复现"><a href="#VGG-16网络结构-前线传播-复现" class="headerlink" title="VGG-16网络结构(前线传播)复现"></a>VGG-16网络结构(前线传播)复现</h2><p>复现VGG-16的16层网络结构，将其封装在一个<code>Vgg16</code>类中，注意这里我们使用已训练好的<code>vgg16.npy</code>参数文件，不需要自己再对模型训练，因而不需要编写用于训练的反向传播函数，只编写用于测试的前向传播部分即可。</p>
+<p>下面代码我已添加详细注释，并添加一些<code>print</code>语句用于输出网络在每一层时的结构尺寸信息。</p>
+<p>vgg16.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> inspect</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"></span><br><span class="line">VGG_MEAN = [<span class="number">103.939</span>, <span class="number">116.779</span>, <span class="number">123.68</span>] <span class="comment"># 样本RGB的平均值</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Vgg16</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, vgg16_path=None)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> vgg16_path <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="comment"># os.getcwd()方法用于返回当前工作目录(npy模型参数文件)</span></span><br><span class="line">            vgg16_path = os.path.join(os.getcwd(), <span class="string">"vgg16.npy"</span>)</span><br><span class="line">            print(<span class="string">"path(vgg16.npy):"</span>,vgg16_path)</span><br><span class="line">            <span class="comment"># 遍历其内键值对，导入模型参数</span></span><br><span class="line">            self.data_dict = np.load(vgg16_path, encoding=<span class="string">'latin1'</span>).item()</span><br><span class="line">        <span class="keyword">for</span> x <span class="keyword">in</span> self.data_dict: <span class="comment"># 遍历datat_dict中的每个键</span></span><br><span class="line">            print(<span class="string">"key in data_dict:"</span>,x)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, images)</span>:</span></span><br><span class="line">        </span><br><span class="line">        print(<span class="string">"build model started..."</span>)</span><br><span class="line">        start_time = time.time() <span class="comment"># 获取前向传播的开始时间  </span></span><br><span class="line">        rgb_scaled = images * <span class="number">255.0</span> <span class="comment"># 逐像素乘以255</span></span><br><span class="line">        <span class="comment"># 从GRB转换色彩通道到BGR</span></span><br><span class="line">        red, green, blue = tf.split(rgb_scaled,<span class="number">3</span>,<span class="number">3</span>)</span><br><span class="line">        <span class="comment"># assert是加入断言，用断每个操作后的维度变化是否和预期一致</span></span><br><span class="line">        <span class="keyword">assert</span> red.get_shape().as_list()[<span class="number">1</span>:] == [<span class="number">224</span>, <span class="number">224</span>, <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">assert</span> green.get_shape().as_list()[<span class="number">1</span>:] == [<span class="number">224</span>, <span class="number">224</span>, <span class="number">1</span>]</span><br><span class="line">        <span class="keyword">assert</span> blue.get_shape ().as_list()[<span class="number">1</span>:] == [<span class="number">224</span>, <span class="number">224</span>, <span class="number">1</span>]</span><br><span class="line">        </span><br><span class="line">        bgr = tf.concat([     </span><br><span class="line">            blue - VGG_MEAN[<span class="number">0</span>],</span><br><span class="line">            green - VGG_MEAN[<span class="number">1</span>],</span><br><span class="line">            red - VGG_MEAN[<span class="number">2</span>]],<span class="number">3</span>)</span><br><span class="line">        <span class="keyword">assert</span> bgr.get_shape().as_list()[<span class="number">1</span>:] == [<span class="number">224</span>, <span class="number">224</span>, <span class="number">3</span>]</span><br><span class="line"></span><br><span class="line">        <span class="comment">#构建VGG的16层网络（包含5段(2+2+3+3+3=13)卷积，3层全连接）</span></span><br><span class="line">        <span class="comment"># 第1段，2卷积层+最大池化层</span></span><br><span class="line">        print(<span class="string">"==&gt;input image shape:"</span>,bgr.get_shape().as_list())</span><br><span class="line">        self.conv1_1 = self.conv_layer(bgr, <span class="string">"conv1_1"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv1_1 shape:"</span>,self.conv1_1.get_shape().as_list())</span><br><span class="line">        self.conv1_2 = self.conv_layer(self.conv1_1, <span class="string">"conv1_2"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv1_2 shape:"</span>,self.conv1_2.get_shape().as_list())</span><br><span class="line">        self.pool1 = self.max_pool_2x2(self.conv1_2, <span class="string">"pool1"</span>)</span><br><span class="line">        print(<span class="string">"---after pool1 shape:"</span>,self.pool1.get_shape().as_list())</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 第2段，2卷积层+最大池化层</span></span><br><span class="line">        self.conv2_1 = self.conv_layer(self.pool1, <span class="string">"conv2_1"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv2_1 shape:"</span>,self.conv2_1.get_shape().as_list())</span><br><span class="line">        self.conv2_2 = self.conv_layer(self.conv2_1, <span class="string">"conv2_2"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv2_2 shape:"</span>,self.conv2_2.get_shape().as_list())</span><br><span class="line">        self.pool2 = self.max_pool_2x2(self.conv2_2, <span class="string">"pool2"</span>)</span><br><span class="line">        print(<span class="string">"---after pool2 shape:"</span>,self.pool2.get_shape().as_list())</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 第3段，3卷积层+最大池化层</span></span><br><span class="line">        self.conv3_1 = self.conv_layer(self.pool2, <span class="string">"conv3_1"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv3_1 shape:"</span>,self.conv3_1.get_shape().as_list())</span><br><span class="line">        self.conv3_2 = self.conv_layer(self.conv3_1, <span class="string">"conv3_2"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv3_2 shape:"</span>,self.conv3_2.get_shape().as_list())</span><br><span class="line">        self.conv3_3 = self.conv_layer(self.conv3_2, <span class="string">"conv3_3"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv3_3 shape:"</span>,self.conv3_3.get_shape().as_list())</span><br><span class="line">        self.pool3 = self.max_pool_2x2(self.conv3_3, <span class="string">"pool3"</span>)</span><br><span class="line">        print(<span class="string">"---after pool3 shape:"</span>,self.pool3.get_shape().as_list())</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 第4段，3卷积层+最大池化层</span></span><br><span class="line">        self.conv4_1 = self.conv_layer(self.pool3, <span class="string">"conv4_1"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv4_1 shape:"</span>,self.conv4_1.get_shape().as_list())</span><br><span class="line">        self.conv4_2 = self.conv_layer(self.conv4_1, <span class="string">"conv4_2"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv4_2 shape:"</span>,self.conv4_2.get_shape().as_list())</span><br><span class="line">        self.conv4_3 = self.conv_layer(self.conv4_2, <span class="string">"conv4_3"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv4_3 shape:"</span>,self.conv4_3.get_shape().as_list())</span><br><span class="line">        self.pool4 = self.max_pool_2x2(self.conv4_3, <span class="string">"pool4"</span>)</span><br><span class="line">        print(<span class="string">"---after pool4 shape:"</span>,self.pool4.get_shape().as_list())</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 第5段，3卷积层+最大池化层</span></span><br><span class="line">        self.conv5_1 = self.conv_layer(self.pool4, <span class="string">"conv5_1"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv5_1 shape:"</span>,self.conv5_1.get_shape().as_list())</span><br><span class="line">        self.conv5_2 = self.conv_layer(self.conv5_1, <span class="string">"conv5_2"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv5_2 shape:"</span>,self.conv5_2.get_shape().as_list())</span><br><span class="line">        self.conv5_3 = self.conv_layer(self.conv5_2, <span class="string">"conv5_3"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after conv5_3 shape:"</span>,self.conv5_3.get_shape().as_list())</span><br><span class="line">        self.pool5 = self.max_pool_2x2(self.conv5_3, <span class="string">"pool5"</span>)</span><br><span class="line">        print(<span class="string">"---after pool5 shape:"</span>,self.pool5.get_shape().as_list())</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 3层全连接层</span></span><br><span class="line">        self.fc6 = self.fc_layer(self.pool5, <span class="string">"fc6"</span>) <span class="comment"># 输出4096长度</span></span><br><span class="line">        print(<span class="string">"=&gt;after fc6 shape:"</span>,self.fc6.get_shape().as_list())</span><br><span class="line">        <span class="keyword">assert</span> self.fc6.get_shape().as_list()[<span class="number">1</span>:] == [<span class="number">4096</span>]</span><br><span class="line">        self.relu6 = tf.nn.relu(self.fc6)         </span><br><span class="line">        self.fc7 = self.fc_layer(self.relu6, <span class="string">"fc7"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after fc7 shape:"</span>,self.fc7.get_shape().as_list())</span><br><span class="line">        self.relu7 = tf.nn.relu(self.fc7)        </span><br><span class="line">        self.fc8 = self.fc_layer(self.relu7, <span class="string">"fc8"</span>)</span><br><span class="line">        print(<span class="string">"=&gt;after fc8 shape:"</span>,self.fc8.get_shape().as_list())</span><br><span class="line"></span><br><span class="line">        <span class="comment"># softmax分类，得到属于各类别的概率</span></span><br><span class="line">        self.prob = tf.nn.softmax(self.fc8, name=<span class="string">"prob"</span>)</span><br><span class="line">        </span><br><span class="line">        end_time = time.time() <span class="comment"># 得到前向传播的结束时间  </span></span><br><span class="line">        print((<span class="string">"forward time consuming: %f"</span> % (end_time-start_time)))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 清空本次读取到的模型参数字典</span></span><br><span class="line">        self.data_dict = <span class="literal">None</span> </span><br><span class="line"></span><br><span class="line">    <span class="comment"># 定义卷积运算   </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">conv_layer</span><span class="params">(self, x, name)</span>:</span></span><br><span class="line">        <span class="comment"># 根据命名空间name从参数字典(npy文件)中取到对应卷积层的网络参数</span></span><br><span class="line">        <span class="keyword">with</span> tf.variable_scope(name): </span><br><span class="line">            w = self.get_conv_filter(name) <span class="comment"># 读到该层的卷积核大小</span></span><br><span class="line">            <span class="comment"># 卷积计算</span></span><br><span class="line">            conv = tf.nn.conv2d(x, w, [<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>], padding=<span class="string">'SAME'</span>) </span><br><span class="line">            conv_biases = self.get_bias(name) <span class="comment"># 读到偏置项b</span></span><br><span class="line">            <span class="comment"># 加上偏置，并做激活计算</span></span><br><span class="line">            result = tf.nn.relu(tf.nn.bias_add(conv, conv_biases)) </span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 定义获取卷积核大小的函数</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_conv_filter</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        <span class="comment"># 根据命名空间name从参数字典中取到对应的卷积核大小</span></span><br><span class="line">        <span class="keyword">return</span> tf.constant(self.data_dict[name][<span class="number">0</span>], name=<span class="string">"filter"</span>) </span><br><span class="line"></span><br><span class="line">    <span class="comment"># 定义获取偏置的函数</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_bias</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        <span class="comment"># 根据命名空间name从参数字典中取到对应的偏置</span></span><br><span class="line">        <span class="keyword">return</span> tf.constant(self.data_dict[name][<span class="number">1</span>], name=<span class="string">"biases"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 定义2x2最大池化操作</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">max_pool_2x2</span><span class="params">(self, x, name)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> tf.nn.max_pool(x, ksize=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>], strides=[<span class="number">1</span>, <span class="number">2</span>, <span class="number">2</span>, <span class="number">1</span>], padding=<span class="string">'SAME'</span>, name=name)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 定义全连接层的前向传播计算</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">fc_layer</span><span class="params">(self, x, name)</span>:</span></span><br><span class="line">        <span class="comment"># 根据命名空间name做全连接层的计算 </span></span><br><span class="line">        <span class="keyword">with</span> tf.variable_scope(name): </span><br><span class="line">            shape = x.get_shape().as_list() <span class="comment"># 获取该层的维度信息列表</span></span><br><span class="line">            print(<span class="string">"fc_layer shape:"</span>,shape)</span><br><span class="line">            dim = <span class="number">1</span></span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> shape[<span class="number">1</span>:]:</span><br><span class="line">                dim *= i <span class="comment"># 将每层的维度相乘</span></span><br><span class="line">            <span class="comment">#  改变特征图的形状，将得到的多维特征做拉伸操作，只在进入第六层全连接层做该操作</span></span><br><span class="line">            x = tf.reshape(x, [<span class="number">-1</span>, dim])</span><br><span class="line">            w = self.get_fc_weight(name) <span class="comment"># 读到权重值</span></span><br><span class="line">            b = self.get_bias(name) <span class="comment"># 读到偏置项</span></span><br><span class="line"></span><br><span class="line">            <span class="comment"># 对该层输入做加权求和，再加上偏置    </span></span><br><span class="line">            result = tf.nn.bias_add(tf.matmul(x, w), b) </span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 定义获取权重的函数</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">get_fc_weight</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        <span class="comment"># 根据命名空间name从参数字典中取到对应的权重</span></span><br><span class="line">        <span class="keyword">return</span> tf.constant(self.data_dict[name][<span class="number">0</span>], name=<span class="string">"weights"</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="图片加载显示与预处理"><a href="#图片加载显示与预处理" class="headerlink" title="图片加载显示与预处理"></a>图片加载显示与预处理</h2><p>测试图片需要进行必要的预处理操作（尺寸裁剪，像素归一化等），并使用matplotlib将原始图片以及预处理用于测试的图片显示出来。</p>
+<p>utils.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> skimage <span class="keyword">import</span> io, transform</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">from</span> pylab <span class="keyword">import</span> mpl</span><br><span class="line"></span><br><span class="line">mpl.rcParams[<span class="string">'font.sans-serif'</span>]=[<span class="string">'SimHei'</span>] <span class="comment"># 正常显示中文标签</span></span><br><span class="line">mpl.rcParams[<span class="string">'axes.unicode_minus'</span>]=<span class="literal">False</span> <span class="comment"># 正常显示正负号</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义加载图像、显示与预处理函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_image</span><span class="params">(path)</span>:</span></span><br><span class="line">    fig = plt.figure(<span class="string">"Centre and Resize"</span>)</span><br><span class="line">    img = io.imread(path)  <span class="comment"># 根据传入的路径读入图片</span></span><br><span class="line">    img = img / <span class="number">255.0</span> <span class="comment"># 将像素归一化到[0,1]</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 将该画布分为一行三列</span></span><br><span class="line">    ax0 = fig.add_subplot(<span class="number">131</span>) <span class="comment"># 把下面的图像放在该画布的第一个位置   </span></span><br><span class="line">    ax0.set_xlabel(<span class="string">u'Original Picture'</span>)  <span class="comment"># 添加子标签</span></span><br><span class="line">    ax0.imshow(img)  <span class="comment"># 添加展示该图像</span></span><br><span class="line">    </span><br><span class="line">    short_edge = min(img.shape[:<span class="number">2</span>]) <span class="comment"># 找到该图像的最短边</span></span><br><span class="line">    y = (img.shape[<span class="number">0</span>] - short_edge) // <span class="number">2</span> </span><br><span class="line">    x = (img.shape[<span class="number">1</span>] - short_edge) // <span class="number">2</span>  <span class="comment"># 把图像的w和h分别减去最短边，求平均</span></span><br><span class="line">    crop_img = img[y:y+short_edge, x:x+short_edge] <span class="comment"># 取出切分出的中心图像</span></span><br><span class="line">    </span><br><span class="line">    ax1 = fig.add_subplot(<span class="number">132</span>) </span><br><span class="line">    ax1.set_xlabel(<span class="string">u"Centre Picture"</span>) </span><br><span class="line">    ax1.imshow(crop_img) <span class="comment"># 显示中心图像</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># resize成固定的imag_szie224x224</span></span><br><span class="line">    re_img = transform.resize(crop_img, (<span class="number">224</span>, <span class="number">224</span>)) </span><br><span class="line">    </span><br><span class="line">    ax2 = fig.add_subplot(<span class="number">133</span>) </span><br><span class="line">    ax2.set_xlabel(<span class="string">u"Resize Picture"</span>) </span><br><span class="line">    ax2.imshow(re_img) <span class="comment"># 显示224x224图像</span></span><br><span class="line">	</span><br><span class="line">    img_ready = re_img.reshape((<span class="number">1</span>, <span class="number">224</span>, <span class="number">224</span>, <span class="number">3</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> img_ready</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义百分比转换函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">percent</span><span class="params">(value)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">'%.2f%%'</span> % (value * <span class="number">100</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="物体种类列表"><a href="#物体种类列表" class="headerlink" title="物体种类列表"></a>物体种类列表</h2><p>此文件保存1000中预测结果编号对应的真实物体的名称，用于将最后的预测id对应为物体名称。</p>
+<p>Nclasses.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 每个图像的真实标签，以及对应的索引值</span></span><br><span class="line">labels = &#123;</span><br><span class="line"> <span class="number">0</span>: <span class="string">'tench\n Tinca tinca'</span>,</span><br><span class="line"> <span class="number">1</span>: <span class="string">'goldfish\n Carassius auratus'</span>,</span><br><span class="line"> <span class="number">2</span>: <span class="string">'great white shark\n white shark\n man-eater\n man-eating shark\n Carcharodon carcharias'</span>,</span><br><span class="line"> <span class="number">3</span>: <span class="string">'tiger shark\n Galeocerdo cuvieri'</span>,</span><br><span class="line"> <span class="number">4</span>: <span class="string">'hammerhead\n hammerhead shark'</span>,</span><br><span class="line"> <span class="number">5</span>: <span class="string">'electric ray\n crampfish\n numbfish\n torpedo'</span>,</span><br><span class="line"> <span class="number">6</span>: <span class="string">'stingray'</span>,</span><br><span class="line"> <span class="number">7</span>: <span class="string">'cock'</span>,</span><br><span class="line"> <span class="number">8</span>: <span class="string">'hen'</span>,</span><br><span class="line"> <span class="number">9</span>: <span class="string">'ostrich\n Struthio camelus'</span>,</span><br><span class="line"> ...省略</span><br><span class="line"> <span class="number">993</span>: <span class="string">'gyromitra'</span>,</span><br><span class="line"> <span class="number">994</span>: <span class="string">'stinkhorn\n carrion fungus'</span>,</span><br><span class="line"> <span class="number">995</span>: <span class="string">'earthstar'</span>,</span><br><span class="line"> <span class="number">996</span>: <span class="string">'hen-of-the-woods\n hen of the woods\n Polyporus frondosus\n Grifola frondosa'</span>,</span><br><span class="line"> <span class="number">997</span>: <span class="string">'bolete'</span>,</span><br><span class="line"> <span class="number">998</span>: <span class="string">'ear\n spike\n capitulum'</span>,</span><br><span class="line"> <span class="number">999</span>: <span class="string">'toilet tissue\n toilet paper\n bathroom tissue'</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="物体分类测试接口函数"><a href="#物体分类测试接口函数" class="headerlink" title="物体分类测试接口函数"></a>物体分类测试接口函数</h2><p>编写接口函数，用于测试图片的加载，模型运行的调用，预测结果的显示等。</p>
+<p>app.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> vgg16</span><br><span class="line"><span class="keyword">import</span> utils</span><br><span class="line"><span class="keyword">from</span> Nclasses <span class="keyword">import</span> labels</span><br><span class="line"></span><br><span class="line">img_path = input(<span class="string">'Input the path and image name:'</span>)</span><br><span class="line">img_ready = utils.load_image(img_path) <span class="comment"># 调用自定义的load_image()函数</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义一个figure画图窗口，并指定窗口的名称</span></span><br><span class="line">fig=plt.figure(<span class="string">u"Top-5 预测结果"</span>) </span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    <span class="comment"># 定义一个维度为[1,224,224,3], 类型为float32的tensor占位符</span></span><br><span class="line">    images = tf.placeholder(tf.float32, [<span class="number">1</span>, <span class="number">224</span>, <span class="number">224</span>, <span class="number">3</span>])</span><br><span class="line">    vgg = vgg16.Vgg16() <span class="comment"># 自定义的Vgg16类实例化出vgg对象</span></span><br><span class="line">    <span class="comment"># 调用类的成员方法forward()，并传入待测试图像，也就是网络前向传播的过程</span></span><br><span class="line">    vgg.forward(images)</span><br><span class="line">    <span class="comment"># 将一个batch的数据喂入网络，得到网络的预测输出</span></span><br><span class="line">    probability = sess.run(vgg.prob, feed_dict=&#123;images:img_ready&#125;)</span><br><span class="line">    <span class="comment"># np.argsort返回预测值由小到大的索引值，并取出预测概率最大的五个索引值</span></span><br><span class="line">    top5 = np.argsort(probability[<span class="number">0</span>])[<span class="number">-1</span>:<span class="number">-6</span>:<span class="number">-1</span>]</span><br><span class="line">    print(<span class="string">"top5 obj id:"</span>,top5)</span><br><span class="line">    <span class="comment"># 定义两个list---对应的概率值和实际标签</span></span><br><span class="line">    values = []</span><br><span class="line">    bar_label = []</span><br><span class="line">    <span class="comment"># 枚举上面取出的五个索引值</span></span><br><span class="line">    <span class="keyword">for</span> n, i <span class="keyword">in</span> enumerate(top5): </span><br><span class="line">        print(<span class="string">'== top %d =='</span> %(n+<span class="number">1</span>))</span><br><span class="line">        print(<span class="string">"obj id:"</span>,i)</span><br><span class="line">        values.append(probability[<span class="number">0</span>][i]) <span class="comment"># 将索引值对应的预测概率值取出并放入values</span></span><br><span class="line">        bar_label.append(labels[i]) <span class="comment"># 根据索引值取出对应的实际标签并放入bar_label</span></span><br><span class="line">        <span class="comment"># 打印属于某个类别的概率</span></span><br><span class="line">        print(<span class="string">"--&gt;"</span>, labels[i], <span class="string">"----"</span>, utils.percent(probability[<span class="number">0</span>][i]))</span><br><span class="line">        </span><br><span class="line">    ax = fig.add_subplot(<span class="number">111</span>)</span><br><span class="line">    <span class="comment"># bar()函数绘制柱状图，参数range(len(values)是柱子下标，values表示柱高的列表</span></span><br><span class="line">    <span class="comment"># tick_label每个柱子上显示的标签（实际对应的标签），width柱子宽度，fc柱子颜色</span></span><br><span class="line">    ax.bar(range(len(values)), values, tick_label=bar_label, width=<span class="number">0.5</span>, fc=<span class="string">'g'</span>)</span><br><span class="line">    ax.set_ylabel(<span class="string">u'probabilityit'</span>) </span><br><span class="line">    ax.set_title(<span class="string">u'Top-5'</span>) </span><br><span class="line">    <span class="keyword">for</span> a,b <span class="keyword">in</span> zip(range(len(values)), values):</span><br><span class="line">        <span class="comment"># 柱子顶端添加对应预测概率值，a,b表示位置坐标，center居中，bottom底端，fontsize字号</span></span><br><span class="line">        ax.text(a, b+<span class="number">0.0005</span>, utils.percent(b), ha=<span class="string">'center'</span>, va = <span class="string">'bottom'</span>, fontsize=<span class="number">7</span>)   </span><br><span class="line">    plt.show()</span><br></pre></td></tr></table></figure>
+
+<h1 id="VGG-16图片分类测试"><a href="#VGG-16图片分类测试" class="headerlink" title="VGG-16图片分类测试"></a>VGG-16图片分类测试</h1><h2 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果"></a>测试结果</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">Python 3.6.8 (tags/v3.6.8:3c6b436a57, Dec 24 2018, 00:16:47) [MSC v.1916 64 bit (AMD64)] on win32</span><br><span class="line">Type &quot;help&quot;, &quot;copyright&quot;, &quot;credits&quot; or &quot;license()&quot; for more information.</span><br><span class="line">&gt;&gt;&gt; </span><br><span class="line"> RESTART: G:\TestProject\...\vgg\app.py </span><br><span class="line">Input the path and image name:pic/8.jpg</span><br><span class="line">path(vgg16.npy): G:\TestProject\...\vgg\vgg16.npy</span><br><span class="line">key in data_dict: conv5_1</span><br><span class="line">key in data_dict: fc6</span><br><span class="line">key in data_dict: conv5_3</span><br><span class="line">key in data_dict: conv5_2</span><br><span class="line">key in data_dict: fc8</span><br><span class="line">key in data_dict: fc7</span><br><span class="line">key in data_dict: conv4_1</span><br><span class="line">key in data_dict: conv4_2</span><br><span class="line">key in data_dict: conv4_3</span><br><span class="line">key in data_dict: conv3_3</span><br><span class="line">key in data_dict: conv3_2</span><br><span class="line">key in data_dict: conv3_1</span><br><span class="line">key in data_dict: conv1_1</span><br><span class="line">key in data_dict: conv1_2</span><br><span class="line">key in data_dict: conv2_2</span><br><span class="line">key in data_dict: conv2_1</span><br><span class="line">build model started...</span><br><span class="line">==&gt;input image shape: [1, 224, 224, 3]</span><br><span class="line">=&gt;after conv1_1 shape: [1, 224, 224, 64]</span><br><span class="line">=&gt;after conv1_2 shape: [1, 224, 224, 64]</span><br><span class="line">---after pool1 shape: [1, 112, 112, 64]</span><br><span class="line">=&gt;after conv2_1 shape: [1, 112, 112, 128]</span><br><span class="line">=&gt;after conv2_2 shape: [1, 112, 112, 128]</span><br><span class="line">---after pool2 shape: [1, 56, 56, 128]</span><br><span class="line">=&gt;after conv3_1 shape: [1, 56, 56, 256]</span><br><span class="line">=&gt;after conv3_2 shape: [1, 56, 56, 256]</span><br><span class="line">=&gt;after conv3_3 shape: [1, 56, 56, 256]</span><br><span class="line">---after pool3 shape: [1, 28, 28, 256]</span><br><span class="line">=&gt;after conv4_1 shape: [1, 28, 28, 512]</span><br><span class="line">=&gt;after conv4_2 shape: [1, 28, 28, 512]</span><br><span class="line">=&gt;after conv4_3 shape: [1, 28, 28, 512]</span><br><span class="line">---after pool4 shape: [1, 14, 14, 512]</span><br><span class="line">=&gt;after conv5_1 shape: [1, 14, 14, 512]</span><br><span class="line">=&gt;after conv5_2 shape: [1, 14, 14, 512]</span><br><span class="line">=&gt;after conv5_3 shape: [1, 14, 14, 512]</span><br><span class="line">---after pool5 shape: [1, 7, 7, 512]</span><br><span class="line">fc_layer shape: [1, 7, 7, 512]</span><br><span class="line">=&gt;after fc6 shape: [1, 4096]</span><br><span class="line">fc_layer shape: [1, 4096]</span><br><span class="line">=&gt;after fc7 shape: [1, 4096]</span><br><span class="line">fc_layer shape: [1, 4096]</span><br><span class="line">=&gt;after fc8 shape: [1, 1000]</span><br><span class="line">forward time consuming: 2.671326</span><br><span class="line">top5 obj id: [472 693 576 449 536]</span><br><span class="line">== top 1 ==</span><br><span class="line">obj id: 472</span><br><span class="line">--&gt; canoe ---- 93.36%</span><br><span class="line">== top 2 ==</span><br><span class="line">obj id: 693</span><br><span class="line">--&gt; paddle</span><br><span class="line"> boat paddle ---- 4.90%</span><br><span class="line">== top 3 ==</span><br><span class="line">obj id: 576</span><br><span class="line">--&gt; gondola ---- 1.03%</span><br><span class="line">== top 4 ==</span><br><span class="line">obj id: 449</span><br><span class="line">--&gt; boathouse ---- 0.25%</span><br><span class="line">== top 5 ==</span><br><span class="line">obj id: 536</span><br><span class="line">--&gt; dock</span><br><span class="line"> dockage</span><br><span class="line"> docking facility ---- 0.16%</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+
+<div align="center"><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/vgg_test_obj.png" width="700" alt="测试图"></div>
+
+<div align="center"><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/vgg_test_top5.png" width="600" alt="Top5预测结果"></div>
+
+<h2 id="结果分析"><a href="#结果分析" class="headerlink" title="结果分析"></a>结果分析</h2><p>选用这张小船的图片（/pic/8.jpg）进行测试，程序先加载训练模型参数文件（vgg16.npy），里面以字典形式保存网路参数（权重偏置等），可以打印显示键值名称，之后进行网络的前向传播，图片输入为：224x224x3，随着网络层数加深，数据尺寸不断减小，厚度不断增加，变为7x7x512后，被拉伸为1列数据，之后经过3层全连接层以及softmax分类输出，最终模型给出Top5预测结果，以93.36%的把握认为图片是canoe（独木舟，轻舟），4.90%的把握认为是paddle boat paddle（桨划船），预测效果还是不错的。</p>
+<p>参考：<a href="https://www.icourse163.org/course/PKU-1002536002?tid=1002700003" target="_blank" rel="noopener">人工智能实践：Tensorflow笔记</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/TensorFlow/" rel="tag"># TensorFlow</a>
+            
+              <a href="/tags/VGG/" rel="tag"># VGG</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/08/21/TensorFlow-手写数字识别（三）/" rel="next" title="TensorFlow-手写数字识别（三）">
+                  <i class="fa fa-chevron-left"></i> TensorFlow-手写数字识别（三）
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#VGG介绍"><span class="nav-number">1.</span> <span class="nav-text">VGG介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#VGG结构特点"><span class="nav-number">1.1.</span> <span class="nav-text">VGG结构特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#详细配置"><span class="nav-number">1.2.</span> <span class="nav-text">详细配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#论文中介绍的训练方法"><span class="nav-number">1.3.</span> <span class="nav-text">论文中介绍的训练方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#VGG-16网络复现"><span class="nav-number">2.</span> <span class="nav-text">VGG-16网络复现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#VGG-16网络结构-前线传播-复现"><span class="nav-number">2.1.</span> <span class="nav-text">VGG-16网络结构(前线传播)复现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#图片加载显示与预处理"><span class="nav-number">2.2.</span> <span class="nav-text">图片加载显示与预处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#物体种类列表"><span class="nav-number">2.3.</span> <span class="nav-text">物体种类列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#物体分类测试接口函数"><span class="nav-number">2.4.</span> <span class="nav-text">物体分类测试接口函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#VGG-16图片分类测试"><span class="nav-number">3.</span> <span class="nav-text">VGG-16图片分类测试</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#测试结果"><span class="nav-number">3.1.</span> <span class="nav-text">测试结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结果分析"><span class="nav-number">3.2.</span> <span class="nav-text">结果分析</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
