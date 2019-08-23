@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="unique_lock unique_lock可完成lock_guard的功能，另外还有额外的参数，实现其它功能  unique_lock的defer_lock参数，即先不加锁，只是先绑定unique_lock与mutex，另外，可以 随时进行加锁、解锁操作，某些情况下可提高效率（注意此时的加、解锁是通过unique_lock的成员函数.lock() 与 .unlock()实现的）">
+<meta name="keywords" content="C++,多线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++多线程笔记（二）">
+<meta property="og:url" content="https://xxpcb.github.io/2019/08/23/C-多线程笔记（二）/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="unique_lock unique_lock可完成lock_guard的功能，另外还有额外的参数，实现其它功能  unique_lock的defer_lock参数，即先不加锁，只是先绑定unique_lock与mutex，另外，可以 随时进行加锁、解锁操作，某些情况下可提高效率（注意此时的加、解锁是通过unique_lock的成员函数.lock() 与 .unlock()实现的）">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-08-23T02:43:10.625Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++多线程笔记（二）">
+<meta name="twitter:description" content="unique_lock unique_lock可完成lock_guard的功能，另外还有额外的参数，实现其它功能  unique_lock的defer_lock参数，即先不加锁，只是先绑定unique_lock与mutex，另外，可以 随时进行加锁、解锁操作，某些情况下可提高效率（注意此时的加、解锁是通过unique_lock的成员函数.lock() 与 .unlock()实现的）">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/08/23/C-多线程笔记（二）/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>C++多线程笔记（二） | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/23/C-多线程笔记（二）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">C++多线程笔记（二）
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-23 10:42:05 / 修改时间：10:43:10" itemprop="dateCreated datePublished" datetime="2019-08-23T10:42:05+08:00">2019-08-23</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/多线程/" itemprop="url" rel="index"><span itemprop="name">多线程</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="unique-lock"><a href="#unique-lock" class="headerlink" title="unique_lock"></a>unique_lock</h1><ul>
+<li><p>unique_lock可完成lock_guard的功能，另外还有额外的参数，实现其它功能</p>
+</li>
+<li><p>unique_lock的<code>defer_lock</code>参数，即先不加锁，只是先绑定unique_lock与mutex，另外，可以 <strong>随时进行加锁、解锁操作</strong>，某些情况下可提高效率（注意此时的加、解锁是通过unique_lock的成员函数<code>.lock()</code> 与 <code>.unlock()</code>实现的）</p>
+<a id="more"></a>
+</li>
+<li><p>unique_lock还可以 <strong>交换管理权</strong>（unique_lock可以被移动，lock_guard不可以）</p>
+</li>
+</ul>
+<p>代码示例：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LogFile</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="built_in">std</span>::mutex m_mutex;<span class="comment">//锁</span></span><br><span class="line">	<span class="built_in">std</span>::ofstream f;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	LogFile()</span><br><span class="line">	&#123;</span><br><span class="line">		f.open(<span class="string">"log.txt"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">shared_print</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">string</span> id, <span class="keyword">int</span> value)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; locker(m_mutex,<span class="built_in">std</span>::defer_lock);<span class="comment">//先不加锁</span></span><br><span class="line">		<span class="comment">//...此处代码不需要保护</span></span><br><span class="line">		locker.lock();</span><br><span class="line">		f &lt;&lt; id &lt;&lt; <span class="string">":"</span> &lt;&lt; value &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;<span class="comment">//此处才是保护区</span></span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; id &lt;&lt; <span class="string">":"</span> &lt;&lt; value &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">		locker.unlock();</span><br><span class="line">		<span class="comment">//...此处代码也不需要保护</span></span><br><span class="line">		locker.lock();</span><br><span class="line">		<span class="comment">//以下可能又需要保护了</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">//unique_lock可以被移动，lock_guard不可以</span></span><br><span class="line">		<span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; locker2 = <span class="built_in">std</span>::move(locker);</span><br><span class="line">		<span class="comment">//将unique_lock管理的lock交给新的unique_lock的管理</span></span><br><span class="line">		<span class="comment">//即将m_mutex与locker2绑定在一起！此时locker已无用</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">function_1</span><span class="params">(LogFile&amp; <span class="built_in">log</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &gt; <span class="number">-1000</span>; i--)</span><br><span class="line">		<span class="built_in">log</span>.shared_print(<span class="built_in">std</span>::<span class="built_in">string</span>(<span class="string">"from t1:"</span>), i);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span><span class="comment">//主线程</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	LogFile <span class="built_in">log</span>;</span><br><span class="line">	<span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(function_1, <span class="built_in">std</span>::ref(<span class="built_in">log</span>))</span></span>;<span class="comment">//t1线程开始运行</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">log</span>.shared_print(<span class="built_in">std</span>::<span class="built_in">string</span>(<span class="string">"from main:"</span>), i);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	t1.join();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>程序运行结果依然是主线程和子线程各自输出1000条信息以及将信息保存到txt文件中，和<a href="https://xxpcb.github.io/2019/08/14/C-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%AC%94%E8%AE%B0-%E4%B8%80/">上篇</a>中 “<code>死锁 &amp; adopt_lock</code>” 的结果类似，这里不再展示。</p>
+<h1 id="call-once"><a href="#call-once" class="headerlink" title="call_once"></a>call_once</h1><p>之前测试代码中，<code>log.txt</code>文件的创建（<code>f.open(&quot;log.txt&quot;);</code>）是在类的构造函数中的，如果没有使用到打印函数（<code>shared_print()</code>），则没必要创建该文件，若将其放入打印函数中，会被多次调用。</p>
+<p>这时，可以使用call_once()函数并配合<code>once_flag</code>标记，保证<strong>即使是多线程情况下，也只被执行一次</strong>。</p>
+<p>代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LogFile</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="built_in">std</span>::mutex m_mutex;</span><br><span class="line">	<span class="built_in">std</span>::once_flag m_flag;<span class="comment">//once_flag标记</span></span><br><span class="line">	<span class="built_in">std</span>::ofstream f;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	LogFile()</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">//f.open("log.txt");//不再需要！</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//此种情况是：那个线程先要打印，则首次创建文件（都不需打印，则始终不创建文件）</span></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">shared_print</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">string</span> id, <span class="keyword">int</span> value)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="built_in">std</span>::call_once(m_flag, [&amp;]() &#123;f.open(<span class="string">"log.txt"</span>); &#125;);<span class="comment">//call_once函数</span></span><br><span class="line">		<span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; locker(m_mutex);</span><br><span class="line">		f &lt;&lt; id &lt;&lt; <span class="string">":"</span> &lt;&lt; value &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; id &lt;&lt; <span class="string">":"</span> &lt;&lt; value &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">function_1</span><span class="params">(LogFile&amp; <span class="built_in">log</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &gt; <span class="number">-1000</span>; i--)</span><br><span class="line">		<span class="built_in">log</span>.shared_print(<span class="built_in">std</span>::<span class="built_in">string</span>(<span class="string">"from t1:"</span>), i);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span><span class="comment">//主线程</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	LogFile <span class="built_in">log</span>;</span><br><span class="line">	<span class="built_in">std</span>::<span class="function">thread <span class="title">t1</span><span class="params">(function_1, <span class="built_in">std</span>::ref(<span class="built_in">log</span>))</span></span>;<span class="comment">//t1线程开始运行</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">log</span>.shared_print(<span class="built_in">std</span>::<span class="built_in">string</span>(<span class="string">"from main:"</span>), i);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	t1.join();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>程序运行结果同上，不再展示。</p>
+<h1 id="condition-varible-amp-wait"><a href="#condition-varible-amp-wait" class="headerlink" title="condition_varible &amp; wait"></a>condition_varible &amp; wait</h1><p>首先引入一个“ <strong>生产者消费者问题</strong> ”，有两个线程，线程A产生数据（生产者），线程B获取数据（消费者），线程A在产生数据时，线程B不能过来取，因而线程B的执行必须要依赖线程A。</p>
+<p>下面的程序通过对<code>队列结构</code>中存取和取出数据，模拟生产和消费。采用加锁机制，保证两个子线程互斥，并且消费者线程使用循环查询机制，不断检查是否有可用数据。</p>
+<p>代码示例：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;deque&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">deque</span>&lt;<span class="keyword">int</span>&gt; q;<span class="comment">//整形队列(共享内存)</span></span><br><span class="line">mutex mu;<span class="comment">//互斥对象</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">function_1</span><span class="params">()</span><span class="comment">//生产者</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> count = <span class="number">10</span>;</span><br><span class="line">	<span class="keyword">while</span> (count &gt; <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		unique_lock&lt;mutex&gt; locker(mu);</span><br><span class="line">		q.push_front(count);<span class="comment">//放入一个数</span></span><br><span class="line">		locker.unlock();</span><br><span class="line">		this_thread::sleep_for(chrono::seconds(<span class="number">1</span>));</span><br><span class="line">		count--;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">function_2</span><span class="params">()</span><span class="comment">//消费者</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> data = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (data != <span class="number">1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		unique_lock&lt;mutex&gt; locker(mu);</span><br><span class="line">		<span class="keyword">if</span> (!q.empty())</span><br><span class="line">		&#123;</span><br><span class="line">			data = q.back();</span><br><span class="line">			q.pop_back();<span class="comment">//取出一个数</span></span><br><span class="line">			locker.unlock();</span><br><span class="line">			<span class="built_in">cout</span> &lt;&lt; <span class="string">"t2 got a value from t1:"</span> &lt;&lt; data &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span><span class="comment">//队列为空时，等待一段时间再继续，减少无意义的判断次数</span></span><br><span class="line">		&#123;</span><br><span class="line">			locker.unlock();</span><br><span class="line">			this_thread::sleep_for(chrono::seconds(<span class="number">5</span>));<span class="comment">//不加此句，function_2一直循环检测q是否为空</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">cout</span> &lt;&lt; <span class="string">"function_2..."</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span><span class="comment">//主线程</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="function">thread <span class="title">t1</span><span class="params">(function_1)</span></span>;</span><br><span class="line">	<span class="function">thread <span class="title">t2</span><span class="params">(function_2)</span></span>;</span><br><span class="line">	t1.join();</span><br><span class="line">	t2.join();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">t2 got a value from t1:10</span><br><span class="line">function_2...</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:9</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:8</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:7</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:6</span><br><span class="line">function_2...</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:5</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:4</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:3</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:2</span><br><span class="line">function_2...</span><br><span class="line">t2 got a value from t1:1</span><br><span class="line">function_2...</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<p>程序输出的中间过程会有些停顿，且消费者线程（function_2）存在多次查询无果的情况，注意上面程序的function_2中还特别加入了线程休眠等待（sleep_for），如果不加，function_2会不停的进行无效的查询访问，效率极低，而加入的等待时间过程，又会使function_2不能及时获取数据。</p>
+<p>针对上面的问题，就需要引入 <strong>条件变量 condition_varible</strong> ，配合<code>.wait()</code>与<code>.notify_one()</code>成员函数，即可通过“ <strong>等待通知</strong> ”的形式使function_2在恰当的时间获得数据，避免无谓低效的查询。</p>
+<p>修改后程序如下（头文件包含以及主函数省略，与上同）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">deque</span>&lt;<span class="keyword">int</span>&gt; q;<span class="comment">//整形队列</span></span><br><span class="line">mutex mu;<span class="comment">//互斥对象-&gt;锁</span></span><br><span class="line">condition_variable cond;<span class="comment">//【条件变量】避免线程无谓的循环</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">function_1</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> count = <span class="number">10</span>;</span><br><span class="line">	<span class="keyword">while</span> (count &gt; <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		unique_lock&lt;mutex&gt; locker1(mu);<span class="comment">//使用unique_lock来管理锁</span></span><br><span class="line">		q.push_front(count);<span class="comment">//队列中写数据（队前插入）10 9 8...1 0</span></span><br><span class="line">		locker1.unlock();<span class="comment">//提前解锁</span></span><br><span class="line">		<span class="comment">//cond.notify_one();//激活一个等待这个条件的线程</span></span><br><span class="line">		cond.notify_all();<span class="comment">//激活所有类似线程2的等待线程</span></span><br><span class="line">		this_thread::sleep_for(chrono::seconds(<span class="number">1</span>));<span class="comment">//此线程休息1秒</span></span><br><span class="line">		count--;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">function_2</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> data = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (data != <span class="number">1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		unique_lock&lt;mutex&gt; locker2(mu);<span class="comment">//互斥对象mu被线程2锁住，线程不会在锁住的情况下休眠</span></span><br><span class="line">		cond.wait(locker2, []() &#123;<span class="keyword">return</span> !q.empty(); &#125;);<span class="comment">//将线程2休眠直到线程1的notify_one（）才将其激活</span></span><br><span class="line">		<span class="comment">//上句第一个参数是解锁加锁，第2个参数为【lambda函数】，防止伪激活</span></span><br><span class="line">		data = q.back();<span class="comment">//队列中读数据</span></span><br><span class="line">		q.pop_back();<span class="comment">//队列中删除数据（队尾删除）</span></span><br><span class="line">		locker2.unlock();<span class="comment">//提前解锁</span></span><br><span class="line">		<span class="built_in">cout</span> &lt;&lt; <span class="string">"t2 got a value from t1:"</span> &lt;&lt; data &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">t2 got a value from t1:10</span><br><span class="line">t2 got a value from t1:9</span><br><span class="line">t2 got a value from t1:8</span><br><span class="line">t2 got a value from t1:7</span><br><span class="line">t2 got a value from t1:6</span><br><span class="line">t2 got a value from t1:5</span><br><span class="line">t2 got a value from t1:4</span><br><span class="line">t2 got a value from t1:3</span><br><span class="line">t2 got a value from t1:2</span><br><span class="line">t2 got a value from t1:1</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<p>此时function_2就可以在functon_1产生数据后及时获取了，并且没有了无效的查询过程。</p>
+<h1 id="future-amp-async"><a href="#future-amp-async" class="headerlink" title="future &amp; async"></a>future &amp; async</h1><p><code>std::async</code>为一函数模板，用来启动一 <strong>异步任务</strong>（即自动创建一线程并执行对应的线程入口函数），之后返回一个<code>std::future</code>对象（对象中包含线程函数的返回结果），最后通过future对象的<code>.get()</code>成员函数来获取结果。<br>(如果只是简单地通过引用的方式在子线程和主线程间传递结果，需要 <strong>额外的加锁</strong> 机制！)</p>
+<ul>
+<li><code>.get()</code>成员函数等待子线程返回结果，否则一直等待（注：只能get一次，多次调用则报异常）<br>与之类似的<code>.wait()</code>成员函数只等待结果，不获取结果（类似于join()）</li>
+<li>如果<code>.get()</code>和 <code>.wait()</code>都不用，主程序结束时仍等待子线程</li>
+<li><code>future</code>：理解为提供了一种访问异步操作结果的机制，即需要等待一段时间（线程执行完毕） <strong>主线程</strong>才能从 <strong>子线程</strong> 中拿到结果</li>
+<li>额外向<code>async()</code>传递一个参数（<code>std::launch</code>枚举类型)，实现其它功能<ul>
+<li><code>std::launch::deffered</code>：表示线程入口函数被延迟到get()或wait()时才执行（但仍是主线程，没有新线程！），若没有get()或wait()则始终不执行子线程</li>
+<li><code>std::launch::async</code>：立即创建一个新线程</li>
+<li><code>std::launch::async|std::launch::deffered</code>：根据系统资源消耗情况，可能立即创建新线程，也可能延迟</li>
+</ul>
+</li>
+</ul>
+<p>代码示例:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;future&gt;//引入future头文件</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">factorial</span><span class="params">(<span class="keyword">int</span> N)</span><span class="comment">//阶乘函数</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"子线程启动&gt;&gt;&gt;&gt;&gt;  线程ID: "</span> &lt;&lt; this_thread::get_id() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">int</span> res = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = N; i &gt; <span class="number">1</span>; i--)</span><br><span class="line">		res *= i;</span><br><span class="line">	chrono::<span class="function">milliseconds <span class="title">dura</span><span class="params">(<span class="number">3000</span>)</span></span>;<span class="comment">//定义一个3秒的时间</span></span><br><span class="line">	this_thread::sleep_for(dura);<span class="comment">//模拟长时间计算</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//cout &lt;&lt; "Result is:" &lt;&lt; res &lt;&lt; endl;</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"子线程结束&lt;&lt;&lt;&lt;&lt;  线程ID: "</span> &lt;&lt; this_thread::get_id() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span><span class="comment">//主线程</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"主线程启动&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  线程ID: "</span> &lt;&lt; this_thread::get_id() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">int</span> x = <span class="number">0</span>;</span><br><span class="line">	<span class="comment">//future&lt;int&gt; fu = async(launch::async | launch::deferred, factorial, 4);//【两者方式均可能】</span></span><br><span class="line">	future&lt;<span class="keyword">int</span>&gt; fu = async(launch::async, factorial, <span class="number">4</span>);<span class="comment">//【强制创建一个线程】</span></span><br><span class="line">	<span class="comment">//future&lt;int&gt; fu = async(launch::deferred, factorial, 4);//【延时执行】</span></span><br><span class="line">	<span class="comment">//future&lt;int&gt; fu = async(factorial, 4);//【不加参数等价于async|deferred】</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"continue..."</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"continue..."</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"continue..."</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	x = fu.get();<span class="comment">//等待子线程结果</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"Result is:"</span> &lt;&lt; x &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"主线程启动&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;  线程ID: "</span> &lt;&lt; this_thread::get_id() &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">主线程启动&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  线程ID: 2468</span><br><span class="line">continue...子线程启动&gt;&gt;&gt;&gt;&gt;  线程ID: 9980</span><br><span class="line"></span><br><span class="line">continue...</span><br><span class="line">continue...</span><br><span class="line">子线程结束&lt;&lt;&lt;&lt;&lt;  线程ID: 9980</span><br><span class="line">Result is:24</span><br><span class="line">主线程启动&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;  线程ID: 2468</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<h1 id="promise"><a href="#promise" class="headerlink" title="promise"></a>promise</h1><p><code>std::promise</code>类模板（事先约定）可以在某个线程中给它赋值，然后在其它线程中，将该值取出</p>
+<p>代码示例：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;future&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">factorial</span><span class="params">(future&lt;<span class="keyword">int</span>&gt;&amp;f)</span><span class="comment">//阶乘函数</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> res = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">int</span> N = f.get();</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = N; i &gt; <span class="number">1</span>; i--)</span><br><span class="line">		res *= i;</span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"Result is:"</span> &lt;&lt; res &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span><span class="comment">//主线程</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> x;</span><br><span class="line">	promise&lt;<span class="keyword">int</span>&gt; p;<span class="comment">//主线程中的int变量(“约定型”变量)</span></span><br><span class="line">	future&lt;<span class="keyword">int</span>&gt; f = p.get_future();<span class="comment">//该变量值的值约定从“将来”future获得</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"pass the promise-future 'p' to factorial()..."</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">	future&lt;<span class="keyword">int</span>&gt; fu = async(launch::async, factorial, ref(f));<span class="comment">//按引用传递f(一个未来的约定)</span></span><br><span class="line"></span><br><span class="line">	this_thread::sleep_for(chrono::seconds(<span class="number">3</span>));<span class="comment">//此线程休息3秒(模拟未来的时间)</span></span><br><span class="line">	p.set_value(<span class="number">4</span>);<span class="comment">//（约定时间到）为其赋值，此时子线程factorial才能获得参数值</span></span><br><span class="line"></span><br><span class="line">	x = fu.get();<span class="comment">//获得子线程factorial的计算结果</span></span><br><span class="line">	<span class="built_in">cout</span> &lt;&lt; <span class="string">"Get from child thread:"</span> &lt;&lt; x &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pass the promise-future &apos;p&apos; to factorial()...</span><br><span class="line">Result is:24</span><br><span class="line">Get from child thread:24</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
+            
+              <a href="/tags/多线程/" rel="tag"># 多线程</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/08/22/TensorFlow-VGG16模型复现/" rel="next" title="TensorFlow-VGG16模型复现">
+                  <i class="fa fa-chevron-left"></i> TensorFlow-VGG16模型复现
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#unique-lock"><span class="nav-number">1.</span> <span class="nav-text">unique_lock</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#call-once"><span class="nav-number">2.</span> <span class="nav-text">call_once</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#condition-varible-amp-wait"><span class="nav-number">3.</span> <span class="nav-text">condition_varible &amp; wait</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#future-amp-async"><span class="nav-number">4.</span> <span class="nav-text">future &amp; async</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#promise"><span class="nav-number">5.</span> <span class="nav-text">promise</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
