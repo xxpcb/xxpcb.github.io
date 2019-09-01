@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[hexo生成的标签类别修改大小写问题]]></title>
+    <url>%2F2019%2F09%2F01%2Fhexo%E7%94%9F%E6%88%90%E7%9A%84%E6%A0%87%E7%AD%BE%E7%B1%BB%E5%88%AB%E4%BF%AE%E6%94%B9%E5%A4%A7%E5%B0%8F%E5%86%99%E9%97%AE%E9%A2%98%2F</url>
+    <content type="text"><![CDATA[目前使用hexo框架的博客网站，每篇博客源文件（Mrakdown）定义好需要的 标签-tags 或 类别-categories 之后，会自动生成相应的文件夹。我之前在使用TensorFlow标签时，起初没有注意大小写，写成了tensorflow，自动生成标签类别并部署到GitHub后，想要将小写改成规范形式，就直接将相应博客源文件的标签改过来，改为的效果是网站可以显示改后的标签，但点击进去会进入404找不到页面。 原因在于自动生成的用于存放对应标签的html文件的文件夹名字没有改正过来（依然是全部小写），导致找不到对应路径上相应的html文件，可以在Github项目中看到文件名称并没有更新，应该是Git忽略了大小写。 回到hexo本地项目目录中，public文件夹就是推送到Github中的博客网站源码，不过注意在这里文件夹了不能进行Git操作，实际真正的Git管理目录是在.deploy_git文件夹中，它的内容和public文件夹中的一样，不过这里可以直接进行Git操作。 解决步骤如下 ： 删除tags文件夹或categories文件夹中想要修改大小写的文件夹 使用Git命令提交并推送（add、commit、push三步） 使用hexo命令进行部署（hexo d） 注 ：第3步的作用应该是hexo将public文件夹中的内容部署到GitHub中了，public文件夹在执行hexo clean时会被清除，执行hexo g时会被创建，之前我已经更新过public文件夹，public文件夹中的tags文件夹和categories文件夹中相应的大小写问题已经更新为正常的了，因而可以直接执行hexo d部署。]]></content>
+      <categories>
+        <category>建站</category>
+      </categories>
+      <tags>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[OSI网络模型基础]]></title>
     <url>%2F2019%2F09%2F01%2FOSI%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%9F%BA%E7%A1%80%2F</url>
     <content type="text"><![CDATA[网络模型的划分主要有3种方式： OSI七层模型 TCP/IP四层模型 五层模型 OSI七层网络模型(Open System Interconnection，开放系统互连)称为开放式系统互联参考模型 ，是一个逻辑上的定义，一个规范，它把网络从逻辑上分为了7层。每一层都有相关、相对应的物理设备，比如路由器，交换机。OSI 七层模型是一种框架性的设计方法 ，建立七层模型的主要目的是为解决异种网络互连时所遇到的兼容性问题，其最主要的功能使就是帮助不同类型的主机实现数据传输。 TCP/IP四层概念模型的应用层整合了OSI参考模型的应用层，表示层，会话层，网络接口层整合了OSI的数据链路层和物理层，但作用不变。 所谓的五层协议的网络体系结构其实是为了方便学习计算机网络原理而采用的，综合了OSI七层模型和TCP/IP的四层模型而得到的五层模型。 OSI七层网络模型 TCP/IP四层概念模型 五层模型 对应网络协议 应用层（Application） 应用层 应用层 HTTP、TFTP, FTP, NFS, WAIS、SMTP 表示层（Presentation Telnet, Rlogin, SNMP, Gopher 会话层（Session） SMTP, DNS 传输层（Transport） 传输层 传输层 TCP, UDP 网络层（Network） 网络层 网络层 IP, ICMP, ARP, RARP, AKP, UUCP 数据链路层（Data Link） 数据链路层 数据链路层 FDDI, Ethernet, Arpanet, PDN, SLIP, PPP 物理层（Physical） 物理层 IEEE 802.1A, IEEE 802.2到IEEE 802.11 物理层（比特）：进行比特流的传输（比特流也是数据流，在不同的介质下表现的形式也不一样，在光纤中是光信号传递，这个比特流也就是光信号，如果是wifi，传递用的是光信号，那么比特流也就是光信号） 数据链路层（帧）：建立和维护数据链路，提供物理地址（MAC地址） 网络层（报文）：负责寻址（IP地址）和转发数据 传输层（TPDU）：主要负责传输数据，建立端主机端（应用）到端的连接 会话层（SPDU）：负责建立，管理，维护和终止表示层实体之间的通信会话 表示层（PPDU）：处理数据的格式，处理数据加密和压缩。 应用层：提供用户访问网络的接口（应用程序），比如QQ之间的通信 参考： https://www.cnblogs.com/Robin-YB/p/6668762.html https://cloud.tencent.com/info/82b1f746251a297a040c034f99922526.html]]></content>
