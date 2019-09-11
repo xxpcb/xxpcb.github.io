@@ -55,19 +55,24 @@
   };
 </script>
 
-  <meta name="description" content="原题链接：https://leetcode-cn.com/problems/swap-nodes-in-pairs/ 题目给定一个链表，两两交换其中相邻的节点，并返回交换后的链表。 你不能只是单纯的改变节点内部的值，而是需要实际的进行节点交换。">
-<meta name="keywords" content="LeetCode,算法">
+  <meta name="description" content="简介TCP提供面向有连接的通信传输，面向有连接是指在数据通信开始之前先做好通信两端之间的准备工作。 TCP在数据通信之前，通过TCP首部发送一个SYN包作为建立连接的请求等待确认应答（TCP中发送第一个SYN包的一方叫做客户端，接收这个的一方叫做服务端）。如果对端发来确认应答，则认为可以进行数据通信。如果对端的确认应答未能到达，就不会进行数据通信。此外，在通信结束时会进行断开连接的处理（FIN包）">
+<meta name="keywords" content="计算机网络">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LeetCode题解-24. 两两交换链表中的节点(链表 递归)">
-<meta property="og:url" content="https://xxpcb.github.io/2019/08/16/LeetCode题解-24-两两交换链表中的节点-链表-递归/index.html">
+<meta property="og:title" content="TCP的三次握手与四次挥手">
+<meta property="og:url" content="https://xxpcb.github.io/2019/09/11/TCP的三次握手与四次挥手/index.html">
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
-<meta property="og:description" content="原题链接：https://leetcode-cn.com/problems/swap-nodes-in-pairs/ 题目给定一个链表，两两交换其中相邻的节点，并返回交换后的链表。 你不能只是单纯的改变节点内部的值，而是需要实际的进行节点交换。">
+<meta property="og:description" content="简介TCP提供面向有连接的通信传输，面向有连接是指在数据通信开始之前先做好通信两端之间的准备工作。 TCP在数据通信之前，通过TCP首部发送一个SYN包作为建立连接的请求等待确认应答（TCP中发送第一个SYN包的一方叫做客户端，接收这个的一方叫做服务端）。如果对端发来确认应答，则认为可以进行数据通信。如果对端的确认应答未能到达，就不会进行数据通信。此外，在通信结束时会进行断开连接的处理（FIN包）">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-16T07:24:08.881Z">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-34-1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-texthead.jpg">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-3syn.jpg">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-4fin.jpg">
+<meta property="og:updated_time" content="2019-09-11T11:51:33.745Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LeetCode题解-24. 两两交换链表中的节点(链表 递归)">
-<meta name="twitter:description" content="原题链接：https://leetcode-cn.com/problems/swap-nodes-in-pairs/ 题目给定一个链表，两两交换其中相邻的节点，并返回交换后的链表。 你不能只是单纯的改变节点内部的值，而是需要实际的进行节点交换。">
-  <link rel="canonical" href="https://xxpcb.github.io/2019/08/16/LeetCode题解-24-两两交换链表中的节点-链表-递归/">
+<meta name="twitter:title" content="TCP的三次握手与四次挥手">
+<meta name="twitter:description" content="简介TCP提供面向有连接的通信传输，面向有连接是指在数据通信开始之前先做好通信两端之间的准备工作。 TCP在数据通信之前，通过TCP首部发送一个SYN包作为建立连接的请求等待确认应答（TCP中发送第一个SYN包的一方叫做客户端，接收这个的一方叫做服务端）。如果对端发来确认应答，则认为可以进行数据通信。如果对端的确认应答未能到达，就不会进行数据通信。此外，在通信结束时会进行断开连接的处理（FIN包）">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-34-1.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/09/11/TCP的三次握手与四次挥手/">
 
 
 <script id="page-configurations">
@@ -81,7 +86,7 @@
   };
 </script>
 
-  <title>LeetCode题解-24. 两两交换链表中的节点(链表 递归) | xxpcb's Blog</title>
+  <title>TCP的三次握手与四次挥手 | xxpcb's Blog</title>
   
 
 
@@ -256,7 +261,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/08/16/LeetCode题解-24-两两交换链表中的节点-链表-递归/">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/09/11/TCP的三次握手与四次挥手/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="xxpcb">
@@ -268,7 +273,7 @@
       <meta itemprop="name" content="xxpcb's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">LeetCode题解-24. 两两交换链表中的节点(链表 递归)
+        <h1 class="post-title" itemprop="name headline">TCP的三次握手与四次挥手
 
           
         </h1>
@@ -284,7 +289,7 @@
                 
               
 
-              <time title="创建时间：2019-08-16 14:12:09 / 修改时间：15:24:08" itemprop="dateCreated datePublished" datetime="2019-08-16T14:12:09+08:00">2019-08-16</time>
+              <time title="创建时间：2019-09-11 19:50:45 / 修改时间：19:51:33" itemprop="dateCreated datePublished" datetime="2019-09-11T19:50:45+08:00">2019-09-11</time>
             </span>
           
             
@@ -297,7 +302,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/算法/" itemprop="url" rel="index"><span itemprop="name">算法</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机网络/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a></span>
 
                 
                 
@@ -316,27 +321,71 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>原题链接：<a href="https://leetcode-cn.com/problems/swap-nodes-in-pairs/" target="_blank" rel="noopener">https://leetcode-cn.com/problems/swap-nodes-in-pairs/</a></p>
-<h1 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h1><p>给定一个链表，两两交换其中相邻的节点，并返回交换后的链表。</p>
-<p><strong>你不能只是单纯的改变节点内部的值</strong>，而是需要实际的进行节点交换。</p>
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p><strong>TCP提供面向有连接的通信传输</strong>，面向有连接是指在数据通信开始之前先做好通信两端之间的准备工作。</p>
+<p>TCP在数据通信之前，通过TCP首部发送一个SYN包作为建立连接的请求等待确认应答（TCP中发送第一个SYN包的一方叫做客户端，接收这个的一方叫做服务端）。如果对端发来确认应答，则认为可以进行数据通信。如果对端的确认应答未能到达，就不会进行数据通信。此外，在通信结束时会进行断开连接的处理（FIN包）。</p>
 <a id="more"></a>
 
-<p><strong>示例 :</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">给定 1-&gt;2-&gt;3-&gt;4, 你应该返回 2-&gt;1-&gt;4-&gt;3.</span><br></pre></td></tr></table></figure>
+<p>一个连接的建立与断开，正常过程至少需要来回发送7个包才能完成（建立一个TCP连接需要发送3个包，这个过<br>程也称作“三次握手”，断开一个TCP连接需要发送4个包，这个过程也称作“四次挥手”）。</p>
+<div align="center"> <img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-34-1.png" width="400" alt="Mardown测试图片"></div>
 
-<h1 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h1><p>采用递归的思想，先交换前两个节点，再交换接着的两个节点，依次类推，交换完成后将所有的两两部分连接在一起。</p>
-<p>编程的思路交换前两个节点，连接上后面已经交换好的所有部分，后面的部分如何实现交换依然使用同样的方式，也就是通过递归调用来实现。</p>
-<p>定义一个节点指针p指向第2个节点，然后将第1个节点的next指向第2节点之后的部分（递归已交换完成的部分），最后将p的next指向原来的第1个节点。注意第2步与第3步的顺序不要反了。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">      __  p</span><br><span class="line">    ↙  ↖⇣</span><br><span class="line">[head]--→▢--→[_________]</span><br><span class="line">    ↘———————↗</span><br></pre></td></tr></table></figure>
 
-<h1 id="C-实现"><a href="#C-实现" class="headerlink" title="C++实现"></a>C++实现</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Definition for singly-linked list.</span></span><br><span class="line"><span class="comment"> * struct ListNode &#123;</span></span><br><span class="line"><span class="comment"> *     int val;</span></span><br><span class="line"><span class="comment"> *     ListNode *next;</span></span><br><span class="line"><span class="comment"> *     ListNode(int x) : val(x), next(NULL) &#123;&#125;</span></span><br><span class="line"><span class="comment"> * &#125;;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">ListNode* <span class="title">swapPairs</span><span class="params">(ListNode* head)</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(head==<span class="literal">NULL</span>||head-&gt;next==<span class="literal">NULL</span>)</span><br><span class="line">            <span class="keyword">return</span> head;</span><br><span class="line">        </span><br><span class="line">        ListNode *p=head-&gt;next;<span class="comment">// 中间临时变量，指向两数中的第2个</span></span><br><span class="line">        head-&gt;next=swapPairs(p-&gt;next);<span class="comment">// 原第一个数的后一个指向整理完毕的后面部分</span></span><br><span class="line">        p-&gt;next=head;<span class="comment">// 原第2个数指向原第一个数</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> p;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
-<h1 id="运行结果"><a href="#运行结果" class="headerlink" title="运行结果"></a>运行结果</h1><p>输入 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[1,2,3,4]</span><br></pre></td></tr></table></figure>
-
-<p>输出</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[2,1,4,3]</span><br></pre></td></tr></table></figure>
-
+<h1 id="TCP报文段首部"><a href="#TCP报文段首部" class="headerlink" title="TCP报文段首部"></a>TCP报文段首部</h1><p>在具体理解三次握手与四次挥手的细节时，需要先了解一下TCP报文段的首部格式：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-texthead.jpg" alt></p>
+<p>主要需要了解的是：</p>
+<ul>
+<li><p><strong>序号 seq</strong></p>
+<p>占4个字节，范围[0,2<sup>23</sup>-1]，共2<sup>23</sup>(42 9496 7296)个序号。TCP是面向字节流的，在一个TCP连接中传送的字节流中的每一个字节都按顺序编号。</p>
+</li>
+<li><p><strong>确认号 ack</strong></p>
+<p>占4个字节，是期望收到对方下一个报文段的第一个数据字节的序号。</p>
+</li>
+<li><p><strong>确认 ACK</strong></p>
+<p>仅当ACK=1时确认号字段才有效，当ACK=0时，确认号无效。TCP规定，<strong>在建立连接后所传送的报文都必须把ACK置1</strong>。</p>
+</li>
+<li><p><strong>同步 SYN</strong></p>
+<p>在连接时用来同步序号，<strong>当SYN=1而ACK=0时，表明这是一个连接请求报文段</strong>，对方若同意连接，在应在响应的报文段中使用SYN=1和ACK=1。因此，SYN置为1就表示这是一个连接请求或连接接受报文。</p>
+</li>
+<li><p><strong>终止 FIN</strong></p>
+<p>用来释放一个连接，当FIN=1时，表明此报文段的发送方的数据已发送完毕，并要求释放运输连接。</p>
+</li>
+</ul>
+<h1 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h1><p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-3syn.jpg" alt></p>
+<ol>
+<li>最初两端的TCP进程都处于CLOSE(关闭)状态。上图中A主动打开连接，B被动打开连接。</li>
+<li>B打开连接后处于LISTEN(监听状态)，等待客户的连接请求。</li>
+<li>A向B发送请求报文，SYN=1,ACK=0,选择一个初始序号seq=x。</li>
+<li>B 收到连接请求报文，如果同意建立连接，则向 A 发送连接确认报文，SYN=1，ACK=1，确认号为ack= x+1，同时也选择一个初始的序号 seq=y。</li>
+<li>A 收到 B 的连接确认报文后，还要向 B 发出确认，确认号为ack= y+1，序号为 seq=x+1。</li>
+<li>B 收到 A 的确认后，连接建立。</li>
+</ol>
+<h2 id="必须握手三次而不是两次的原因"><a href="#必须握手三次而不是两次的原因" class="headerlink" title="必须握手三次而不是两次的原因"></a>必须握手三次而不是两次的原因</h2><p>主要是<strong>防止已经失效的连接请求报文突然又传送到了服务器，从而产生错误</strong></p>
+<p>如果使用的是两次握手建立连接，假设有这样一种场景，<strong>客户端发送了第一个请求连接并且没有丢失，只是因为在网络结点中滞留的时间太长了</strong>，由于TCP的客户端迟迟没有收到确认报文，以为服务器没有收到，此时重新向服务器发送这条报文，此后客户端和服务器经过两次握手完成连接，传输数据，然后关闭连接。此时<strong>此前滞留的那一次请求连接，网络通畅了到达了服务器</strong>，这个报文本该是失效的，但是，<strong>两次握手的机制将会让客户端和服务器再次建立连接，这将导致不必要的错误和资源的浪费</strong>。</p>
+<p><strong>如果采用的是三次握手，就算是那一次失效的报文传送过来了，服务端接受到了那条失效报文并且回复了确认报文，但是客户端不会再次发出确认</strong>。由于服务器收不到确认，就知道客户端并没有请求连接。</p>
+<h2 id="建立连接后，客户端出现故障时的机制"><a href="#建立连接后，客户端出现故障时的机制" class="headerlink" title="建立连接后，客户端出现故障时的机制"></a>建立连接后，客户端出现故障时的机制</h2><p>TCP设有一个保活计时器，显然，客户端如果出现故障，服务器不能一直等下去，白白浪费资源。服务器每收到一次客户端的请求后都会重新复位这个计时器，时间通常是设置为<strong>2小时</strong>，若2小时还没有收到客户端的任何数据，服务器就会发送一个探测报文段，以后<strong>每隔75秒</strong>发送一次。若<strong>一连发送10个</strong>探测报文仍然没反应，服务器就认为客户端出了故障，接着就关闭连接。</p>
+<h1 id="四次挥手"><a href="#四次挥手" class="headerlink" title="四次挥手"></a>四次挥手</h1><p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-4fin.jpg" alt></p>
+<ol>
+<li>A 发送连接释放报文，FIN=1。</li>
+<li>B 收到之后发出确认，此时 TCP 属于半关闭状态，B 能向 A 发送数据但是 A 不能向 B 发送数据。</li>
+<li>当 B 不再需要连接时，发送连接释放报文，FIN=1。</li>
+<li>A 收到后发出确认，进入 TIME-WAIT 状态，等待 2 MSL（最大报文存活时间）后释放连接。</li>
+<li>B 收到 A 的确认后释放连接。</li>
+</ol>
+<h2 id="四次挥手的细节"><a href="#四次挥手的细节" class="headerlink" title="四次挥手的细节"></a>四次挥手的细节</h2><h3 id="CLOSE-WAIT"><a href="#CLOSE-WAIT" class="headerlink" title="CLOSE-WAIT"></a>CLOSE-WAIT</h3><p>客户端发送了 FIN 连接释放报文之后，服务器收到了这个报文，就进入了 CLOSE-WAIT 状态。这个状态是<strong>为了让服务器端发送还未传送完毕的数据</strong>，传送完毕之后，服务器会发送 FIN 连接释放报文。</p>
+<h3 id="TIME-WAIT"><a href="#TIME-WAIT" class="headerlink" title="TIME-WAIT"></a>TIME-WAIT</h3><p><strong>客户端接收到服务器端的 FIN 报文后进入此状态，此时并不是直接进入 CLOSED 状态</strong>，还需要等待一个时间计时器设置的时间 2MSL。原因有二：</p>
+<ul>
+<li><p><strong>为保证A发送的最后一个ACK报文段能够到达B</strong></p>
+<p>A发送的这个ACK报文段有可能丢失，如果 B 没收到 A 发送来的确认报文，那么A就会重新发送连接释放请求报文，A 等待一段时间就是为了处理这种情况的发生。</p>
+</li>
+<li><p><strong>防止“已经失效的连接请求报文段”出现在本链接中</strong></p>
+<p>A在发送完最后一个ACK报文段后，再经过时间2MSL，就可以使本连接的时间内所产生的所有报文段都从网络中消失。这样下一个新的连接中就不会出现这种旧的连接请求报文段。</p>
+</li>
+</ul>
+<h3 id="为何建立连接协议是三次握手，而关闭连接却是四次挥手？"><a href="#为何建立连接协议是三次握手，而关闭连接却是四次挥手？" class="headerlink" title="为何建立连接协议是三次握手，而关闭连接却是四次挥手？"></a>为何建立连接协议是三次握手，而关闭连接却是四次挥手？</h3><p>因为<strong>服务端B</strong>的LISTEN状态下的SOCKET当收到SYN报文的连接请求后，它可以把<strong>ACK</strong>和<strong>SYN</strong>（ACK起应答作用，而SYN起同步作用）放在一个报文里来发送。但关闭连接时，当B收到对方A的FIN报文通知时，<strong>它仅表示客户端A没有数据发送给B了；但未必B的数据都全部发送给A了，</strong>所以B可能未必会马上会关闭SOCKET，而是先发送一个<strong>ACK</strong>应答信号，继续将剩余的数据发送给A之后，再发送<strong>FIN</strong>报文给A表示B同意现在可以关闭连接了，所以它这里的ACK报文和FIN报文多数情况下都是分开发送的。</p>
+<p>参考：</p>
+<p><a href="https://zhuanlan.zhihu.com/p/58603455" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/58603455</a></p>
+<p><a href="https://blog.csdn.net/qzcsu/article/details/72861891" target="_blank" rel="noopener">https://blog.csdn.net/qzcsu/article/details/72861891</a></p>
+<p><a href="https://book.douban.com/subject/24737674/" target="_blank" rel="noopener">图解TCP/IP（第5版）</a></p>
 
     </div>
 
@@ -352,9 +401,7 @@
           
           <div class="post-tags">
             
-              <a href="/tags/LeetCode/" rel="tag"># LeetCode</a>
-            
-              <a href="/tags/算法/" rel="tag"># 算法</a>
+              <a href="/tags/计算机网络/" rel="tag"># 计算机网络</a>
             
           </div>
         
@@ -364,8 +411,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/08/16/LeetCode题解-19-删除链表的倒数第N个节点-链表-双指针/" rel="next" title="LeetCode题解-19. 删除链表的倒数第N个节点(链表 双指针)">
-                  <i class="fa fa-chevron-left"></i> LeetCode题解-19. 删除链表的倒数第N个节点(链表 双指针)
+                <a href="/2019/09/10/TCP-IP基础/" rel="next" title="TCP/IP基础">
+                  <i class="fa fa-chevron-left"></i> TCP/IP基础
                 </a>
               
             </div>
@@ -373,10 +420,6 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-              
-                <a href="/2019/08/16/LeetCode题解-107-二叉树的层次遍历-II-树-队列/" rel="prev" title="LeetCode题解-107. 二叉树的层次遍历 II(树 队列)">
-                  LeetCode题解-107. 二叉树的层次遍历 II(树 队列) <i class="fa fa-chevron-right"></i>
-                </a>
               
             </div>
           </div>
@@ -595,7 +638,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#题目"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分析"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#C-实现"><span class="nav-number">3.</span> <span class="nav-text">C++实现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#运行结果"><span class="nav-number">4.</span> <span class="nav-text">运行结果</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP报文段首部"><span class="nav-number">2.</span> <span class="nav-text">TCP报文段首部</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三次握手"><span class="nav-number">3.</span> <span class="nav-text">三次握手</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#必须握手三次而不是两次的原因"><span class="nav-number">3.1.</span> <span class="nav-text">必须握手三次而不是两次的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#建立连接后，客户端出现故障时的机制"><span class="nav-number">3.2.</span> <span class="nav-text">建立连接后，客户端出现故障时的机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四次挥手"><span class="nav-number">4.</span> <span class="nav-text">四次挥手</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#四次挥手的细节"><span class="nav-number">4.1.</span> <span class="nav-text">四次挥手的细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CLOSE-WAIT"><span class="nav-number">4.1.1.</span> <span class="nav-text">CLOSE-WAIT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TIME-WAIT"><span class="nav-number">4.1.2.</span> <span class="nav-text">TIME-WAIT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为何建立连接协议是三次握手，而关闭连接却是四次挥手？"><span class="nav-number">4.1.3.</span> <span class="nav-text">为何建立连接协议是三次握手，而关闭连接却是四次挥手？</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
