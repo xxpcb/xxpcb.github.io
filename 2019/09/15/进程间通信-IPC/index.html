@@ -55,19 +55,19 @@
   };
 </script>
 
-  <meta name="description" content="STL简介STL（Standard TemplateLibrary），即标准模板库，从根本上说，STL是一些“容器”的集合，这些“容器”有list、vector、set、map等，STL也是算法和其他一些组件的集合。STL的目的是标准化组件，这样就不用重新开发，可以使用现成的组件。">
-<meta name="keywords" content="C++,STL">
+  <meta name="description" content="本文主要介绍进程间通信（IPC，Inter Process Communication）的一些方式，包括：  管道（管道/匿名管道，命名管道/FIFO）  消息队列/报文队列  共享内存  信号量/信号灯  信号/软中断  套接字/socket">
+<meta name="keywords" content="计算机网络">
 <meta property="og:type" content="article">
-<meta property="og:title" content="C++基础-STL简介">
-<meta property="og:url" content="https://xxpcb.github.io/2019/09/13/C-基础-STL简介/index.html">
+<meta property="og:title" content="进程间通信-IPC">
+<meta property="og:url" content="https://xxpcb.github.io/2019/09/15/进程间通信-IPC/index.html">
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
-<meta property="og:description" content="STL简介STL（Standard TemplateLibrary），即标准模板库，从根本上说，STL是一些“容器”的集合，这些“容器”有list、vector、set、map等，STL也是算法和其他一些组件的集合。STL的目的是标准化组件，这样就不用重新开发，可以使用现成的组件。">
+<meta property="og:description" content="本文主要介绍进程间通信（IPC，Inter Process Communication）的一些方式，包括：  管道（管道/匿名管道，命名管道/FIFO）  消息队列/报文队列  共享内存  信号量/信号灯  信号/软中断  套接字/socket">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-13T07:57:54.032Z">
+<meta property="og:updated_time" content="2019-09-15T07:48:17.534Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="C++基础-STL简介">
-<meta name="twitter:description" content="STL简介STL（Standard TemplateLibrary），即标准模板库，从根本上说，STL是一些“容器”的集合，这些“容器”有list、vector、set、map等，STL也是算法和其他一些组件的集合。STL的目的是标准化组件，这样就不用重新开发，可以使用现成的组件。">
-  <link rel="canonical" href="https://xxpcb.github.io/2019/09/13/C-基础-STL简介/">
+<meta name="twitter:title" content="进程间通信-IPC">
+<meta name="twitter:description" content="本文主要介绍进程间通信（IPC，Inter Process Communication）的一些方式，包括：  管道（管道/匿名管道，命名管道/FIFO）  消息队列/报文队列  共享内存  信号量/信号灯  信号/软中断  套接字/socket">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/09/15/进程间通信-IPC/">
 
 
 <script id="page-configurations">
@@ -81,7 +81,7 @@
   };
 </script>
 
-  <title>C++基础-STL简介 | xxpcb's Blog</title>
+  <title>进程间通信-IPC | xxpcb's Blog</title>
   
 
 
@@ -256,7 +256,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/09/13/C-基础-STL简介/">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/09/15/进程间通信-IPC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="xxpcb">
@@ -268,7 +268,7 @@
       <meta itemprop="name" content="xxpcb's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">C++基础-STL简介
+        <h1 class="post-title" itemprop="name headline">进程间通信-IPC
 
           
         </h1>
@@ -284,7 +284,7 @@
                 
               
 
-              <time title="创建时间：2019-09-13 15:54:52 / 修改时间：15:57:54" itemprop="dateCreated datePublished" datetime="2019-09-13T15:54:52+08:00">2019-09-13</time>
+              <time title="创建时间：2019-09-15 15:47:01 / 修改时间：15:48:17" itemprop="dateCreated datePublished" datetime="2019-09-15T15:47:01+08:00">2019-09-15</time>
             </span>
           
             
@@ -297,7 +297,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C++</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机网络/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a></span>
 
                 
                 
@@ -316,71 +316,97 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="STL简介"><a href="#STL简介" class="headerlink" title="STL简介"></a>STL简介</h1><p>STL（Standard TemplateLibrary），即<strong>标准模板库</strong>，从根本上说，STL是一些“容器”的集合，这些“容器”有list、vector、set、map等，STL也是算法和其他一些组件的集合。STL的目的是标准化组件，这样就不用重新开发，可以使用现成的组件。</p>
+        <p>本文主要介绍<strong>进程间通信</strong>（<strong>IPC</strong>，<strong>Inter Process Communication</strong>）的一些方式，包括：</p>
+<ul>
+<li><p>管道（管道/匿名管道，命名管道/FIFO）</p>
+</li>
+<li><p>消息队列/报文队列</p>
+</li>
+<li><p>共享内存</p>
+</li>
+<li><p>信号量/信号灯</p>
+</li>
+<li><p>信号/软中断</p>
+</li>
+<li><p>套接字/socket</p>
 <a id="more"></a>
 
-<p>STL包含了诸多在计算机科学领域里常用的<strong>基本数据结构和基本算法</strong>。为广大C++程序员们提供了一个可扩展的应用框架，高度体现了软件的可复用性。从逻辑层次来看，<strong>在STL中体现了泛型化程序设计的思想（generic programming）</strong>。在这种思想里，大部分基本算法被抽象，被泛化，独立于与之对应的数据结构，用于以相同或相近的方式处理各种不同情形。</p>
-<h1 id="STL六大组件"><a href="#STL六大组件" class="headerlink" title="STL六大组件"></a>STL六大组件</h1><ol>
-<li><strong>容器（Containers）</strong>：各种<strong>数据结构</strong>，如<code>Vector</code>，<code>Deque</code>，<code>List</code>，<code>Set</code>，<code>Map</code>，用来存放数据，STL容器是一种Class Template,就体积而言，这一部分很像冰山载海面的比率。</li>
-<li><strong>算法（Algorithms）</strong>：各种常用<strong>算法</strong>，如<code>Sort</code>，<code>Search</code>，<code>Copy</code>，<code>Erase</code>，从实现的角度来看，STL算法是一种Function Templates。</li>
-<li><strong>迭代器（Iterators）</strong>：扮演<strong>容器与算法之间的胶合剂，是所谓的“泛型指针”</strong>，共有五种类型，以及其它衍生变化，从实现的角度来看，迭代器是一种将：<code>Operators*</code>，<code>Operator-&gt;</code>，<code>Operator++</code>，<code>Operator–</code>等相关操作予以重载的Class Template。<strong>所有STL容器都附带有自己专属的迭代器</strong>，只有容器设计者才知道如何遍历自己的元素，原生指针（Native pointer）也是一种迭代器。</li>
-<li><strong>仿函数（Functors）</strong>： 即<strong>函数对象</strong>，行为类似函数，可作为算法的某种策略（Policy）,从实现的角度来看，仿函数是一种重载了Operator()的Class 或 Class Template。<strong>一般函数指针可视为狭义的仿函数</strong>。</li>
-<li><strong>配接器（适配器）（Adapters）</strong>：一种用来<strong>修饰容器（Containers）或仿函数（Functors）或迭代器（Iterators）接口的东西</strong>，例如：STL提供的<code>Queue</code>和<code>Stack</code>，虽然看似容器，其实只能算是一种容器配接器，因为它们的底部完全借助<code>Deque</code>，所有操作有底层的Deque供应。改变Functor接口者，称为<strong>Function Adapter</strong>；改变Container接口者，称为<strong>Container Adapter</strong>；改变Iterator接口者，称为<strong>Iterator Adapter</strong>。配接器的实现技术很难一言蔽之，必须逐一分析。</li>
-<li><strong>分配器（Allocators）</strong>：即<strong>空间配置器，负责空间配置与管理</strong>，从实现的角度来看，配置器是一个实现了动态空间配置、空间管理、空间释放的Class Template。</li>
-</ol>
-<h1 id="顺序容器-vector、queue、list"><a href="#顺序容器-vector、queue、list" class="headerlink" title="顺序容器(vector、queue、list)"></a>顺序容器(vector、queue、list)</h1><h2 id="vector"><a href="#vector" class="headerlink" title="vector"></a>vector</h2><ul>
-<li>vector是表示可变大小数组的序列容器，<strong>底层是内存可进行二倍扩容的数组</strong>。</li>
-<li>和数组一样，vector也<strong>采用的连续存储空间来存储元素</strong>。也就是意味着可以采用下标对vector的元素进行访问，和数组一样高效。但是又不像数组，<strong>它的大小是可以动态改变的，而且它的大小会被容器自动处理</strong>。</li>
-<li>本质讲，vector使用<strong>动态分配数组</strong>来存储它的元素。当新元素插入时候，这个数组需要被重新分配大小为了增加存储空间。其做法是，<strong>分配一个新的数组，然后将全部元素移到这个数组。就时间而言，这是一个相对代价高的任务</strong>，因为每当一个新的元素加入到容器的时候，vector并不会每次都重新分配大小。</li>
-<li>vector分配空间策略：<strong>vector会分配一些额外的空间以适应可能的增长</strong>，因为存储空间比实际需要的存储空间更大。不同的库采用不同的策略权衡空间的使用和重新分配。但是无论如何，重新分配都应该是对数增长的间隔大小，以至于在末尾插入一个元素的时候是在常数时间的复杂度完成的。</li>
-<li>因此，<strong>vector占用了更多的存储空间，为了获得管理存储空间的能力，并且以一种有效的方式动态增长</strong>。</li>
-<li><strong>与其它动态序列容器相比（deques, lists and forward_lists）， vector在访问元素的时候更加高效，在末尾添加和删除元素相对高效</strong>。对于其它不在末尾的删除和插入操作，效率更低。比起lists和forward_lists统一的迭代器和引用更好。</li>
-</ul>
-<h2 id="deque（double-ended-queue）"><a href="#deque（double-ended-queue）" class="headerlink" title="deque（double-ended queue）"></a>deque（double-ended queue）</h2><ul>
-<li><strong>两端都能快速插入元素和删除元素</strong>（vector只在尾端快速进行此类操作）。</li>
-<li>存取元素时，deque的内部结构会多一个间接过程，所以元素的存取和迭代器的动作会稍稍慢一些。</li>
-<li>迭代器需要在不同区块间跳转，所以必须是特殊的智能型指针，非一般指针。</li>
-<li><strong>在对内存区块有所限制的系统中（例如PC系统），deque可以内含更多元素，因为它使用不止一块内存</strong>。因此deque的max_size()可能更大。</li>
-<li>deque不支持对容量和内存重分配时机的控制。<strong>特别要注意的是，除了头尾两端，在任何地方插入或删除元素，都将导致指向deque元素的任何指针、引用、迭代器失效。</strong>不过，<strong>deque的内存重分配优于vector，因为其内部结构显示，deque不必在内存重分配时复制所有元素。</strong></li>
-<li>deque的内存区块不再被使用时，会被释放。<strong>deque的内存大小是可缩减的。</strong></li>
-</ul>
-<h2 id="list"><a href="#list" class="headerlink" title="list"></a>list</h2><ul>
-<li>list就是一个<strong>带头结点的双向非循环链表</strong>，list将元素按顺序储存在链表中。</li>
-<li>与vector相比, 访问随机元素不如vector快，随机的插入元素比vector快。</li>
-<li>对每个元素分配空间，所以不存在空间不够，重新分配的情况。</li>
-<li>list可以快速地在所有地方添加删除元素，但是只能快速地访问最开始与最后的元素。</li>
-</ul>
-<h1 id="关联容器（set、multiset、map、multimap）"><a href="#关联容器（set、multiset、map、multimap）" class="headerlink" title="关联容器（set、multiset、map、multimap）"></a>关联容器（set、multiset、map、multimap）</h1><p>关联容器和顺序容器的根本不同在于：<strong>关联容器中的元素是按关键字来保存和访问的，</strong>而顺序容器中的元素则是按它们在容器中的位置来顺序保存和访问的。</p>
-<h2 id="multiset"><a href="#multiset" class="headerlink" title="multiset"></a>multiset</h2><ul>
-<li>multiset <strong>是排序好的集合</strong>（元素已经进行了排序），并且<strong>允许有相同的元素</strong>。</li>
-<li><strong>不能直接修改 multiset 容器中元素的值</strong>。因为<strong>元素被修改后，容器并不会自动重新调整顺序</strong>，于是容器的有序性就会被破坏，再在其上进行查找等操作就会得到错误的结果。因此，如果要修改 multiset 容器中某个元素的值，<strong>正确的做法是先删除该元素，再插入新元素</strong>。</li>
-</ul>
-<h2 id="set"><a href="#set" class="headerlink" title="set"></a>set</h2><ul>
-<li>set 和 multiset 类似，差别在于<strong>set中不能有重复的元素</strong> 。multiset 的成员函数 set 中也都有。</li>
-<li>同样不能直接修改 set 容器中元素的值。</li>
-<li>由于不能有重复元素，所以set中插入单个元素的<code>insert</code>成员函数与multiset中的有所不同</li>
-</ul>
-<h2 id="multimap"><a href="#multimap" class="headerlink" title="multimap"></a>multimap</h2><ul>
-<li>multimap 的每个元素都分为关键字和值两部分，容器中的元素是按关键字排序的，并且允许有多个元素的关键字相同。</li>
-<li>不能直接修改 multimap 容器中的关键字。因为 multimap 中的元素是按照关键字排序的，当关键字被修改后，容器并不会自动重新调整顺序，于是容器的有序性就会被破坏，再在其上进行查找等操作就会得到错误的结果。</li>
-<li><strong>multimap 中的元素都是pair 模板类的对象</strong>。元素的 first 成员变量也叫“<strong>关键字</strong>”，second 成员变量也叫“<strong>值</strong>”。multimap 容器中的元素是按关键字从小到大排序的。</li>
-</ul>
-<h2 id="map"><a href="#map" class="headerlink" title="map"></a>map</h2><ul>
-<li><p>map 和 multimap 十分类似，区别在于 map 容器中元素的关键字不能重复。multimap 有的成员函数，map 都有。</p>
-</li>
-<li><p>此外，map 还有成员函数 operator[]：<code>T &amp; operator[] (Key k);</code></p>
-<p>该成员函数返回 first 值为 k 的元素的 second 部分的引用。如果容器中没有元素的 first 值等于 k，则自动添加一个 first 值为 k 的元素。如果该元素的 second 成员变量是一个对象，则用无参构造函数对其初始化。</p>
 </li>
 </ul>
-<h1 id="容器适配器（stack、queue、priority-queue）"><a href="#容器适配器（stack、queue、priority-queue）" class="headerlink" title="容器适配器（stack、queue、priority_queue）"></a>容器适配器（stack、queue、priority_queue）</h1><p>STL中的容器适配器有 stack、queue、priority_queue 三种。它们都是在顺序容器的基础上实现的，屏蔽了顺序容器的一部分功能，突出或增加了另外一些功能。</p>
-<p>容器适配器都有以下三个成员函数：</p>
+<h1 id="管道"><a href="#管道" class="headerlink" title="管道"></a>管道</h1><p>包括管道（Pipe）与命名管道（named pipe）。</p>
+<h2 id="管道-匿名管道"><a href="#管道-匿名管道" class="headerlink" title="管道/匿名管道"></a>管道/匿名管道</h2><p>管道（Pipe），也称匿名管道，是Linux下最常见的进程间通信的方式之一，它是在两个进程之间实现一个<strong>数据流通的通道</strong>。优点在于简单易用，缺点在于功能简单，有许多限制。</p>
+<p>匿名管道在系统中是没有实名的，并不可以在文件系统中以任何方式看到该管道，它只是进程的一种资源，会随着进程的结束而被系统清除。</p>
 <ul>
-<li>push：添加一个元素。</li>
-<li>top：返回顶部（对 stack 而言）或队头（对 queue、priority_queue 而言）的元素的引用。</li>
-<li>pop：删除一个元素。</li>
+<li>管道<strong>没有名字</strong>，所以也称为匿名管道</li>
+<li>管道是<strong>半双工</strong>的，数据只能向一个方向流动。若要进行双向通信，需要建立两个管道</li>
+<li>只能用于父子进程或兄弟进程等具有<strong>亲缘关系之间的进程通信</strong></li>
+<li><strong>单独构成一种独立的文件系统</strong>。管道对于管道两端的进程而言，就是一个文件，但它不是普通的文件，它不属于某种文件系统，并且只存在于内存中</li>
+<li>数据的读出和写入：一个进程向管道中写的内容被管道另一端的进程读出。写入的内容每次都<strong>添加在管道缓冲的末尾</strong>，并且每次都是<strong>从缓冲区的头部读出</strong>数据</li>
+<li><strong>管道的缓冲区是有限的</strong>（管道只存在于内存中，在创建管道时，为缓冲区分配一个页面大小）</li>
+<li><strong>管道传送的是无格式的字节流</strong>，因而读出方和写入方须事先约定好数据的格式，比如多少字节算做一个消息等</li>
 </ul>
-<p>参考：<br><a href="https://zhaoyang.blog.csdn.net/article/details/88769890" target="_blank" rel="noopener">https://zhaoyang.blog.csdn.net/article/details/88769890</a></p>
-<p><a href="http://c.biancheng.net/cplus/80/" target="_blank" rel="noopener">http://c.biancheng.net/cplus/80/</a></p>
+<h2 id="命名管道-FIFO"><a href="#命名管道-FIFO" class="headerlink" title="命名管道/FIFO"></a>命名管道/FIFO</h2><p>命名管道（named pipe）也称为FIFO，它是一种文件类型，在文件系统中可以看到它，创建一个FIFO文件类似于创建一个普通文件。</p>
+<p>管道应用的一个最大限制在于它没有名字，因而只能用于具有亲缘概关系进程间的通信。而FIFO提供了一个路径名与之关联，以FIFO文件的形式存在于文件系统中，通过路径访问的方式，可以在不相关的进程间通信。</p>
+<ul>
+<li>命名管道可用于<strong>任何两个进程间的通信</strong>，因而比管道使用灵活方便</li>
+<li>命名管道作为一种特殊的文件<strong>存放在系统文件中</strong>，而不像管道那样存在于内存（使用完消失），除非对其进行删除操作，否则该命名管道不会消失</li>
+<li>FIFO的出现解决了系统在应用过程中产生的大量中间临时文件的问题，它可以被Shell调用使数据从一个进程到另一个进程，系统不必为该中间通道清理不必要的垃圾，或者释放该通道的资源，它可以被留作后来的进程使用。</li>
+</ul>
+<h1 id="消息队列-报文队列"><a href="#消息队列-报文队列" class="headerlink" title="消息队列/报文队列"></a>消息队列/报文队列</h1><p>消息队列，也称报文队列，是一种以<strong>链表式结构</strong>组织的一组数据，存放在<strong>内核</strong>中，是由各进程通过消息队列标识符来引用的一种数据传送方式。</p>
+<ul>
+<li>消息队列 就是一个消息的链表，可以把消息看作一个记录，具有<strong>特定的格式及特定的优先级</strong></li>
+<li>消息队列是<strong>随内核持续的</strong>，消息队列会一直存在，需要调用接口显式删除或使用命令删除</li>
+<li>每个消息队列在系统范围内对应唯一的键值</li>
+<li>克服了管道数据无格式字节流的缺点</li>
+<li>消息队列可以实现消息的<strong>随机查询</strong>，不一定要以先进先出的次序读取,也可以按<strong>消息类型读取</strong></li>
+</ul>
+<p>附：</p>
+<blockquote>
+<p>随<strong>进程</strong>持续：IPC一直存在，直到打开IPC对象的最后一个进程关闭该对象为止，如<strong>管道</strong>和<strong>有名管道</strong></p>
+<p>随<strong>内核</strong>持续：IPC一直持续到内核重新自举或者显示删除该对象为止，如<strong>消息队列</strong>、<strong>信号量</strong>及<strong>共享内存</strong>等</p>
+<p>随<strong>文件系统</strong>持续：IPC一直持续到显示删除该对象为止</p>
+</blockquote>
+<h1 id="共享内存"><a href="#共享内存" class="headerlink" title="共享内存"></a>共享内存</h1><p>共享内存可以说是Linux下最快速、最有效的进程间通信方式。两个不同进程A、B共享内存的意思是，同一块物理内存被映射到进程A、B各自的进程地址空间，进程A可以及时看到进程B对内存中数据的更新，反之，B也可以看到A的修改。</p>
+<ul>
+<li><p>显而易见的好处是<strong>效率高</strong>，因为进程可以直接读写内存，而不需要任何数据的复制</p>
+<p>（对于管道和消息队列等通信方式，需要在内核空间和用户空间进行四次的数据复制，而共享内存则只复制两次：一次从输入文件到共享内存区，另一次从共享内存区到输出文件。实际上，进程间共享内存，并不是使用后就接触映射，而是保持共享区，直至通信完毕）</p>
+</li>
+<li><p>最大不足在于，由于多个进程对同一内存区域就具有访问的权限，各个进程之间的同步问题显得尤为重要，通常<strong>与信号量结合使用</strong>解决同步问题</p>
+</li>
+</ul>
+<h1 id="信号量-信号灯"><a href="#信号量-信号灯" class="headerlink" title="信号量/信号灯"></a>信号量/信号灯</h1><p>信号量（Semaphore），也称信号灯，其原理是一种<strong>数据操作锁</strong>的概念，它本身不具备数据交换的功能，而是通过控制其它的通信资源（文件、外部设备等）来实现进程间通信。</p>
+<ul>
+<li>信号量本身不具备数据传输的功能，它只是一种外部资源的标识，<strong>负责协调各个进程</strong>，保证它们正确合理地使用公共资源</li>
+<li>信号量分为<strong>单值和多值</strong>两种，前者只能被一个进程获得，后者可以被若干个进程获得</li>
+<li>信号量基于操作系统的 PV 操作，程序对信号量的操作都是原子操作</li>
+</ul>
+<p>附：PV操作</p>
+<blockquote>
+<p>1962年，荷兰学者Dijksrta在参与X8计算机的开发中设计并实现了具有多道程序运行能力的操作系统——THE Multiprogramming System。为了解决这个操作系统中进程（线程）的同步与互斥问题，他巧妙地利用火车运行控制系统中的“信号灯”（semaphore，或叫“信号量”）概念加以解决。信号量的值大于0时，表示当前可用资源的数量；当它的值小于0时，其绝对值表示等待使用该资源的进程个数。注意，这个信号量的值仅能由PV操作来改变。</p>
+<p>PV操作由<strong>P操作原语</strong>和<strong>V操作原语</strong>组成（原语也叫原子操作Atomic Operation，是不可中断的过程），PV两个字母是荷兰文 <strong>P</strong>asseren（通过）和<strong>V</strong>rijgeven（释放）的简称，对信号量（注意不要和Windows中的信号量机制相混淆）进行操作，具体定义如下：</p>
+<p>P(S)：</p>
+<p>​       ①将信号量S的值减1，即S=S-1；</p>
+<p>​       ②如果S&gt;=0，则该进程继续执行；否则该进程置为等待状态。</p>
+<p>V(S)：</p>
+<p>​      ①将信号量S的值加1，即S=S+1；</p>
+<p>​      ②该进程继续执行；如果该信号的等待队列中有等待进程就唤醒一等待进程。<br>用PV操作实现多线程的同步与互斥是非常简单的，只要考虑逻辑处理上合理严密而不用考虑具体技术细节。</p>
+<p>参考：<a href="https://blog.csdn.net/morewindows/article/details/7650470" target="_blank" rel="noopener">https://blog.csdn.net/morewindows/article/details/7650470</a></p>
+</blockquote>
+<h1 id="信号-软中断"><a href="#信号-软中断" class="headerlink" title="信号/软中断"></a>信号/软中断</h1><p>信号机制是进程之间相互传递消息的一种方法，信号全程为<strong>软中断信号</strong>，也有人称作<strong>软中断</strong>。</p>
+<p>从它的命名可以看出，它的实质和使用很像<strong>中断</strong>。注意它和信号量完全不是一个概念。</p>
+<ul>
+<li>信号是系统中用于处理<strong>异步事件</strong>的主要手段</li>
+<li>信号只是<strong>用来通知某个进程发生了什么事</strong>，并不给该进程传递任何数据</li>
+<li>在Linux的信号控制中，有时不希望进程在接收到信号时立刻中断进程的执行，也不希望该信号完全被忽略，而是延迟一段时间再去调用相关的信号处理函数，可以通过<strong>阻塞信号</strong>的方法来实现</li>
+</ul>
+<h1 id="套接字-socket"><a href="#套接字-socket" class="headerlink" title="套接字/socket"></a>套接字/socket</h1><p>套接字是操作系统内核的一个数据结构，它是网络中的节点进行相互通信的门户。</p>
+<p>套接字也就是网络进程的ID，网络通信，归根到底还是进程间的通信（不同计算机上的进程间通信）。在网络中，每个节点（计算机或路由器）都有一个网络地址，也就是IP地址，但仅凭网络地址还不能确定计算机中的哪个进程，需要端口号（port）来一一对应进程。</p>
+<ul>
+<li>套接字相比较其它的IPC，它可以实现不同计算机之间的进程间通信</li>
+</ul>
+<p>参考：</p>
+<p><a href="https://www.amazon.cn/dp/B013DYU1RG" target="_blank" rel="noopener">精通Linux C编程</a></p>
+<p><a href="https://blog.csdn.net/wh_sjc/article/details/70283843" target="_blank" rel="noopener">https://blog.csdn.net/wh_sjc/article/details/70283843</a></p>
 
     </div>
 
@@ -396,9 +422,7 @@
           
           <div class="post-tags">
             
-              <a href="/tags/C/" rel="tag"># C++</a>
-            
-              <a href="/tags/STL/" rel="tag"># STL</a>
+              <a href="/tags/计算机网络/" rel="tag"># 计算机网络</a>
             
           </div>
         
@@ -408,8 +432,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/09/11/TCP的三次握手与四次挥手/" rel="next" title="TCP的三次握手与四次挥手">
-                  <i class="fa fa-chevron-left"></i> TCP的三次握手与四次挥手
+                <a href="/2019/09/13/C-基础-静态库与动态库/" rel="next" title="C++基础-静态库与动态库">
+                  <i class="fa fa-chevron-left"></i> C++基础-静态库与动态库
                 </a>
               
             </div>
@@ -417,10 +441,6 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-              
-                <a href="/2019/09/13/C-基础-静态库与动态库/" rel="prev" title="C++基础-静态库与动态库">
-                  C++基础-静态库与动态库 <i class="fa fa-chevron-right"></i>
-                </a>
               
             </div>
           </div>
@@ -643,7 +663,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#STL简介"><span class="nav-number">1.</span> <span class="nav-text">STL简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#STL六大组件"><span class="nav-number">2.</span> <span class="nav-text">STL六大组件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#顺序容器-vector、queue、list"><span class="nav-number">3.</span> <span class="nav-text">顺序容器(vector、queue、list)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#vector"><span class="nav-number">3.1.</span> <span class="nav-text">vector</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deque（double-ended-queue）"><span class="nav-number">3.2.</span> <span class="nav-text">deque（double-ended queue）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#list"><span class="nav-number">3.3.</span> <span class="nav-text">list</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#关联容器（set、multiset、map、multimap）"><span class="nav-number">4.</span> <span class="nav-text">关联容器（set、multiset、map、multimap）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#multiset"><span class="nav-number">4.1.</span> <span class="nav-text">multiset</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#set"><span class="nav-number">4.2.</span> <span class="nav-text">set</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#multimap"><span class="nav-number">4.3.</span> <span class="nav-text">multimap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#map"><span class="nav-number">4.4.</span> <span class="nav-text">map</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#容器适配器（stack、queue、priority-queue）"><span class="nav-number">5.</span> <span class="nav-text">容器适配器（stack、queue、priority_queue）</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#管道"><span class="nav-number">1.</span> <span class="nav-text">管道</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#管道-匿名管道"><span class="nav-number">1.1.</span> <span class="nav-text">管道/匿名管道</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#命名管道-FIFO"><span class="nav-number">1.2.</span> <span class="nav-text">命名管道/FIFO</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#消息队列-报文队列"><span class="nav-number">2.</span> <span class="nav-text">消息队列/报文队列</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#共享内存"><span class="nav-number">3.</span> <span class="nav-text">共享内存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#信号量-信号灯"><span class="nav-number">4.</span> <span class="nav-text">信号量/信号灯</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#信号-软中断"><span class="nav-number">5.</span> <span class="nav-text">信号/软中断</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#套接字-socket"><span class="nav-number">6.</span> <span class="nav-text">套接字/socket</span></a></li></ol></div>
             
 
           </div>
