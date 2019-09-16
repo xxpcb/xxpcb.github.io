@@ -55,24 +55,22 @@
   };
 </script>
 
-  <meta name="description" content="简介TCP提供面向有连接的通信传输，面向有连接是指在数据通信开始之前先做好通信两端之间的准备工作。 TCP在数据通信之前，通过TCP首部发送一个SYN包作为建立连接的请求等待确认应答（TCP中发送第一个SYN包的一方叫做客户端，接收这个的一方叫做服务端）。如果对端发来确认应答，则认为可以进行数据通信。如果对端的确认应答未能到达，就不会进行数据通信。此外，在通信结束时会进行断开连接的处理（FIN包）">
-<meta name="keywords" content="计算机网络">
+  <meta name="description" content="简介CAN (Controller Area Network )是 ISO 国际标准化的串行通信协议。1986 年德国电气商博世公司开发出面向汽车的 CAN 通信协议。此后，CAN 通过 ISO11898 及 ISO11519 进行了标准化，现在在欧洲已是汽车网络的标准协议。现在，CAN 的高性能和可靠性已被认同，并被广泛地应用于工业自动化、船舶、医疗设备、工业设备等方面。现场总线是当今自动化领域">
+<meta name="keywords" content="嵌入式">
 <meta property="og:type" content="article">
-<meta property="og:title" content="TCP的三次握手与四次挥手">
-<meta property="og:url" content="https://xxpcb.github.io/2019/09/11/TCP的三次握手与四次挥手/index.html">
+<meta property="og:title" content="CAN通信">
+<meta property="og:url" content="https://xxpcb.github.io/2019/09/16/CAN通信/index.html">
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
-<meta property="og:description" content="简介TCP提供面向有连接的通信传输，面向有连接是指在数据通信开始之前先做好通信两端之间的准备工作。 TCP在数据通信之前，通过TCP首部发送一个SYN包作为建立连接的请求等待确认应答（TCP中发送第一个SYN包的一方叫做客户端，接收这个的一方叫做服务端）。如果对端发来确认应答，则认为可以进行数据通信。如果对端的确认应答未能到达，就不会进行数据通信。此外，在通信结束时会进行断开连接的处理（FIN包）">
+<meta property="og:description" content="简介CAN (Controller Area Network )是 ISO 国际标准化的串行通信协议。1986 年德国电气商博世公司开发出面向汽车的 CAN 通信协议。此后，CAN 通过 ISO11898 及 ISO11519 进行了标准化，现在在欧洲已是汽车网络的标准协议。现在，CAN 的高性能和可靠性已被认同，并被广泛地应用于工业自动化、船舶、医疗设备、工业设备等方面。现场总线是当今自动化领域">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-34-1.png">
-<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-texthead.jpg">
-<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-3syn.jpg">
-<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-4fin.jpg">
-<meta property="og:updated_time" content="2019-09-11T11:51:33.745Z">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/CAN/can-connect.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/CAN/can-dataframe.png">
+<meta property="og:updated_time" content="2019-09-16T14:26:50.596Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="TCP的三次握手与四次挥手">
-<meta name="twitter:description" content="简介TCP提供面向有连接的通信传输，面向有连接是指在数据通信开始之前先做好通信两端之间的准备工作。 TCP在数据通信之前，通过TCP首部发送一个SYN包作为建立连接的请求等待确认应答（TCP中发送第一个SYN包的一方叫做客户端，接收这个的一方叫做服务端）。如果对端发来确认应答，则认为可以进行数据通信。如果对端的确认应答未能到达，就不会进行数据通信。此外，在通信结束时会进行断开连接的处理（FIN包）">
-<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-34-1.png">
-  <link rel="canonical" href="https://xxpcb.github.io/2019/09/11/TCP的三次握手与四次挥手/">
+<meta name="twitter:title" content="CAN通信">
+<meta name="twitter:description" content="简介CAN (Controller Area Network )是 ISO 国际标准化的串行通信协议。1986 年德国电气商博世公司开发出面向汽车的 CAN 通信协议。此后，CAN 通过 ISO11898 及 ISO11519 进行了标准化，现在在欧洲已是汽车网络的标准协议。现在，CAN 的高性能和可靠性已被认同，并被广泛地应用于工业自动化、船舶、医疗设备、工业设备等方面。现场总线是当今自动化领域">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/CAN/can-connect.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/09/16/CAN通信/">
 
 
 <script id="page-configurations">
@@ -86,7 +84,7 @@
   };
 </script>
 
-  <title>TCP的三次握手与四次挥手 | xxpcb's Blog</title>
+  <title>CAN通信 | xxpcb's Blog</title>
   
 
 
@@ -261,7 +259,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/09/11/TCP的三次握手与四次挥手/">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/09/16/CAN通信/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="xxpcb">
@@ -273,7 +271,7 @@
       <meta itemprop="name" content="xxpcb's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">TCP的三次握手与四次挥手
+        <h1 class="post-title" itemprop="name headline">CAN通信
 
           
         </h1>
@@ -289,7 +287,7 @@
                 
               
 
-              <time title="创建时间：2019-09-11 19:50:45 / 修改时间：19:51:33" itemprop="dateCreated datePublished" datetime="2019-09-11T19:50:45+08:00">2019-09-11</time>
+              <time title="创建时间：2019-09-16 22:25:55 / 修改时间：22:26:50" itemprop="dateCreated datePublished" datetime="2019-09-16T22:25:55+08:00">2019-09-16</time>
             </span>
           
             
@@ -302,7 +300,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机网络/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/嵌入式/" itemprop="url" rel="index"><span itemprop="name">嵌入式</span></a></span>
 
                 
                 
@@ -321,71 +319,117 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p><strong>TCP提供面向有连接的通信传输</strong>，面向有连接是指在数据通信开始之前先做好通信两端之间的准备工作。</p>
-<p>TCP在数据通信之前，通过TCP首部发送一个SYN包作为建立连接的请求等待确认应答（TCP中发送第一个SYN包的一方叫做客户端，接收这个的一方叫做服务端）。如果对端发来确认应答，则认为可以进行数据通信。如果对端的确认应答未能到达，就不会进行数据通信。此外，在通信结束时会进行断开连接的处理（FIN包）。</p>
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p><strong>CAN</strong> (Controller Area Network )是 ISO 国际标准化的串行通信协议。1986 年德国电气商博世公司开发出面向汽车的 CAN 通信协议。此后，CAN 通过 ISO11898 及 ISO11519 进行了标准化，现在在欧洲已是汽车网络的标准协议。现在，CAN 的高性能和可靠性已被认同，并被广泛地应用于<strong>工业自动化、船舶、医疗设备、工业设备</strong>等方面。现场总线是当今自动化领域技术发展的热点之一，<strong>被誉为自动化领域的计算机局域网</strong>。</p>
 <a id="more"></a>
 
-<p>一个连接的建立与断开，正常过程至少需要来回发送7个包才能完成（建立一个TCP连接需要发送3个包，这个过<br>程也称作“三次握手”，断开一个TCP连接需要发送4个包，这个过程也称作“四次挥手”）。</p>
-<div align="center"> <img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-34-1.png" width="400" alt="Mardown测试图片"></div>
-
-
-
-<h1 id="TCP报文段首部"><a href="#TCP报文段首部" class="headerlink" title="TCP报文段首部"></a>TCP报文段首部</h1><p>在具体理解三次握手与四次挥手的细节时，需要先了解一下TCP报文段的首部格式：</p>
-<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-texthead.jpg" alt></p>
-<p>主要需要了解的是：</p>
+<p>CAN 控制器根据<strong>两根线上的电位差</strong>来判断总线电平。总线电平分为显性电平和隐性电平，二者必居其一。发送方通过使总线电平发生变化，将消息发送给接收方。</p>
+<h1 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h1><ol>
+<li><p><strong>多主控制</strong></p>
+<p>在总线空闲时，所有单元都可以发送消息（多主控制），而当两个以上的单元同时开始发送消息时，<strong>根据标识符（ID）决定优先级</strong>。两个以上的单元同时开始发送消息时，<strong>对各消息 ID 的每个位进行逐个仲裁比较</strong>。仲裁获胜（被判定为优先级最高）的单元可继续发送消息，仲裁失利的单元则立刻停止发送而进行接收工作。</p>
+</li>
+<li><p><strong>系统的柔软性</strong></p>
+<p>与总线相连的单元<strong>没有类似于“地址”的信息</strong>。因此在总线上<strong>增加单元时</strong>，连接在总线上的其它单元的<strong>软硬件及应用层都不需要改变</strong>。</p>
+</li>
+<li><p><strong>通信速度较快，通信距离远</strong></p>
+<p>最高 1Mbps（距离小于40M），最远可达10KM（速率低于 5Kbps）。</p>
+</li>
+<li><p><strong>具有错误检测、错误通知和错误恢复功能</strong></p>
+<p>所有单元都可以检测错误（错误检测功能），检测出错误的单元会立即同时通知其他所有单元（错误通知功能），正在发送消息的单元一旦检测出错误，会<strong>强制结束当前的发送</strong>。强制结束发送的单元会不断<strong>反复地重新发送</strong>此消息直到成功发送为止（错误恢复功能）。</p>
+</li>
+<li><p><strong>故障封闭功能</strong></p>
+<p>CAN <strong>可以判断出错误的类型</strong>是总线上暂时的数据错误（如外部噪声等）还是持续的数据错误（如单元内部故障、驱动器故障、断线等）。由此功能，当总线上发生持续数据错误时，可<strong>将引起此故障的单元从总线上隔离</strong>出去。</p>
+</li>
+<li><p><strong>连接节点多</strong></p>
+<p>CAN 总线是<strong>可同时连接多个单元的总线</strong>。可连接的单元总数理论上是没有限制的。但实际上可连接的单元数受总线上的时间延迟及电气负载的限制。单元数增加，通信速度降低；单元数减少，通信速度提高。</p>
+</li>
+</ol>
+<h1 id="物理连接"><a href="#物理连接" class="headerlink" title="物理连接"></a>物理连接</h1><p>下图是ISO11898 标准的物理层特征图 ，CAN通信只需要两根线连接，在 CAN 总线的起止端都有一个 120Ω的终端电阻，来做阻抗匹配，以减少回波反射。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/CAN/can-connect.png" alt></p>
+<p>从该特性可以看出：</p>
 <ul>
-<li><p><strong>序号 seq</strong></p>
-<p>占4个字节，范围[0,2<sup>23</sup>-1]，共2<sup>23</sup>(42 9496 7296)个序号。TCP是面向字节流的，在一个TCP连接中传送的字节流中的每一个字节都按顺序编号。</p>
+<li><p><strong>显性电平</strong>对应<strong>逻辑 0</strong>，CAN_H 和 CAN_L 之<strong>差为 2.5V</strong>左右</p>
 </li>
-<li><p><strong>确认号 ack</strong></p>
-<p>占4个字节，是期望收到对方下一个报文段的第一个数据字节的序号。</p>
-</li>
-<li><p><strong>确认 ACK</strong></p>
-<p>仅当ACK=1时确认号字段才有效，当ACK=0时，确认号无效。TCP规定，<strong>在建立连接后所传送的报文都必须把ACK置1</strong>。</p>
-</li>
-<li><p><strong>同步 SYN</strong></p>
-<p>在连接时用来同步序号，<strong>当SYN=1而ACK=0时，表明这是一个连接请求报文段</strong>，对方若同意连接，在应在响应的报文段中使用SYN=1和ACK=1。因此，SYN置为1就表示这是一个连接请求或连接接受报文。</p>
-</li>
-<li><p><strong>终止 FIN</strong></p>
-<p>用来释放一个连接，当FIN=1时，表明此报文段的发送方的数据已发送完毕，并要求释放运输连接。</p>
+<li><p><strong>隐性电平</strong>对应<strong>逻辑 1</strong>，CAN_H 和 CAN_L 之<strong>差为 0V</strong></p>
+<p>（助记：显性-&gt;两线电压差明显-&gt;其中一根是低电压-&gt;逻辑0）</p>
 </li>
 </ul>
-<h1 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h1><p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-3syn.jpg" alt></p>
-<ol>
-<li>最初两端的TCP进程都处于CLOSE(关闭)状态。上图中A主动打开连接，B被动打开连接。</li>
-<li>B打开连接后处于LISTEN(监听状态)，等待客户的连接请求。</li>
-<li>A向B发送请求报文，SYN=1,ACK=0,选择一个初始序号seq=x。</li>
-<li>B 收到连接请求报文，如果同意建立连接，则向 A 发送连接确认报文，SYN=1，ACK=1，确认号为ack= x+1，同时也选择一个初始的序号 seq=y。</li>
-<li>A 收到 B 的连接确认报文后，还要向 B 发出确认，确认号为ack= y+1，序号为 seq=x+1。</li>
-<li>B 收到 A 的确认后，连接建立。</li>
-</ol>
-<h2 id="必须握手三次而不是两次的原因"><a href="#必须握手三次而不是两次的原因" class="headerlink" title="必须握手三次而不是两次的原因"></a>必须握手三次而不是两次的原因</h2><p>主要是<strong>防止已经失效的连接请求报文突然又传送到了服务器，从而产生错误</strong></p>
-<p>如果使用的是两次握手建立连接，假设有这样一种场景，<strong>客户端发送了第一个请求连接并且没有丢失，只是因为在网络结点中滞留的时间太长了</strong>，由于TCP的客户端迟迟没有收到确认报文，以为服务器没有收到，此时重新向服务器发送这条报文，此后客户端和服务器经过两次握手完成连接，传输数据，然后关闭连接。此时<strong>此前滞留的那一次请求连接，网络通畅了到达了服务器</strong>，这个报文本该是失效的，但是，<strong>两次握手的机制将会让客户端和服务器再次建立连接，这将导致不必要的错误和资源的浪费</strong>。</p>
-<p><strong>如果采用的是三次握手，就算是那一次失效的报文传送过来了，服务端接受到了那条失效报文并且回复了确认报文，但是客户端不会再次发出确认</strong>。由于服务器收不到确认，就知道客户端并没有请求连接。</p>
-<h2 id="建立连接后，客户端出现故障时的机制"><a href="#建立连接后，客户端出现故障时的机制" class="headerlink" title="建立连接后，客户端出现故障时的机制"></a>建立连接后，客户端出现故障时的机制</h2><p>TCP设有一个保活计时器，显然，客户端如果出现故障，服务器不能一直等下去，白白浪费资源。服务器每收到一次客户端的请求后都会重新复位这个计时器，时间通常是设置为<strong>2小时</strong>，若2小时还没有收到客户端的任何数据，服务器就会发送一个探测报文段，以后<strong>每隔75秒</strong>发送一次。若<strong>一连发送10个</strong>探测报文仍然没反应，服务器就认为客户端出了故障，接着就关闭连接。</p>
-<h1 id="四次挥手"><a href="#四次挥手" class="headerlink" title="四次挥手"></a>四次挥手</h1><p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/TCPIP/tcp-ip-4fin.jpg" alt></p>
-<ol>
-<li>A 发送连接释放报文，FIN=1。</li>
-<li>B 收到之后发出确认，此时 TCP 属于半关闭状态，B 能向 A 发送数据但是 A 不能向 B 发送数据。</li>
-<li>当 B 不再需要连接时，发送连接释放报文，FIN=1。</li>
-<li>A 收到后发出确认，进入 TIME-WAIT 状态，等待 2 MSL（最大报文存活时间）后释放连接。</li>
-<li>B 收到 A 的确认后释放连接。</li>
-</ol>
-<h2 id="四次挥手的细节"><a href="#四次挥手的细节" class="headerlink" title="四次挥手的细节"></a>四次挥手的细节</h2><h3 id="CLOSE-WAIT"><a href="#CLOSE-WAIT" class="headerlink" title="CLOSE-WAIT"></a>CLOSE-WAIT</h3><p>客户端发送了 FIN 连接释放报文之后，服务器收到了这个报文，就进入了 CLOSE-WAIT 状态。这个状态是<strong>为了让服务器端发送还未传送完毕的数据</strong>，传送完毕之后，服务器会发送 FIN 连接释放报文。</p>
-<h3 id="TIME-WAIT"><a href="#TIME-WAIT" class="headerlink" title="TIME-WAIT"></a>TIME-WAIT</h3><p><strong>客户端接收到服务器端的 FIN 报文后进入此状态，此时并不是直接进入 CLOSED 状态</strong>，还需要等待一个时间计时器设置的时间 2MSL。原因有二：</p>
+<p>在总线上<strong>显性电平（逻辑0）具有优先权</strong>，只要有一个单元输出显性电平，总线上即为显性电平。而<strong>隐形电平则具有包容的意味</strong>，只有所有的单元都输出隐性电平，总线上才为隐性电平（显性电平比隐性电平更强）。</p>
+<p>实际使用CAN通信时，需要连接<strong>CAN收发芯片</strong>，可以选用<strong>JTA1050</strong>或<strong>82C250</strong>等类似的CAN收发芯片。</p>
+<p>另外，STM32微控制芯片里面集成了<strong>CAN控制器</strong>（名为bxCAN），如果是使用51单片机，需要外接<strong>MCP2515</strong>（SPI接口）或<strong>SJA1000</strong>（并行，速度快）等类似的CAN控制器芯片。</p>
+<h1 id="CAN协议"><a href="#CAN协议" class="headerlink" title="CAN协议"></a>CAN协议</h1><p>CAN 协议通过以下 5 种类型的帧进行：</p>
+<table>
+<thead>
+<tr>
+<th>帧类型</th>
+<th>帧用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据帧</td>
+<td>用于发送单元向接收单元传送数据的帧</td>
+</tr>
+<tr>
+<td>遥控帧</td>
+<td>用于接收单元向具有相同 ID 的发送单元请求数据的帧</td>
+</tr>
+<tr>
+<td>错误帧</td>
+<td>用于当检测出错误时向其它单元通知错误的帧</td>
+</tr>
+<tr>
+<td>过载帧</td>
+<td>用于接收单元通知其尚未做好接收准备的帧</td>
+</tr>
+<tr>
+<td>间隔帧</td>
+<td>用于将数据帧及遥控帧与前面的帧分离开来的帧</td>
+</tr>
+</tbody></table>
+<p>其中<strong>数据帧</strong>和<strong>遥控帧</strong>有标准格式（11位标识符ID）和扩展格式（29位标识符ID）两种格式。最常用、最复杂的是数据帧。</p>
+<h1 id="数据帧详解"><a href="#数据帧详解" class="headerlink" title="数据帧详解"></a>数据帧详解</h1><p>数据帧一般由 7 个段构成：</p>
 <ul>
-<li><p><strong>为保证A发送的最后一个ACK报文段能够到达B</strong></p>
-<p>A发送的这个ACK报文段有可能丢失，如果 B 没收到 A 发送来的确认报文，那么A就会重新发送连接释放请求报文，A 等待一段时间就是为了处理这种情况的发生。</p>
+<li><code>帧起始</code>：表示数据帧开始的段</li>
+<li><code>仲裁段</code>：表示该帧优先级的段</li>
+<li><code>控制段</code>：表示数据的字节数及保留位的段</li>
+<li><code>数据段</code>：数据的内容，一帧可发送 0~8 个字节的数据</li>
+<li><code>CRC 段</code>：检查帧的传输错误的段</li>
+<li><code>ACK 段</code>：表示确认正常接收的段</li>
+<li><code>帧结束</code>：表示数据帧结束的段</li>
+</ul>
+<p>数据帧的构成下图所示，图中<strong>D表示显性</strong>电平，<strong>R表示隐性</strong>电平。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/CAN/can-dataframe.png" alt></p>
+<ul>
+<li><p><strong>帧起始</strong>：标准帧和扩展帧都是由<strong>1个位的显性电平</strong>表示帧起始。</p>
 </li>
-<li><p><strong>防止“已经失效的连接请求报文段”出现在本链接中</strong></p>
-<p>A在发送完最后一个ACK报文段后，再经过时间2MSL，就可以使本连接的时间内所产生的所有报文段都从网络中消失。这样下一个新的连接中就不会出现这种旧的连接请求报文段。</p>
+<li><p><strong>仲裁段</strong>：表示<strong>数据优先级的段</strong>，标准帧和扩展帧格式在本段有所区别。</p>
+<p><strong>标准格式</strong>的 ID 有 11 个位。从 ID28 到 ID18 被依次发送。禁止高 7 位都为隐性（禁止设定：ID = 1111111 XXXX）。</p>
+<p><strong>扩展格式</strong>的 ID 有 29 个位。基本ID从 ID28 到 ID18，扩展 ID 由ID17 到 ID0 表示。基本 ID 和标准格式的 ID 相同。禁止高 7 位都为隐性（禁止设定：基本ID=1111111XXXX）。</p>
+<p>其中 <strong>RTR 位</strong>用于标识是否是远程帧（0：数据帧；1：远程帧），<strong>IDE 位</strong>为标识符选择位（0：使用标准标识符；1：使用扩展标识符），<strong>SRR 位</strong>为代替远程请求位，为隐性位，它代替了标准帧中的 RTR 位。</p>
+</li>
+<li><p><strong>控制段</strong>：由 6 个位构成，表示数据段的字节数。标准帧和扩展帧的控制段稍有不同。</p>
+<p><strong>r0 和 r1 **为保留位，必须全部以显性电平发送，但是接收端可以接收显性、隐性及任意组合的电平。</strong>DLC 段**为数据长度表示段，高位在前，DLC 段有效值为 0<del>8，但是接收方接收到 9</del>15 的时候并不认为是错误。</p>
+</li>
+<li><p><strong>数据段</strong>：该段可包含<strong>0~8 个字节的数据</strong>。从最高位（MSB）开始输出，标准帧和扩展帧在这个段的定义都是一样的。</p>
+</li>
+<li><p><strong>CRC 段</strong>：该段用于检查帧传输错误。由 15 个位的 <strong>CRC 顺序</strong>和 1 个位的 <strong>CRC 界定符</strong>（用于分隔的位）组成，标准帧和扩展帧在这个段的格式也是相同的。</p>
+<p>CRC 的值<strong>计算范围包括：帧起始、仲裁段、控制段、数据段</strong>。接收方以同样的算法计算 CRC 值并进行比较，不一致时会通报错误。</p>
+</li>
+<li><p><strong>ACK 段</strong>：此段用来确认是否正常接收。由 <strong>ACK 槽(ACK Slot)</strong>和 *<em>ACK 界定符 *</em>2 个位组成。标准帧和扩展帧在这个段的格式也是相同的。</p>
+<p>发送单元的 ACK，发送 2 个位的隐性位，而接收到正确消息的单元在 ACK 槽（ACK Slot）发送显性位，通知发送单元正常接收结束，这个过程叫<strong>发送 ACK/返回 ACK</strong>。发送 ACK 的是在既不处于总线关闭态也不处于休眠态的所有接收单元中，接收到<strong>正常消息</strong>的单元（发送单元不发送 ACK）。所谓正常消息是指不含填充错误、格式错误、CRC 错误的消息。</p>
+</li>
+<li><p><strong>帧结束</strong>：标准帧和扩展帧在这个段格式一样，由 <strong>7 个位的隐性位</strong>组成。</p>
 </li>
 </ul>
-<h3 id="为何建立连接协议是三次握手，而关闭连接却是四次挥手？"><a href="#为何建立连接协议是三次握手，而关闭连接却是四次挥手？" class="headerlink" title="为何建立连接协议是三次握手，而关闭连接却是四次挥手？"></a>为何建立连接协议是三次握手，而关闭连接却是四次挥手？</h3><p>因为<strong>服务端B</strong>的LISTEN状态下的SOCKET当收到SYN报文的连接请求后，它可以把<strong>ACK</strong>和<strong>SYN</strong>（ACK起应答作用，而SYN起同步作用）放在一个报文里来发送。但关闭连接时，当B收到对方A的FIN报文通知时，<strong>它仅表示客户端A没有数据发送给B了；但未必B的数据都全部发送给A了，</strong>所以B可能未必会马上会关闭SOCKET，而是先发送一个<strong>ACK</strong>应答信号，继续将剩余的数据发送给A之后，再发送<strong>FIN</strong>报文给A表示B同意现在可以关闭连接了，所以它这里的ACK报文和FIN报文多数情况下都是分开发送的。</p>
-<p>参考：</p>
-<p><a href="https://zhuanlan.zhihu.com/p/58603455" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/58603455</a></p>
-<p><a href="https://blog.csdn.net/qzcsu/article/details/72861891" target="_blank" rel="noopener">https://blog.csdn.net/qzcsu/article/details/72861891</a></p>
-<p><a href="https://book.douban.com/subject/24737674/" target="_blank" rel="noopener">图解TCP/IP（第5版）</a></p>
+<h1 id="STM32F4的bxCAN的主要特点"><a href="#STM32F4的bxCAN的主要特点" class="headerlink" title="STM32F4的bxCAN的主要特点"></a>STM32F4的bxCAN的主要特点</h1><ul>
+<li>支持 CAN 协议 2.0A 和 2.0B 主动模式</li>
+<li>波特率最高达 1Mbps</li>
+<li>支持时间触发通信</li>
+<li>具有 3 个发送邮箱</li>
+<li>具有 3 级深度的 2 个接收 FIFO</li>
+<li>可变的过滤器组（28 个，CAN1 和 CAN2 共享）</li>
+</ul>
+<p>未完待续。。。</p>
+<p>参考：<a href="https://www.bilibili.com/video/av56936776/?p=56" target="_blank" rel="noopener">【正点原子】 手把手教你学STM32 系列视频之 STM32F4-基于探索者F407</a></p>
 
     </div>
 
@@ -401,7 +445,7 @@
           
           <div class="post-tags">
             
-              <a href="/tags/计算机网络/" rel="tag"># 计算机网络</a>
+              <a href="/tags/嵌入式/" rel="tag"># 嵌入式</a>
             
           </div>
         
@@ -411,8 +455,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/09/10/TCP-IP基础/" rel="next" title="TCP/IP基础">
-                  <i class="fa fa-chevron-left"></i> TCP/IP基础
+                <a href="/2019/09/15/socket网络编程基础/" rel="next" title="socket网络编程基础">
+                  <i class="fa fa-chevron-left"></i> socket网络编程基础
                 </a>
               
             </div>
@@ -420,10 +464,6 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
-              
-                <a href="/2019/09/13/C-基础-STL简介/" rel="prev" title="C++基础-STL简介">
-                  C++基础-STL简介 <i class="fa fa-chevron-right"></i>
-                </a>
               
             </div>
           </div>
@@ -650,7 +690,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP报文段首部"><span class="nav-number">2.</span> <span class="nav-text">TCP报文段首部</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三次握手"><span class="nav-number">3.</span> <span class="nav-text">三次握手</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#必须握手三次而不是两次的原因"><span class="nav-number">3.1.</span> <span class="nav-text">必须握手三次而不是两次的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#建立连接后，客户端出现故障时的机制"><span class="nav-number">3.2.</span> <span class="nav-text">建立连接后，客户端出现故障时的机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四次挥手"><span class="nav-number">4.</span> <span class="nav-text">四次挥手</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#四次挥手的细节"><span class="nav-number">4.1.</span> <span class="nav-text">四次挥手的细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#CLOSE-WAIT"><span class="nav-number">4.1.1.</span> <span class="nav-text">CLOSE-WAIT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TIME-WAIT"><span class="nav-number">4.1.2.</span> <span class="nav-text">TIME-WAIT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为何建立连接协议是三次握手，而关闭连接却是四次挥手？"><span class="nav-number">4.1.3.</span> <span class="nav-text">为何建立连接协议是三次握手，而关闭连接却是四次挥手？</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#特点"><span class="nav-number">2.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#物理连接"><span class="nav-number">3.</span> <span class="nav-text">物理连接</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CAN协议"><span class="nav-number">4.</span> <span class="nav-text">CAN协议</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据帧详解"><span class="nav-number">5.</span> <span class="nav-text">数据帧详解</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#STM32F4的bxCAN的主要特点"><span class="nav-number">6.</span> <span class="nav-text">STM32F4的bxCAN的主要特点</span></a></li></ol></div>
             
 
           </div>
