@@ -55,31 +55,33 @@
   };
 </script>
 
-  <meta name="description" content="The early bird catches the worm">
-<meta property="og:type" content="website">
-<meta property="og:title" content="xxpcb&#39;s Blog">
-<meta property="og:url" content="https://xxpcb.github.io/page/5/index.html">
+  <meta name="description" content="IP地址是一个32位的二进制地址，被分为4个8位段（八位组）。人们不习惯使用32的二进制地址或8位的二进制八位组，所以IP地址最常用的表达形式是点分十进制形式。">
+<meta name="keywords" content="计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IP地址与子网划分">
+<meta property="og:url" content="https://xxpcb.github.io/2019/11/16/IP地址与子网划分/index.html">
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
-<meta property="og:description" content="The early bird catches the worm">
+<meta property="og:description" content="IP地址是一个32位的二进制地址，被分为4个8位段（八位组）。人们不习惯使用32的二进制地址或8位的二进制八位组，所以IP地址最常用的表达形式是点分十进制形式。">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-11-16T08:02:45.191Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="xxpcb&#39;s Blog">
-<meta name="twitter:description" content="The early bird catches the worm">
-  <link rel="canonical" href="https://xxpcb.github.io/page/5/">
+<meta name="twitter:title" content="IP地址与子网划分">
+<meta name="twitter:description" content="IP地址是一个32位的二进制地址，被分为4个8位段（八位组）。人们不习惯使用32的二进制地址或8位的二进制八位组，所以IP地址最常用的表达形式是点分十进制形式。">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/11/16/IP地址与子网划分/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome: true,
-    isPost: false,
+    isHome: false,
+    isPost: true,
     isPage: false,
     isArchive: false
   };
 </script>
 
-  <title>xxpcb's Blog</title>
+  <title>IP地址与子网划分 | xxpcb's Blog</title>
   
 
 
@@ -243,17 +245,18 @@
         <div class="content-wrap">
             
 
-          <div id="content" class="content page-home">
+          <div id="content" class="content page-post-detail">
             
-  <section id="posts" class="posts-expand">
-      
+
+  <div id="posts" class="posts-expand">
+    
 
   <article class="post" itemscope itemtype="http://schema.org/Article">
   
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/06/29/查找算法笔记/">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/11/16/IP地址与子网划分/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="xxpcb">
@@ -265,9 +268,8 @@
       <meta itemprop="name" content="xxpcb's Blog">
     </span>
       <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/06/29/查找算法笔记/" class="post-title-link" itemprop="url">查找算法笔记（C++版）</a>
+        <h1 class="post-title" itemprop="name headline">IP地址与子网划分
+
           
         </h1>
 
@@ -282,19 +284,11 @@
                 
               
 
-              <time title="创建时间：2019-06-29 21:06:21" itemprop="dateCreated datePublished" datetime="2019-06-29T21:06:21+08:00">2019-06-29</time>
+              <time title="创建时间：2019-11-16 16:01:28 / 修改时间：16:02:45" itemprop="dateCreated datePublished" datetime="2019-11-16T16:01:28+08:00">2019-11-16</time>
             </span>
           
             
 
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-08-16 15:28:00" itemprop="dateModified" datetime="2019-08-16T15:28:00+08:00">2019-08-16</time>
-              </span>
             
           
             <span class="post-meta-item">
@@ -303,7 +297,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/算法/" itemprop="url" rel="index"><span itemprop="name">算法</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机网络/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a></span>
 
                 
                 
@@ -322,227 +316,285 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="顺序查找"><a href="#顺序查找" class="headerlink" title="顺序查找"></a>顺序查找</h1><p>时间复杂度：O(n)</p>
-          <!--noindex-->
+        <p>IP地址是一个<strong>32位的二进制</strong>地址，被分为4个8位段（八位组）。人们不习惯使用32的二进制地址或8位的二进制八位组，所以IP地址最常用的表达形式是<strong>点分十进制</strong>形式。</p>
+<a id="more"></a>
+
+<h1 id="IP地址分类"><a href="#IP地址分类" class="headerlink" title="IP地址分类"></a>IP地址分类</h1><p>IP地址中一部分是<strong>网络ID</strong>，另一部分是<strong>主机ID</strong>，地址分类系统把IP地址划分为不同的地址类：‘</p>
+<ul>
+<li><strong>A类地址</strong>：IP地址的前<strong>8</strong>位表示网络ID，后24位表示主机ID</li>
+<li><strong>B类地址</strong>：IP地址的前<strong>16</strong>位表示网络ID，后16位表示主机ID</li>
+<li><strong>C类地址</strong>：IP地址的前<strong>24</strong>位表示网络ID，后8位表示主机ID</li>
+</ul>
+<p>使用的位数越多，包含的组合就越多，可知A类地址较少的网络ID，但每个网络都具有大量的可用主机ID。<strong>那计算机或路由器是如何将一个IP地址解释为A类、B类还是C类呢？</strong>其实二进制的前几位就是用来地址分类，如下表：</p>
+<table>
+<thead>
+<tr>
+<th>地址类</th>
+<th>二进制的前几位</th>
+<th>点分十进制的第一个字段</th>
+<th>排除地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>0</td>
+<td><strong>0~127</strong></td>
+<td>10.0.0.0<del>10.255.255.255<br>127.0.0.0</del>127.255.255.255</td>
+</tr>
+<tr>
+<td>B</td>
+<td>10</td>
+<td><strong>128~191</strong></td>
+<td>172.16.0.0~173.31.255.255</td>
+</tr>
+<tr>
+<td>C</td>
+<td>110</td>
+<td><strong>192~223</strong></td>
+<td>192.168.0.0~192.169.255.255</td>
+</tr>
+</tbody></table>
+<p><strong>注</strong>：</p>
+<ul>
+<li>D类地址，前4位为1110，用于多播（组播）</li>
+<li>E类地址，前5位为11110，实验性质的，不用于生产环境 </li>
+<li><strong>排除地址</strong>指的是<strong>私有IP地址</strong>，用于本地局域网的IP地址分配</li>
+</ul>
+<h2 id="特殊的IP地址"><a href="#特殊的IP地址" class="headerlink" title="特殊的IP地址"></a>特殊的IP地址</h2><ul>
+<li><strong>全0</strong>主机ID：表示<strong>网络本身</strong>，如IP地址129.152.0.0是指网络ID为129.152的B类网络</li>
+<li><strong>全1</strong>主机ID：表示<strong>广播地址</strong>，如IP地址129.152.255.255是指网络ID为129.152的B类网络的广播地址</li>
+<li>十进制<strong>127开头</strong>的地址：<strong>环回地址</strong>，用于测试自身TCP/IP软件是否正常，如ping自己127.0.0.1</li>
+</ul>
+<h2 id="子网掩码"><a href="#子网掩码" class="headerlink" title="子网掩码"></a>子网掩码</h2><p>子网掩码是需要配合IP地址一起使用的，用于指示IP地址的前多少比特是网络ID，后多少比特是主机ID。</p>
+<p>A、B、C类地址均有默认的掩码，也称固定掩码：</p>
+<table>
+<thead>
+<tr>
+<th>IP地址分类</th>
+<th>默认掩码</th>
+<th>网络号比特</th>
+<th>主机号比特</th>
+<th>子网可容纳电脑数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A</td>
+<td>255.0.0.0</td>
+<td>8</td>
+<td>24</td>
+<td>2^24-2=16777216-2≈1677万</td>
+</tr>
+<tr>
+<td>B</td>
+<td>255.255.0.0</td>
+<td>16</td>
+<td>16</td>
+<td>2^16-2=65536-2≈6万</td>
+</tr>
+<tr>
+<td>C</td>
+<td>255.255.255.0</td>
+<td>24</td>
+<td>8</td>
+<td>2^8-2=256-2=254</td>
+</tr>
+</tbody></table>
+<h1 id="子网划分"><a href="#子网划分" class="headerlink" title="子网划分"></a>子网划分</h1><p>子网划分是<strong>从主机号字段借用若干位比特</strong>，把物理网络分解为更小的逻辑实体（称为子网）的一种手段，从而可以更加充分的利用有限的IP地址资源。</p>
+<p>将初始网络分段，必须设计一种编址方案，能够识别出大型网络中的每个子网。一台特定主机可以通过以下三项被唯一识别：</p>
+<ul>
+<li><strong>网络号</strong>唯一地指定主机所在网路（如果网络是公共互联网，网络号就是表示网络的地址，包括了其所有的子网）</li>
+<li><strong>子网号</strong>唯一的指定了一个子网（初始网络内部的子网），一个子网内部包含若干主机</li>
+<li><strong>主机号</strong>唯一地指定了子网内的某台主机</li>
+</ul>
+<h2 id="子网划分的几个步骤"><a href="#子网划分的几个步骤" class="headerlink" title="子网划分的几个步骤"></a>子网划分的几个步骤</h2><ul>
+<li>1确定需要的<strong>子网个数</strong></li>
+<li>2确定一个<strong>子网内可能的最多主机数量</strong></li>
+<li>3确定从主机号字段<strong>借用的比特数</strong>，用于创建子网号字段</li>
+<li>4确定主机号字段需要<strong>保留的比特数</strong>（不能被子网字段借用的比特数）</li>
+<li>5确定<strong>原始</strong>网络号字段和主机号字段的比特数</li>
+<li>6检查以确保被借用的比特数<strong>没有超过</strong>被保留的比特数（即检查子网划分问题是可解的）</li>
+<li>7设置<strong>子网号字段的最佳长度</strong>，包括为未来增长预留空间</li>
+<li>8创建一个修改（自定义）的<strong>子网掩码</strong></li>
+<li>9确定<strong>有效的子网号</strong></li>
+<li>10确定每个子网的<strong>IP地址有效范围</strong></li>
+</ul>
+<h2 id="子网划分举例"><a href="#子网划分举例" class="headerlink" title="子网划分举例"></a>子网划分举例</h2><p>问题：有一个C类地址193.200.35.0，分配给某个组织，该组织需要两个子网，每个子网的主机数不会超过30台。</p>
+<p>分析：子网数S=2，每个子网内最多的主机数H=30，C类地址的主机位比特T=8</p>
+<ol>
+<li><p>确定<strong>子网个数</strong>，S=2</p>
+</li>
+<li><p>确定一个<strong>子网内可能的最多主机数量</strong>，H=30</p>
+</li>
+<li><p>求解2^s - 2 &gt;= S的最小整数s，解得s=2，即从主机号字段<strong>借用的比特数</strong>，用于创建子网号字段</p>
+</li>
+<li><p>求解2^h - 2 &gt;= H的最小整数h，解得h=5，即主机号字段需要<strong>保留的比特数</strong></p>
+</li>
+<li><p>确定<strong>原始</strong>网络号字段和主机号字段的比特数，网络号字段为24，主机号字段T=8</p>
+</li>
+<li><p>因为s + h = 2 +5 =7 &lt; 8，即借用的比特数<strong>没有超过</strong>被保留的比特数，问题可解</p>
+</li>
+<li><p>由于7 &lt; 8，并且r = T - s - h = 1，因而可将 r分配给s或h，通常情况下子网的数量相比子网内主机的数量更容易耗尽，因而将r分配给s，即s = s + r = 2 + 1 =3，此时s + h = 3 +  = 8 = T</p>
+</li>
+<li><p>创建一个自定义的<strong>子网掩码</strong>，默认C类地址的子网掩码为255.255.255.<strong>0</strong>，需要计算一个新值代替其0字节，计算256 - 2 ^ (8 - s) = 256 - 2 ^ 5 = 256 - 32 = 224，所以自定义子网掩码为<strong>255.255.255.224</strong></p>
+</li>
+<li><p>确定<strong>有效的子网号</strong>，运势网络地址为193.200.35.<strong>0</strong>，将2 ^ (8 - s) = 256 - 2 ^ 5 = 32加到其0字节上，得到第一个子网的网络地址为193.200.35.<strong>32</strong>。继续在此字节上加上2 ^ (8 - s)，直至其等于自定义的子网掩码，具体如下：</p>
+<table>
+<thead>
+<tr>
+<th>原始地址(非有效子网地址，网络号全0)</th>
+<th>193.200.35.0</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>子网1地址</td>
+<td>193.200.35.<strong>32</strong></td>
+</tr>
+<tr>
+<td>子网2地址</td>
+<td>193.200.35.<strong>64</strong></td>
+</tr>
+<tr>
+<td>子网3地址</td>
+<td>193.200.35.<strong>96</strong></td>
+</tr>
+<tr>
+<td>子网4地址</td>
+<td>193.200.35.<strong>128</strong></td>
+</tr>
+<tr>
+<td>子网5地址</td>
+<td>193.200.35.<strong>160</strong></td>
+</tr>
+<tr>
+<td>子网6地址</td>
+<td>193.200.35.<strong>192</strong></td>
+</tr>
+<tr>
+<td><strong>自定义子网掩码(非有效子网地址，网络号全1)</strong></td>
+<td><strong>193.200.35.224</strong></td>
+</tr>
+</tbody></table>
+</li>
+<li><p>确定每个子网的<strong>IP地址有效范围</strong>，先计算第一个子网，其地址为193.200.35.<strong>33</strong>，所以其有效起始地址为193.200.35.<strong>33</strong>，子网内可以有2^h - 2 = 2^5 - 2 = 30个IP地址，所以结束地址为193.200.35.<strong>62</strong>，具体如下:</p>
+<table>
+<thead>
+<tr>
+<th>子网序号</th>
+<th>子网地址</th>
+<th>子网IP范围</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>193.200.35.<strong>32</strong></td>
+<td>193.200.35.<strong>33</strong>~193.200.35.<strong>62</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>193.200.35.<strong>64</strong></td>
+<td>193.200.35.<strong>65</strong>~193.200.35.<strong>94</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>193.200.35.<strong>96</strong></td>
+<td>193.200.35.<strong>97</strong>~193.200.35.<strong>126</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td>193.200.35.<strong>128</strong></td>
+<td>193.200.35.<strong>129</strong>~193.200.35.<strong>158</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td>193.200.35.<strong>160</strong></td>
+<td>193.200.35.<strong>161</strong>~193.200.35.<strong>190</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td>193.200.35.<strong>192</strong></td>
+<td>193.200.35.<strong>193</strong>~193.200.35.<strong>222</strong></td>
+</tr>
+</tbody></table>
+<p>注：每个子网的有效<strong>起始</strong>IP为<strong>子网地址+1</strong>，每个子网的有效<strong>结束</strong>IP为<strong>子网地址+子网内IP总数</strong>，也为<strong>下一个子网地址-2</strong>，中间跳过的一个IP地址为子网的<strong>广播地址</strong>。</p>
+</li>
+</ol>
+<h2 id="一些题目"><a href="#一些题目" class="headerlink" title="一些题目"></a>一些题目</h2><ol>
+<li><p>给定IP地址<code>167.77.88.99</code>和掩码<code>255.255.255.192</code>，求子网号、广播地址、有效IP地址。</p>
+<p>分析：</p>
+<p>IP地址—-&gt;167.77.88.99–&gt; 10100111.01001101.01011000.01100011</p>
+<p>掩码–&gt;255.255.255.192–&gt;11111111.11111111.11111111.11000000</p>
+<p>对应位求积——————–&gt; 10100111.01001101.01011000.01000000–&gt;<strong>167.77.88.64</strong>（<strong>子网号</strong>）</p>
+<p><strong>广播地址</strong>(子网主机全1)—&gt;  10100111.01001101.01011000.01111111–&gt;<strong>167.77.88.127</strong></p>
+<p><strong>有效IP</strong>(除去子网本身和广播地址):<strong>167.77.88.65~167.77.88.126</strong></p>
+</li>
+<li><p>一个子网网段地址为5.32.0.0，掩码为255.224.0.0网络，求它允许的最大主机地址。</p>
+<p>分析：</p>
+<p>网段——-&gt;5.32.0.0–&gt;00000101.00100000.00000000.00000000</p>
+<p>掩码–&gt;255.254.0.0–&gt;11111111.11100000.00000000.00000000–&gt;主机位为21位（0位）</p>
+<p><strong>最大主机地址</strong>———-&gt;00000101.00111111.11111111.11111110–&gt;5.63.255.254</p>
+</li>
+<li><p>188.188.0.111，188.188.5.222，子网掩码都设为255.255.254.0，在同一网段吗？ </p>
+<p>分析：</p>
+<p>IP1—-&gt;188.188.0.111–&gt;10111100.10111100.00000000.01101111 </p>
+<p>IP2—-&gt;188.188.5.222–&gt;10111100.10111100.00000101.11011010 </p>
+<p>掩码–&gt;255.255.254.0–&gt;11111111.11111111.11111110.00000000</p>
+<p>IP分别与掩码作求积运算：</p>
+<p>10111100.10111100.00000000.00000000 </p>
+<p>10111100.10111100.00000100.00000000 </p>
+<p><strong>网络标识不一样，即不在同一网段</strong>。</p>
+</li>
+</ol>
+<p>参考：</p>
+<p><a href="https://item.jd.com/12357714.html" target="_blank" rel="noopener">《TCP/IP入门经典 第6版》/ 乔·卡萨德（Joe Casad）</a></p>
+<p><a href="https://item.jd.com/11992590.html" target="_blank" rel="noopener">《计算机网络基础教程：基本概念及经典问题解析》/ 纳拉辛哈·卡鲁曼希 等</a></p>
+<p><a href="https://blog.csdn.net/hawht/article/details/22684499" target="_blank" rel="noopener">https://blog.csdn.net/hawht/article/details/22684499</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
           
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/06/29/查找算法笔记/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/计算机网络/" rel="tag"># 计算机网络</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/11/12/makefile使用基础/" rel="next" title="makefile使用基础">
+                  <i class="fa fa-chevron-left"></i> makefile使用基础
+                </a>
+              
             </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
 
-    
-    
-    
-      <footer class="post-footer">
-          <div class="post-eof"></div>
-        
-      </footer>
-  </div>
-  
-  
-  
-  </article>
+            <span class="post-nav-divider"></span>
 
-    
-      
-
-  <article class="post" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/06/29/排序算法笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="xxpcb">
-      <meta itemprop="description" content="The early bird catches the worm">
-      <meta itemprop="image" content="/images/header.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="xxpcb's Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/06/29/排序算法笔记/" class="post-title-link" itemprop="url">排序算法笔记（C++版）</a>
-          
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
+            <div class="post-nav-prev post-nav-item">
               
-                
-              
-
-              <time title="创建时间：2019-06-29 21:04:30" itemprop="dateCreated datePublished" datetime="2019-06-29T21:04:30+08:00">2019-06-29</time>
-            </span>
-          
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-09-14 14:17:47" itemprop="dateModified" datetime="2019-09-14T14:17:47+08:00">2019-09-14</time>
-              </span>
-            
-          
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/算法/" itemprop="url" rel="index"><span itemprop="name">算法</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>注：<br>&emsp;①第一个算法给出了完整的测试程序，其余的为避免重复及节省空间，只显示排序算法部分代码<br>&emsp;②运行结果的程序耗时每次运行略有不同，仅供大致对比参考</p>
-<h1 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h1><p>时间复杂度：O(n)[最好]，O(n^2^)[平均]，O(n^2^)[最差]<br>空间复杂度：O(1)</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/06/29/排序算法笔记/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
             </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-          <div class="post-eof"></div>
+          </div>
         
       </footer>
+    
   </div>
   
   
   
   </article>
 
-    
-      
-
-  <article class="post" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/06/27/My-new-Post/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="xxpcb">
-      <meta itemprop="description" content="The early bird catches the worm">
-      <meta itemprop="image" content="/images/header.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="xxpcb's Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/06/27/My-new-Post/" class="post-title-link" itemprop="url">My new Post</a>
-          
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-27 22:23:37" itemprop="dateCreated datePublished" datetime="2019-06-27T22:23:37+08:00">2019-06-27</time>
-            </span>
-          
-            
-
-            
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-06-28 10:45:52" itemprop="dateModified" datetime="2019-06-28T10:45:52+08:00">2019-06-28</time>
-              </span>
-            
-          
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Hello"><a href="#Hello" class="headerlink" title="Hello"></a>Hello</h2>
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-          <div class="post-eof"></div>
-        
-      </footer>
   </div>
-  
-  
-  
-  </article>
-
-    
-  </section>
-
-  
-  <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
-  </nav>
 
 
           </div>
@@ -561,8 +613,17 @@
 
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
 
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -756,6 +817,23 @@
 
         </div>
       </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#IP地址分类"><span class="nav-number">1.</span> <span class="nav-text">IP地址分类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#特殊的IP地址"><span class="nav-number">1.1.</span> <span class="nav-text">特殊的IP地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#子网掩码"><span class="nav-number">1.2.</span> <span class="nav-text">子网掩码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#子网划分"><span class="nav-number">2.</span> <span class="nav-text">子网划分</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#子网划分的几个步骤"><span class="nav-number">2.1.</span> <span class="nav-text">子网划分的几个步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#子网划分举例"><span class="nav-number">2.2.</span> <span class="nav-text">子网划分举例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一些题目"><span class="nav-number">2.3.</span> <span class="nav-text">一些题目</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
       
       
         <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
@@ -873,5 +951,8 @@
 
 
   
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
 </body>
 </html>
