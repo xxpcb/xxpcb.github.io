@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="GDB简介GDB(GNU Debugger)是Linux下一款C/C++程序调试工具，通过在命令行中执行相应的命令实现程序的调试，使用GDB时只需要在shell中输入gdb命令或gdb filename（filename为可执行程序文件名）即可进入GDB调试环境。">
+<meta name="keywords" content="Linux,GDB">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LinuxGDB调试">
+<meta property="og:url" content="https://xxpcb.github.io/2019/12/03/LinuxGDB调试/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="GDB简介GDB(GNU Debugger)是Linux下一款C/C++程序调试工具，通过在命令行中执行相应的命令实现程序的调试，使用GDB时只需要在shell中输入gdb命令或gdb filename（filename为可执行程序文件名）即可进入GDB调试环境。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-03T11:54:59.368Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LinuxGDB调试">
+<meta name="twitter:description" content="GDB简介GDB(GNU Debugger)是Linux下一款C/C++程序调试工具，通过在命令行中执行相应的命令实现程序的调试，使用GDB时只需要在shell中输入gdb命令或gdb filename（filename为可执行程序文件名）即可进入GDB调试环境。">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/12/03/LinuxGDB调试/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LinuxGDB调试 | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/12/03/LinuxGDB调试/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">LinuxGDB调试
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-03 19:50:21 / 修改时间：19:54:59" itemprop="dateCreated datePublished" datetime="2019-12-03T19:50:21+08:00">2019-12-03</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="GDB简介"><a href="#GDB简介" class="headerlink" title="GDB简介"></a>GDB简介</h1><p>GDB(GNU Debugger)是Linux下一款C/C++程序调试工具，通过在命令行中执行相应的命令实现程序的调试，使用GDB时只需要在shell中输入<code>gdb</code>命令或<code>gdb filename</code>（filename为可执行程序文件名）即可进入GDB调试环境。</p>
+<a id="more"></a>
+
+<p>GDB主要有以下功能：</p>
+<ul>
+<li>设置断点</li>
+<li>单步调试</li>
+<li>查看变量的值</li>
+<li>动态改变程序的执行环境</li>
+<li>分析崩溃程序产生的core文件</li>
+</ul>
+<h1 id="GDB常用命令"><a href="#GDB常用命令" class="headerlink" title="GDB常用命令"></a>GDB常用命令</h1><table>
+<thead>
+<tr>
+<th>命令</th>
+<th>简写</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>file <file></file></td>
+<td>-</td>
+<td>装入待调试的可执行文件</td>
+</tr>
+<tr>
+<td><strong>run</strong></td>
+<td>r</td>
+<td>执行程序(至结束)</td>
+</tr>
+<tr>
+<td><strong>start</strong></td>
+<td>-</td>
+<td>开始调试(至main开始处暂停)</td>
+</tr>
+<tr>
+<td><strong>step</strong></td>
+<td>s</td>
+<td>执行一条程序，若为函数则进入内部执行</td>
+</tr>
+<tr>
+<td><strong>next</strong></td>
+<td>n</td>
+<td>执行一条程序，不进入函数内部</td>
+</tr>
+<tr>
+<td>continue</td>
+<td>c</td>
+<td>连续运行</td>
+</tr>
+<tr>
+<td>finish</td>
+<td>-</td>
+<td>运行到当前函数返回</td>
+</tr>
+<tr>
+<td>kill</td>
+<td>k</td>
+<td>终止正在调试的程序</td>
+</tr>
+<tr>
+<td><strong>list</strong></td>
+<td>l</td>
+<td>列出源代码的一部分(10行)</td>
+</tr>
+<tr>
+<td><strong>print</strong> <tmp></tmp></td>
+<td>p <tmp></tmp></td>
+<td>打印变量的值</td>
+</tr>
+<tr>
+<td><strong>info locals</strong></td>
+<td>i locals</td>
+<td>查看当前栈帧的局部变量</td>
+</tr>
+<tr>
+<td><strong>backtrace</strong></td>
+<td>bt</td>
+<td>查看函数调用栈帧编号</td>
+</tr>
+<tr>
+<td><strong>frame</strong> <id></id></td>
+<td>f <id></id></td>
+<td>选择栈帧(再看局部变量)</td>
+</tr>
+<tr>
+<td><strong>display</strong> <tmp></tmp></td>
+<td>-</td>
+<td>每次自动显示跟踪的变量的值</td>
+</tr>
+<tr>
+<td>undisplay <tmp></tmp></td>
+<td>-</td>
+<td>取消跟踪</td>
+</tr>
+<tr>
+<td><strong>break</strong> <num></num></td>
+<td>b</td>
+<td>设置(调试)断点</td>
+</tr>
+<tr>
+<td>delete breakpoints <num></num></td>
+<td>d breakpoints <num></num></td>
+<td>删除断点，不加行号则删除所有</td>
+</tr>
+<tr>
+<td>disable breakpoints <num></num></td>
+<td>-</td>
+<td>屏蔽断点</td>
+</tr>
+<tr>
+<td>enable breakpoints <num></num></td>
+<td>-</td>
+<td>启用断点</td>
+</tr>
+<tr>
+<td><strong>info breakpoints</strong></td>
+<td>i breakpoints</td>
+<td>显示所有断点</td>
+</tr>
+<tr>
+<td>break 9 if sum != 0</td>
+<td>-</td>
+<td>根据条件设置断点(sum不等于0时，第9行设断点)</td>
+</tr>
+<tr>
+<td><strong>set var</strong> sum=0</td>
+<td>-</td>
+<td>修改变量的值(使sum变量的值为0)</td>
+</tr>
+<tr>
+<td>watch <tmp></tmp></td>
+<td>-</td>
+<td>监视一个变量的值</td>
+</tr>
+<tr>
+<td>examine &lt;…&gt;</td>
+<td>-</td>
+<td>查看内存中的地址</td>
+</tr>
+<tr>
+<td>jump <num></num></td>
+<td>j</td>
+<td>跳转执行</td>
+</tr>
+<tr>
+<td>signal &lt;…&gt;</td>
+<td>-</td>
+<td>产生信号量</td>
+</tr>
+<tr>
+<td>return</td>
+<td>-</td>
+<td>强制函数返回</td>
+</tr>
+<tr>
+<td>call <fun></fun></td>
+<td>-</td>
+<td>强制调用函数</td>
+</tr>
+<tr>
+<td>make &lt;…&gt;</td>
+<td>-</td>
+<td>不退出gdb下重新产生可执行文件</td>
+</tr>
+<tr>
+<td>shell &lt;…&gt;</td>
+<td>-</td>
+<td>不退出gdb下执行shell命令</td>
+</tr>
+<tr>
+<td><strong>quit</strong></td>
+<td>q</td>
+<td>退出gdb环境</td>
+</tr>
+</tbody></table>
+<h1 id="调试示例1"><a href="#调试示例1" class="headerlink" title="调试示例1"></a>调试示例1</h1><p>gdbtest.c:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> start, <span class="keyword">int</span> end)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i, sum;</span><br><span class="line">    <span class="keyword">for</span>(i=start; i&lt;=end; i++)</span><br><span class="line">        sum += i;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> result;</span><br><span class="line">    result = add(<span class="number">1</span>, <span class="number">10</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"result=%d\n"</span>, result);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译，需要添加<code>-g</code>参数，用于GDB调试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> gcc -o gdbtest gdbtest.c -g</span><br></pre></td></tr></table></figure>
+
+<p>该程序是计算1~10电脑的和，正确结果应该输出55，我们先运行一下程序：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> ./gdbtest</span><br><span class="line">result=55</span><br></pre></td></tr></table></figure>
+
+<p>程序在本电脑上运行正确，但是，该程序是存在问题的，add()函数中的sum变量应该赋初值0，否则在其它电脑上运行，如果该变量被初始化了随机数，则会计算出错误的结果。本次运行未出错的原因应该是该变量被默认初始化为0，所以计算无误。</p>
+<p>下面使用GDB对该可执行程序进程调试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> gdb gdbtest</span><br></pre></td></tr></table></figure>
+
+<p>输出以下信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">GNU gdb (Ubuntu 8.1-0ubuntu3.2) 8.1.0.20180409-git</span><br><span class="line">Copyright (C) 2018 Free Software Foundation, Inc.</span><br><span class="line">License GPLv3+: GNU GPL version 3 or later &lt;http://gnu.org/licenses/gpl.html&gt;</span><br><span class="line">This is free software: you are free to change and redistribute it.</span><br><span class="line">There is NO WARRANTY, to the extent permitted by law.  Type &quot;show copying&quot;</span><br><span class="line">and &quot;show warranty&quot; for details.</span><br><span class="line">This GDB was configured as &quot;x86_64-linux-gnu&quot;.</span><br><span class="line">Type &quot;show configuration&quot; for configuration details.</span><br><span class="line">For bug reporting instructions, please see:</span><br><span class="line">&lt;http://www.gnu.org/software/gdb/bugs/&gt;.</span><br><span class="line">Find the GDB manual and other documentation resources online at:</span><br><span class="line">&lt;http://www.gnu.org/software/gdb/documentation/&gt;.</span><br><span class="line">For help, type &quot;help&quot;.</span><br><span class="line">Type &quot;apropos word&quot; to search for commands related to &quot;word&quot;...</span><br><span class="line">Reading symbols from gdbtest...done.</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>首先输出一些系统信息，最后一行开头的<code>(gdb)</code>为命令提示符，输入<code>start</code>命令开始调试:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) start</span><br><span class="line">Temporary breakpoint 1 at 0x67b: file gdbtest.c, line 14.</span><br><span class="line">Starting program: /home/deeplearning/dcj/linuxCTest/GDBtest/gdbtest</span><br><span class="line"></span><br><span class="line">Temporary breakpoint 1, main () at gdbtest.c:14</span><br><span class="line">14          result = add(1, 10);</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>程序直接运行至主函数处的第一条实质性的运行语句处，即第14行的子程序调用处，此处可以使用<code>step</code>命令步入该语句的程序内部：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) step</span><br><span class="line">add (start=1, end=10) at gdbtest.c:6</span><br><span class="line">6           for(i=start; i&lt;=end; i++)</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>继续使用<code>backtrace</code>命令查看<strong>函数调用帧栈</strong>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) backtrace</span><br><span class="line"><span class="meta">#</span>0  add (start=1, end=10) at gdbtest.c:6</span><br><span class="line"><span class="meta">#</span>1  0x000055555555468a in main () at gdbtest.c:14</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>可以看出函数add()被主函数调用，主函数传入的start和end参数值。add()函数的<strong>栈帧号</strong>为0，主函数的栈帧号为1。</p>
+<p>可以继续使用<code>info locals</code>命令查看add()函数中的局部变量的值，也可以使用<code>frame 1</code>命令先选择主函数所在的1号帧栈，再使用<code>info locals</code>命令查看主函数中的局部变量的值：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(gdb) info locals</span><br><span class="line">i = 0</span><br><span class="line">sum = 0</span><br><span class="line">(gdb) frame 1</span><br><span class="line"><span class="meta">#</span>1  0x000055555555468a in main () at gdbtest.c:14</span><br><span class="line">14          result = add(1, 10);</span><br><span class="line">(gdb) info locals</span><br><span class="line">result = 0</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，add()函数中两个局部变量的值均被默认初始化为0，主函数中的局部变量result也被初始化为0。</p>
+<p>如果局部变量默认不是初始化为0，可以在GDB环境下通过<code>set var</code>命令修改变量的值，并查看运行效果。由于程序在本电脑上运行无误，我们现在故意修改sum的初始值为100，并查看最终的运行结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">(gdb) set var sum=100</span><br><span class="line">No symbol "sum" in current context.</span><br><span class="line">(gdb) frame 0</span><br><span class="line"><span class="meta">#</span>0  add (start=1, end=10) at gdbtest.c:6</span><br><span class="line">6           for(i=start; i&lt;=end; i++)</span><br><span class="line">(gdb) set var sum=100</span><br><span class="line">(gdb) print sum</span><br><span class="line"><span class="meta">$</span>1 = 100</span><br><span class="line">(gdb) info locals</span><br><span class="line">i = 0</span><br><span class="line">sum = 100</span><br><span class="line">(gdb) finish</span><br><span class="line">Run till exit from #0  add (start=1, end=10) at gdbtest.c:6</span><br><span class="line">0x000055555555468a in main () at gdbtest.c:14</span><br><span class="line">14          result = add(1, 10);</span><br><span class="line">Value returned is $2 = 155</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>set var sum=100</code>将sum的值修改为100，注意要切换到sum变量所在的帧栈环境中执行，然后可以使用<code>print</code>或<code>info locals</code>命令查看修改后的结果，接着使用<code>finish</code>命令使程序自动运行结果，可以看出最终的输出的结果为155，符合预期。最后可以使用<code>quit</code>命令退出GDB环境：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) quit</span><br><span class="line">A debugging session is active.</span><br><span class="line"></span><br><span class="line">        Inferior 1 [process 31210] will be killed.</span><br><span class="line"></span><br><span class="line">Quit anyway? (y or n) y</span><br><span class="line"><span class="meta">$</span></span><br></pre></td></tr></table></figure>
+
+<p>键入<code>y</code>确认退出即可。</p>
+<h1 id="调试示例2"><a href="#调试示例2" class="headerlink" title="调试示例2"></a>调试示例2</h1><p>计算从1到n是和，gdbbreakpoint.c:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sum=<span class="number">0</span>, i, data;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"please input a num(&lt;100)\n"</span>);</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;data);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(i=<span class="number">1</span>; i&lt;=data; i++)</span><br><span class="line">            sum += i;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"sum from 1 to %d is: %d\n"</span>, data, sum);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译并运行测试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span> gcc -o gdbbreakpoint gdbbreakpoint.c -g</span><br><span class="line"><span class="meta">$</span> ./gdbbreakpoint</span><br><span class="line">please input a num(&lt;100)</span><br><span class="line">2</span><br><span class="line">sum from 1 to 2 is: 3</span><br><span class="line">please input a num(&lt;100)</span><br><span class="line">3</span><br><span class="line">sum from 1 to 3 is: 9</span><br><span class="line">please input a num(&lt;100)</span><br><span class="line">4</span><br><span class="line">sum from 1 to 4 is: 19</span><br><span class="line">please input a num(&lt;100)</span><br><span class="line">^C</span><br></pre></td></tr></table></figure>
+
+<p>可以看到只有第一次计算正确，其后的都计算错误。</p>
+<p>这次对程序设置断点进行调试，进入GDB环境后，可以先使用<code>list</code>命令查看源程序，确定所需加断点和行号：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">(gdb) list</span><br><span class="line">1       #include &lt;stdio.h&gt;</span><br><span class="line">2</span><br><span class="line">3       int main()</span><br><span class="line">4       &#123;</span><br><span class="line">5           int sum=0, i, data;</span><br><span class="line">6           while(1)</span><br><span class="line">7           &#123;</span><br><span class="line">8               printf("please input a num(&lt;100)\n");</span><br><span class="line">9               scanf("%d", &amp;data);</span><br><span class="line">10</span><br><span class="line">(gdb)</span><br><span class="line">11              for(i=1; i&lt;=data; i++)</span><br><span class="line">12                  sum += i;</span><br><span class="line">13</span><br><span class="line">14              printf("sum from 1 to %d is: %d\n", data, sum);</span><br><span class="line">15          &#125;</span><br><span class="line">16</span><br><span class="line">17          return 0;</span><br><span class="line">18      &#125;</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p><code>list</code>每次显示10行，可以使用<code>Enter</code>键继续显示，for循环语句位于第11行，使用<code>break</code>加行号命令设置断点：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break 11</span><br><span class="line">Breakpoint 1 at 0x73c: file gdbbreakpoint.c, line 11.</span><br><span class="line">(gdb) info breakpoints</span><br><span class="line">Num     Type           Disp Enb Address            What</span><br><span class="line">1       breakpoint     keep y   0x000000000000073c in main</span><br><span class="line">                                                   at gdbbreakpoint.c:11</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>此处还使用了<code>info breakpoints</code>查看当前已设置的所有断点。</p>
+<p>然后使用<code>start</code>命令启动调试：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">(gdb) start</span><br><span class="line">Temporary breakpoint 2 at 0x702: file gdbbreakpoint.c, line 4.</span><br><span class="line">Starting program: /home/deeplearning/dcj/linuxCTest/GDBtest/gdbbreakpoint</span><br><span class="line"></span><br><span class="line">Temporary breakpoint 2, main () at gdbbreakpoint.c:4</span><br><span class="line">4       &#123;</span><br><span class="line">(gdb) continue</span><br><span class="line">Continuing.</span><br><span class="line">please input a num(&lt;100)</span><br><span class="line">2</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main () at gdbbreakpoint.c:11</span><br><span class="line">11              for(i=1; i&lt;=data; i++)</span><br><span class="line">(gdb) info locals</span><br><span class="line">sum = 0</span><br><span class="line">i = 32767</span><br><span class="line">data = 2</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>程序先运行到主函数处暂停，继续使用<code>continue</code>命令使程序继续运行，然后程序提示输入一个数字，先输入2，之后程序执行至11行断点处，此时使用<code>info locals</code>命令查看局部变量的值，i此时为随机数(对后续结果不影响)，sum和data为预期结果。</p>
+<p>继续使用<code>continue</code>命令，此次输入3，并在11行断点再次使用<code>info locals</code>命令查看局部变量的值，发现sum的值在每次循环后没有清零，因此导致之后的计算结果出错。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(gdb) continue</span><br><span class="line">Continuing.</span><br><span class="line">sum from 1 to 2 is: 3</span><br><span class="line">please input a num(&lt;100)</span><br><span class="line">3</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main () at gdbbreakpoint.c:11</span><br><span class="line">11              for(i=1; i&lt;=data; i++)</span><br><span class="line">(gdb) info locals</span><br><span class="line">sum = 3</span><br><span class="line">i = 3</span><br><span class="line">data = 3</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>找到原因，手动修改源程序，在while循环体的开始处将sum赋值0修正程序问题。</p>
+<p>参考：</p>
+<ol>
+<li><p><a href="https://item.jd.com/11747092.html" target="_blank" rel="noopener">《精通Linux C编程》-  程国钢</a></p>
+</li>
+<li><p><a href="https://item.jd.com/12572161.html" target="_blank" rel="noopener">《Linux C编程完全解密》-  闫敬 吴淑坤</a></p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+            
+              <a href="/tags/GDB/" rel="tag"># GDB</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/11/29/Linux信号量及函数/" rel="next" title="Linux信号量及函数">
+                  <i class="fa fa-chevron-left"></i> Linux信号量及函数
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">38</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#GDB简介"><span class="nav-number">1.</span> <span class="nav-text">GDB简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GDB常用命令"><span class="nav-number">2.</span> <span class="nav-text">GDB常用命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#调试示例1"><span class="nav-number">3.</span> <span class="nav-text">调试示例1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#调试示例2"><span class="nav-number">4.</span> <span class="nav-text">调试示例2</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
