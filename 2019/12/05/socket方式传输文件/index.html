@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="socket通信实现文件的传输，TCP传输方式，python版与C/C++版。">
+<meta name="keywords" content="计算机网络,socket">
+<meta property="og:type" content="article">
+<meta property="og:title" content="socket方式传输文件">
+<meta property="og:url" content="https://xxpcb.github.io/2019/12/05/socket方式传输文件/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="socket通信实现文件的传输，TCP传输方式，python版与C/C++版。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-05T13:59:51.286Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="socket方式传输文件">
+<meta name="twitter:description" content="socket通信实现文件的传输，TCP传输方式，python版与C/C++版。">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/12/05/socket方式传输文件/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>socket方式传输文件 | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/12/05/socket方式传输文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">socket方式传输文件
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-05 21:58:27 / 修改时间：21:59:51" itemprop="dateCreated datePublished" datetime="2019-12-05T21:58:27+08:00">2019-12-05</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机网络/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>socket通信实现文件的传输，TCP传输方式，python版与C/C++版。</p>
+<a id="more"></a>
+
+<h1 id="python版"><a href="#python版" class="headerlink" title="python版"></a>python版</h1><h2 id="服务器端代码"><a href="#服务器端代码" class="headerlink" title="服务器端代码"></a>服务器端代码</h2><p>TCPserver.py:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取本机ip</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_host_ip</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)</span><br><span class="line">        s.connect((<span class="string">'8.8.8.8'</span>, <span class="number">80</span>))</span><br><span class="line">        ip = s.getsockname()[<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        s.close()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ip</span><br><span class="line"></span><br><span class="line"><span class="comment"># 处理客户端请求下载文件的操作（从主线程提出来的代码）</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_client_request</span><span class="params">(ip_port, service_client_socket)</span>:</span></span><br><span class="line">    <span class="comment"># 连接成功后，输出“客户端连接成功”和客户端的ip和端口</span></span><br><span class="line">    print(<span class="string">"客户端连接成功"</span>, ip_port)</span><br><span class="line">    <span class="comment"># 接收客户端的请求信息【recv】</span></span><br><span class="line">    file_name = service_client_socket.recv(<span class="number">1024</span>)</span><br><span class="line">    <span class="comment"># 解码</span></span><br><span class="line">    file_name_data = file_name.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">    <span class="comment"># 判断文件是否存在</span></span><br><span class="line">    <span class="keyword">if</span> os.path.exists(file_name_data):</span><br><span class="line">        <span class="comment">#输出文件字节数</span></span><br><span class="line">        fsize = os.path.getsize(file_name_data)</span><br><span class="line">        <span class="comment">#转化为兆单位</span></span><br><span class="line">        fmb = fsize/float(<span class="number">1024</span>*<span class="number">1024</span>)</span><br><span class="line">        <span class="comment">#要传输的文件信息</span></span><br><span class="line">        senddata = <span class="string">"文件名：%s  文件大小：%.2fMB"</span>%(file_name_data,fmb)</span><br><span class="line">        <span class="comment">#发送和打印文件信息【send】</span></span><br><span class="line">        service_client_socket.send(senddata.encode(<span class="string">"utf-8"</span>))</span><br><span class="line">        print(<span class="string">"请求文件名：%s  文件大小：%.2f MB"</span>%(file_name_data,fmb))</span><br><span class="line">        <span class="comment">#接受客户是否需要下载【recv】</span></span><br><span class="line">        options = service_client_socket.recv(<span class="number">1024</span>)</span><br><span class="line">        <span class="keyword">if</span> options.decode(<span class="string">"utf-8"</span>) == <span class="string">"y"</span>:</span><br><span class="line">            <span class="comment"># 打开文件</span></span><br><span class="line">            <span class="keyword">with</span> open(file_name_data, <span class="string">"rb"</span>) <span class="keyword">as</span> f:</span><br><span class="line">                <span class="comment">#　计算总数据包数目</span></span><br><span class="line">                nums = fsize/<span class="number">1024</span></span><br><span class="line">                <span class="comment">#　当前传输的数据包数目</span></span><br><span class="line">                cnum = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">                <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">                    file_data = f.read(<span class="number">1024</span>)</span><br><span class="line">                    cnum = cnum + <span class="number">1</span></span><br><span class="line">                    <span class="comment">#progress = cnum/nums*100</span></span><br><span class="line"></span><br><span class="line">                    <span class="comment">#print("当前已下载：%.2f%%"%progress,end = "\r")</span></span><br><span class="line">                    <span class="keyword">if</span> file_data:</span><br><span class="line">                        <span class="comment"># 只要读取到数据，就向客户端进行发送【send】</span></span><br><span class="line">                        service_client_socket.send(file_data)</span><br><span class="line">                    <span class="comment"># 数据读完，退出循环</span></span><br><span class="line">                    <span class="keyword">else</span>:</span><br><span class="line">                        print(<span class="string">"请求的文件数据发送完成"</span>)</span><br><span class="line">                        <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            print(<span class="string">"下载取消！"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        print(<span class="string">"下载的文件不存在！"</span>)</span><br><span class="line">    <span class="comment"># 关闭服务当前客户端的套接字【close】</span></span><br><span class="line">    service_client_socket.close()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># 获取本机ip</span></span><br><span class="line">    print(<span class="string">"TCP文件传输服务器，本机IP:"</span> + get_host_ip())</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 把工作目录切换到data目录下</span></span><br><span class="line">    os.chdir(<span class="string">"./data"</span>)</span><br><span class="line">    <span class="comment"># 创建套接字【socket】</span></span><br><span class="line">    tcp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    <span class="comment"># 绑定端口号【bind】</span></span><br><span class="line">    tcp_server_socket.bind((<span class="string">""</span>, <span class="number">3356</span>))</span><br><span class="line">    <span class="comment"># 设置监听，将主动套接字变为被动套接字【listen】</span></span><br><span class="line">    tcp_server_socket.listen(<span class="number">128</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 循环调用【accept】，可以支持多个客户端同时连接，和多个客户端同时下载文件</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        service_client_socket, ip_port = tcp_server_socket.accept()</span><br><span class="line">        <span class="comment"># 连接成功后打印套接字号</span></span><br><span class="line">        <span class="comment">#print(id(service_client_socket))</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 创建子线程</span></span><br><span class="line">        sub_thread = threading.Thread(target=deal_client_request, args=(ip_port, service_client_socket))</span><br><span class="line">        <span class="comment"># 启动子线程</span></span><br><span class="line">        sub_thread.start()</span><br></pre></td></tr></table></figure>
+
+<h2 id="客户端代码"><a href="#客户端代码" class="headerlink" title="客户端代码"></a>客户端代码</h2><p>TCPclient.py:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="comment"># 多任务文件下载器客户端</span></span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># 创建套接字【socket】</span></span><br><span class="line">    tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    <span class="comment"># 和服务端连接【connect】</span></span><br><span class="line">    server_ip = input(<span class="string">"输入服务器IP："</span>)</span><br><span class="line">    tcp_client_socket.connect((server_ip, <span class="number">3356</span>))</span><br><span class="line">    <span class="comment"># 发送下载文件的请求</span></span><br><span class="line">    file_name = input(<span class="string">"请输入要下载的文件名："</span>)</span><br><span class="line">    <span class="comment"># 编码</span></span><br><span class="line">    file_name_data = file_name.encode(<span class="string">"utf-8"</span>)</span><br><span class="line">    <span class="comment"># 发送文件下载请求数据【send】</span></span><br><span class="line">    tcp_client_socket.send(file_name_data)</span><br><span class="line">    <span class="comment"># 接收要下载的文件信息【recv】</span></span><br><span class="line">    file_info = tcp_client_socket.recv(<span class="number">1024</span>)</span><br><span class="line">    <span class="comment"># 文件信息解码</span></span><br><span class="line">    info_decode = file_info.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">    print(info_decode)</span><br><span class="line">    <span class="comment">#获取文件大小</span></span><br><span class="line">    fileszie = float(info_decode.split(<span class="string">'：'</span>)[<span class="number">2</span>].split(<span class="string">'MB'</span>)[<span class="number">0</span>])</span><br><span class="line">    fileszie2 = fileszie*<span class="number">1024</span></span><br><span class="line">    <span class="comment"># 是否下载？输入ｙ　确认　输入ｑ 取消</span></span><br><span class="line">    opts = input(<span class="string">"是否下载？(y 确认　q 取消)"</span>)</span><br><span class="line">    <span class="keyword">if</span> opts == <span class="string">'q'</span>:</span><br><span class="line">        print(<span class="string">"下载取消！程序退出"</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        print(<span class="string">"正在下载　&gt;&gt;&gt;&gt;&gt;&gt;"</span>)</span><br><span class="line">        <span class="comment">#向服务器确认正在下载【send】</span></span><br><span class="line">        tcp_client_socket.send(<span class="string">b'y'</span>)</span><br><span class="line"></span><br><span class="line">        recvpath = <span class="string">"./receive/"</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(recvpath):</span><br><span class="line">            os.mkdir(recvpath) </span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 把数据写入到文件里</span></span><br><span class="line">        <span class="keyword">with</span> open(recvpath + file_name, <span class="string">"wb"</span>) <span class="keyword">as</span> file:</span><br><span class="line">            <span class="comment">#目前接收到的数据包数目</span></span><br><span class="line">            cnum = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">                <span class="comment"># 循环接收文件数据【recv】</span></span><br><span class="line">                file_data = tcp_client_socket.recv(<span class="number">1024</span>)</span><br><span class="line">                <span class="comment"># 接收到数据</span></span><br><span class="line">                <span class="keyword">if</span> file_data:</span><br><span class="line">                    <span class="comment"># 写入数据</span></span><br><span class="line">                    file.write(file_data)</span><br><span class="line">                    cnum = cnum+<span class="number">1</span></span><br><span class="line">                    <span class="comment">#progress =cnum/fileszie2*100</span></span><br><span class="line">                    <span class="comment">#print("当前已下载：%.2f%%"%progress,end = "\r")</span></span><br><span class="line">                <span class="comment"># 接收完成</span></span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    print(<span class="string">"下载结束！"</span>)</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">    <span class="comment"># 关闭套接字【close】</span></span><br><span class="line">    tcp_client_socket.close()</span><br></pre></td></tr></table></figure>
+
+<p>上述程序修改搬运自：<a href="https://mp.weixin.qq.com/s?__biz=MjM5NDEwNzc0MQ==&mid=2650937624&idx=3&sn=43274db2ddffb2d5dd1bfe02dc496d20&chksm=bd7a612a8a0de83cd05d6bfd2d34f94e23499a5bdc43d574d8e2c77fc0deecce232e6659ba1e&mpshare=1&scene=23&srcid=1203qVFhEwNZx2h8flGtyweg&sharer_sharetime=1575376875165&sharer_shareid=4b590a346d1315b5a98e4d2b5c2df153" target="_blank" rel="noopener">Python3使用TCP编写一个简易的文件下载器–Linux公社 </a>，服务器端添加了一段打印本机IP的代码，客户端添加了一段新建receive文件夹保存接收文件的代码。</p>
+<p>程序在Windows和Linux系统上均可运行，测试时需要在服务器程序所在路径新建一个data文件夹并放入用于测试的文件，如图片、视频文件等。</p>
+<p>另外，此程序在传输较小的文件(如几KB)时，程序中计算进度的语句会出现除数为0的错误，需要屏蔽传输进度相关语句或作某些修改。另一方面，进度的显示也比较耗时，去掉进度显示可以减小文件传输时间。</p>
+<h2 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果"></a>测试结果</h2><p>服务器端(Ubuntu18.04)：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">D...@deeplearning:~/.../TCPsocketTest$ python3 TCPserver.py </span><br><span class="line">TCP文件传输服务器，本机IP:192.168.1.143</span><br><span class="line">客户端连接成功 (&apos;192.168.1.110&apos;, 53114)</span><br><span class="line">请求文件名：1.jpg  文件大小：0.04 MB</span><br><span class="line">请求的文件数据发送完成</span><br></pre></td></tr></table></figure>
+
+<p>客户端(Win10)：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">============= RESTART: G:\...\TCPsocketTest\TCPclient.py =============</span><br><span class="line">输入服务器IP：192.168.1.143</span><br><span class="line">请输入要下载的文件名：1.jpg</span><br><span class="line">文件名：1.jpg  文件大小：0.04MB</span><br><span class="line">是否下载？(y 确认　q 取消)y</span><br><span class="line">正在下载　&gt;&gt;&gt;&gt;&gt;&gt;</span><br><span class="line">下载结束！</span><br><span class="line">&gt;&gt;&gt; </span><br><span class="line"></span><br><span class="line">G:\TCPsocketTest&gt;</span><br></pre></td></tr></table></figure>
+
+<p>服务器端运行在Ubuntu18.04系统，客户端运行在Win10系统，当然也可以互换运行。另外，实测win10的服务器端程序与Ubuntu10的客户端通信这种情况，win10的服务器端必须在IDLE环境中运行，在cmd命令行中运行无法连接，原因未知。</p>
+<h1 id="C-C-版"><a href="#C-C-版" class="headerlink" title="C/C++版"></a>C/C++版</h1><p>将python程序改写为C/C++语言，实现类似的文件传输功能，以下程序用到了winsock以及dll库，只能在Windows系统下运行。</p>
+<h2 id="服务器端"><a href="#服务器端" class="headerlink" title="服务器端"></a>服务器端</h2><p>server.cpp</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 客户端发送字符串，服务器接收字符串，以相同内容返回 (循环服务)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;winsock2.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment (lib, <span class="meta-string">"ws2_32.lib"</span>)  <span class="comment">//加载 ws2_32.dll</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BUF_SIZE 1024</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	WSADATA wsaData;</span><br><span class="line">	WSAStartup(MAKEWORD(<span class="number">2</span>, <span class="number">2</span>), &amp;wsaData);<span class="comment">// 加载套接字库</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//创建套接字</span></span><br><span class="line">	SOCKET servSock = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);<span class="comment">//【socket】</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//绑定套接字</span></span><br><span class="line">	sockaddr_in sockAddr;</span><br><span class="line">	<span class="built_in">memset</span>(&amp;sockAddr, <span class="number">0</span>, <span class="keyword">sizeof</span>(sockAddr));  <span class="comment">//每个字节都用0填充</span></span><br><span class="line">	sockAddr.sin_family = PF_INET;  <span class="comment">//使用IPv4地址</span></span><br><span class="line">	<span class="comment">//sockAddr.sin_addr.s_addr = inet_addr("127.0.0.1");  //具体的IP地址</span></span><br><span class="line">	sockAddr.sin_addr.s_addr = htonl(INADDR_ANY);<span class="comment">//不要这一句好像也行</span></span><br><span class="line">	sockAddr.sin_port = htons(<span class="number">3356</span>);  <span class="comment">//端口</span></span><br><span class="line">	bind(servSock, (SOCKADDR*)&amp;sockAddr, <span class="keyword">sizeof</span>(SOCKADDR));<span class="comment">//【bind】</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//进入监听状态</span></span><br><span class="line">	listen(servSock, <span class="number">20</span>);<span class="comment">//【listen】</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//接收客户端请求</span></span><br><span class="line">	SOCKADDR clntAddr;</span><br><span class="line">	<span class="keyword">int</span> nSize = <span class="keyword">sizeof</span>(SOCKADDR);</span><br><span class="line">	<span class="keyword">char</span> buffer[BUF_SIZE] = &#123; <span class="number">0</span> &#125;;  <span class="comment">//接收缓冲区</span></span><br><span class="line">	<span class="keyword">char</span> sbuffer[BUF_SIZE] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 本机IP</span></span><br><span class="line">	<span class="keyword">char</span> ip[<span class="number">20</span>] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">hostent</span> *<span class="title">phostinfo</span> = <span class="title">gethostbyname</span>("");</span></span><br><span class="line">	<span class="keyword">char</span> *p = inet_ntoa(*((struct in_addr *)(*phostinfo-&gt;h_addr_list)));</span><br><span class="line">	<span class="built_in">strncpy</span>(ip, p, <span class="keyword">sizeof</span>(ip) - <span class="number">1</span>);</span><br><span class="line">	ip[<span class="keyword">sizeof</span>(ip) - <span class="number">1</span>] = <span class="string">'\0'</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"This is TCP file server(IP:%s)\n"</span>, ip);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"waiting connect...\n"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		SOCKET clntSock = accept(servSock, (SOCKADDR*)&amp;clntAddr, &amp;nSize);<span class="comment">//【accept】</span></span><br><span class="line">		<span class="comment">// 获取客户端的IP的端口号</span></span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> *<span class="title">sock</span> = (<span class="title">struct</span> <span class="title">sockaddr_in</span>*)&amp;<span class="title">clntAddr</span>;</span></span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"client(IP:%s, PORT:%d)connect ok\n"</span>, inet_ntoa(sock-&gt;sin_addr), ntohs(sock-&gt;sin_port));</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">int</span> strLen = recv(clntSock, buffer, BUF_SIZE, <span class="number">0</span>);  <span class="comment">//接收客户端发来的数据 【recv】</span></span><br><span class="line">		<span class="comment">//printf("%s\n", buffer);</span></span><br><span class="line">		<span class="comment">// 判断文件是否存在</span></span><br><span class="line">		FILE *pFile;</span><br><span class="line">		pFile = fopen(buffer, <span class="string">"rb"</span>);  <span class="comment">//获取已打开文件的指针</span></span><br><span class="line">		<span class="keyword">if</span> (pFile)</span><br><span class="line">		&#123;</span><br><span class="line">			fseek(pFile, <span class="number">0</span>, SEEK_END);  <span class="comment">//先用fseek将文件指针移到文件末尾</span></span><br><span class="line">			<span class="keyword">int</span> n = ftell(pFile);    <span class="comment">//再用ftell获取文件内指针当前的文件位置。</span></span><br><span class="line">			<span class="comment">//printf("file:%s, size:%dKB\n", buffer, n/1024);</span></span><br><span class="line">			<span class="built_in">sprintf</span>(sbuffer,<span class="string">"file:%s, size:%dKB\n"</span>, buffer, n / <span class="number">1024</span>);</span><br><span class="line">			send(clntSock, sbuffer, BUF_SIZE, <span class="number">0</span>);  <span class="comment">//【send】文件大小信息</span></span><br><span class="line">			recv(clntSock, buffer, BUF_SIZE, <span class="number">0</span>);  <span class="comment">//【recv】</span></span><br><span class="line">			<span class="keyword">if</span> (*buffer == <span class="string">'y'</span>)</span><br><span class="line">			&#123;</span><br><span class="line">				fseek(pFile, <span class="number">0</span>, SEEK_SET);<span class="comment">//开头</span></span><br><span class="line">				<span class="keyword">int</span> len;</span><br><span class="line">				<span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">				&#123;</span><br><span class="line">					<span class="keyword">if</span>((len = fread(&amp;sbuffer, <span class="number">1</span>, BUF_SIZE, pFile)) &amp;&amp; len &gt; <span class="number">0</span>)</span><br><span class="line">					&#123;</span><br><span class="line">						send(clntSock, sbuffer, len, <span class="number">0</span>);  <span class="comment">//【send】</span></span><br><span class="line">						<span class="comment">//printf("FILE p offset:%d\n", (int)ftell(pFile));</span></span><br><span class="line">						<span class="comment">//printf("%d\n", len);</span></span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">else</span></span><br><span class="line">					&#123;</span><br><span class="line">						<span class="built_in">printf</span>(<span class="string">"Download down!\n"</span>);</span><br><span class="line">						<span class="keyword">break</span>;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"Download Canceled!\n"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">sprintf</span>(sbuffer, <span class="string">"file:%s not exist!!!\n"</span>, buffer);</span><br><span class="line">			send(clntSock, sbuffer, BUF_SIZE, <span class="number">0</span>);  <span class="comment">//【send】文件大小信息</span></span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		closesocket(clntSock);  <span class="comment">//关闭套接字</span></span><br><span class="line">		<span class="built_in">memset</span>(buffer, <span class="number">0</span>, BUF_SIZE);  <span class="comment">//重置缓冲区</span></span><br><span class="line">		<span class="built_in">memset</span>(sbuffer, <span class="number">0</span>, BUF_SIZE);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//关闭套接字</span></span><br><span class="line">	closesocket(servSock);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//终止 DLL 的使用</span></span><br><span class="line">	WSACleanup();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>client.cpp:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 客户端发送字符串，服务器接收字符串，以相同内容返回 (循环服务)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;WinSock2.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;windows.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> comment(lib, <span class="meta-string">"ws2_32.lib"</span>)  <span class="comment">//加载 ws2_32.dll</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BUF_SIZE 1024</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//初始化DLL</span></span><br><span class="line">	WSADATA wsaData;</span><br><span class="line">	WSAStartup(MAKEWORD(<span class="number">2</span>, <span class="number">2</span>), &amp;wsaData);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//向服务器发起请求</span></span><br><span class="line">	sockaddr_in sockAddr;</span><br><span class="line">	<span class="built_in">memset</span>(&amp;sockAddr, <span class="number">0</span>, <span class="keyword">sizeof</span>(sockAddr));  <span class="comment">//每个字节都用0填充</span></span><br><span class="line">	sockAddr.sin_family = PF_INET;</span><br><span class="line">	<span class="comment">//sockAddr.sin_addr.s_addr = inet_addr("127.0.0.1");//服务器IP</span></span><br><span class="line">	sockAddr.sin_port = htons(<span class="number">3356</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">char</span> bufSend[BUF_SIZE] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line">	<span class="keyword">char</span> bufRecv[BUF_SIZE] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//输入服务器IP</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Input server IP: "</span>);</span><br><span class="line">	gets_s(bufSend, BUF_SIZE);<span class="comment">//此处先借用bufSend接收输入的IP地址</span></span><br><span class="line">	sockAddr.sin_addr.s_addr = inet_addr(bufSend);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (<span class="number">1</span>) </span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">//创建套接字</span></span><br><span class="line">		SOCKET sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);<span class="comment">//【socket】</span></span><br><span class="line">		connect(sock, (SOCKADDR*)&amp;sockAddr, <span class="keyword">sizeof</span>(SOCKADDR));<span class="comment">//【connect】</span></span><br><span class="line">		<span class="comment">//获取用户输入的字符串并发送给服务器</span></span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"Input a file name for download: "</span>);</span><br><span class="line">		gets_s(bufSend, BUF_SIZE);</span><br><span class="line">		send(sock, bufSend, BUF_SIZE, <span class="number">0</span>);<span class="comment">//【send】</span></span><br><span class="line">		<span class="comment">//接收服务器传回的数据</span></span><br><span class="line">		recv(sock, bufRecv, BUF_SIZE, <span class="number">0</span>);<span class="comment">//【recv】</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">//输出接收到的数据</span></span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"%s\n"</span>, bufRecv);</span><br><span class="line">		<span class="keyword">if</span> (!<span class="built_in">strstr</span>(bufRecv, <span class="string">"not"</span>))</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"Download now?(y/n)"</span>);</span><br><span class="line">			<span class="keyword">if</span> (getchar() == <span class="string">'y'</span>)</span><br><span class="line">			&#123;</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"Download ...\n"</span>);</span><br><span class="line">				send(sock, <span class="string">"y"</span>, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), <span class="number">0</span>);<span class="comment">//【send】</span></span><br><span class="line">				FILE *pFile;</span><br><span class="line">				pFile = fopen(bufSend, <span class="string">"wb"</span>);  <span class="comment">//获取已打开文件的指针</span></span><br><span class="line">				<span class="keyword">int</span> len;</span><br><span class="line">				<span class="keyword">while</span> ((len = recv(sock, bufRecv, BUF_SIZE, <span class="number">0</span>)) &amp;&amp; len &gt; <span class="number">0</span>)<span class="comment">//【recv】</span></span><br><span class="line">				&#123;</span><br><span class="line">					fwrite(&amp;bufRecv, <span class="number">1</span>, len, pFile);</span><br><span class="line">					<span class="comment">//printf("receive...%d\n", (int)ftell(pFile));</span></span><br><span class="line">					<span class="comment">//printf("%d\n", len);</span></span><br><span class="line">				&#125;</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"Download down!\n"</span>);</span><br><span class="line">				fclose(pFile);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"Cancel download\n"</span>);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		getchar();<span class="comment">//此句是为了消除上面gets_s()或的问题</span></span><br><span class="line"></span><br><span class="line">		<span class="built_in">memset</span>(bufSend, <span class="number">0</span>, BUF_SIZE);  <span class="comment">//重置缓冲区</span></span><br><span class="line">		<span class="built_in">memset</span>(bufRecv, <span class="number">0</span>, BUF_SIZE);  <span class="comment">//重置缓冲区</span></span><br><span class="line">		closesocket(sock);  <span class="comment">//关闭套接字【close】</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	WSACleanup();  <span class="comment">//终止使用 DLL</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行效果与python版的类似。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/计算机网络/" rel="tag"># 计算机网络</a>
+            
+              <a href="/tags/socket/" rel="tag"># socket</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/12/03/LinuxGDB调试/" rel="next" title="LinuxGDB调试">
+                  <i class="fa fa-chevron-left"></i> LinuxGDB调试
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">51</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#python版"><span class="nav-number">1.</span> <span class="nav-text">python版</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#服务器端代码"><span class="nav-number">1.1.</span> <span class="nav-text">服务器端代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端代码"><span class="nav-number">1.2.</span> <span class="nav-text">客户端代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#测试结果"><span class="nav-number">1.3.</span> <span class="nav-text">测试结果</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#C-C-版"><span class="nav-number">2.</span> <span class="nav-text">C/C++版</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#服务器端"><span class="nav-number">2.1.</span> <span class="nav-text">服务器端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端"><span class="nav-number">2.2.</span> <span class="nav-text">客户端</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">12</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
