@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="基于流的I/O操作与基于文件描述符的I/O操作过程十分相似，同样是使用相关的函数调用打开文件或设备，然后对文件进行读写，最后关闭文件。流I/O是由C语言的标准函数库提供的，这些I/O可以替代系统中提供的read和write函数。">
+<meta name="keywords" content="Linux,流I&#x2F;O">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux基于流的IO操作">
+<meta property="og:url" content="https://xxpcb.github.io/2019/12/23/Linux基于流的IO操作/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="基于流的I/O操作与基于文件描述符的I/O操作过程十分相似，同样是使用相关的函数调用打开文件或设备，然后对文件进行读写，最后关闭文件。流I/O是由C语言的标准函数库提供的，这些I/O可以替代系统中提供的read和write函数。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-23T13:23:28.052Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux基于流的IO操作">
+<meta name="twitter:description" content="基于流的I/O操作与基于文件描述符的I/O操作过程十分相似，同样是使用相关的函数调用打开文件或设备，然后对文件进行读写，最后关闭文件。流I/O是由C语言的标准函数库提供的，这些I/O可以替代系统中提供的read和write函数。">
+  <link rel="canonical" href="https://xxpcb.github.io/2019/12/23/Linux基于流的IO操作/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Linux基于流的IO操作 | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2019/12/23/Linux基于流的IO操作/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">Linux基于流的IO操作
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-23 21:22:36 / 修改时间：21:23:28" itemprop="dateCreated datePublished" datetime="2019-12-23T21:22:36+08:00">2019-12-23</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>基于流的I/O操作与基于文件描述符的I/O操作过程十分相似，同样是使用相关的函数调用打开文件或设备，然后对文件进行读写，最后关闭文件。流I/O是由C语言的标准函数库提供的，这些I/O可以替代系统中提供的read和write函数。</p>
+<a id="more"></a>
+
+<h1 id="流与缓存"><a href="#流与缓存" class="headerlink" title="流与缓存"></a>流与缓存</h1><h2 id="流和FILE对象"><a href="#流和FILE对象" class="headerlink" title="流和FILE对象"></a>流和FILE对象</h2><p>基于文件的I/O函数都是针对<strong>文件描述符</strong>的，当打开一个文件时，返回一个文件的描述符，然后通过该文件描述符进行后续的I/O操作。</p>
+<p>而对于标准的I/O库，它的操作是围绕<strong>流(stream)</strong>进行的，当用标准I/O库打开或创建一个文件时，已使一个流与一个文件相结合。当打开一个流时，标准I/O函数fopen返回一个指向<strong>FILE对象</strong>的指针，该对象通常是一个结构体，它包含了I/O库为管理该流所需要的所有信息。</p>
+<h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>基于流的操作最终会调用read或write函数进行I/O操作，为了提高程序的运行效率，尽可能减少使用read和write调用的数量，流对象通常会提供缓冲区，以减少调用系统I/O库函数的次数。标准I/O提供了3种类型的缓存：</p>
+<ul>
+<li>全缓存：直到缓冲区被填满，才调用系统I/O函数。</li>
+<li>行缓存：直到遇到换行符“\n”，才调用系统I/O函数库。</li>
+<li>无缓存：没有缓冲区，数据会立即读入或输出到外存文件和设备上。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>缓冲区类型</th>
+<th>定义的宏</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全缓存</td>
+<td>_IO_FULL_BUF</td>
+</tr>
+<tr>
+<td>行缓存</td>
+<td>_IO_LINE_BUF</td>
+</tr>
+<tr>
+<td>无缓冲</td>
+<td>_IO_UNBUFFERED</td>
+</tr>
+</tbody></table>
+<p>检测缓冲区类型和大小，buf_test.c:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"stdin is "</span>); <span class="comment">// 判断标准输入流对象的缓冲区类型-------------</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">stdin</span>-&gt;_flags&amp;_IO_UNBUFFERED)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"unbuffered\n"</span>); <span class="comment">// 无缓存</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">stdin</span>-&gt;_flags&amp;_IO_LINE_BUF)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"line-buffered\n"</span>); <span class="comment">// 行缓存</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fully-buffered\n"</span>); <span class="comment">// 全缓存</span></span><br><span class="line">    <span class="comment">// 打印缓冲区的大小</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"buffer size is %ld\n"</span>, <span class="built_in">stdin</span>-&gt;_IO_buf_end-<span class="built_in">stdin</span>-&gt;_IO_buf_base);</span><br><span class="line">    <span class="comment">// 标准输入流的文件描述符</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"file discriptor is %d\n\n"</span>, fileno(<span class="built_in">stdin</span>));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"stdout is "</span>); <span class="comment">// 判断标准输出流对象的缓冲区类型-------------</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">stdout</span>-&gt;_flags&amp;_IO_UNBUFFERED)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"unbuffered\n"</span>); <span class="comment">// 无缓存</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">stdout</span>-&gt;_flags&amp;_IO_LINE_BUF)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"line-buffered\n"</span>); <span class="comment">// 行缓存</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fully-buffered\n"</span>); <span class="comment">// 全缓存</span></span><br><span class="line">    <span class="comment">// 打印缓冲区的大小</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"buffer size is %ld\n"</span>, <span class="built_in">stdout</span>-&gt;_IO_buf_end-<span class="built_in">stdout</span>-&gt;_IO_buf_base);</span><br><span class="line">    <span class="comment">// 标准输出流的文件描述符</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"file discriptor is %d\n\n"</span>, fileno(<span class="built_in">stdout</span>));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"stderr is "</span>); <span class="comment">// 判断标准出错流对象的缓冲区类型-------------</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">stderr</span>-&gt;_flags&amp;_IO_UNBUFFERED)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"unbuffered\n"</span>); <span class="comment">// 无缓存</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">stderr</span>-&gt;_flags&amp;_IO_LINE_BUF)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"line-buffered\n"</span>); <span class="comment">// 行缓存</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fully-buffered\n"</span>); <span class="comment">// 全缓存</span></span><br><span class="line">    <span class="comment">// 打印缓冲区的大小</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"buffer size is %ld\n"</span>, <span class="built_in">stderr</span>-&gt;_IO_buf_end-<span class="built_in">stderr</span>-&gt;_IO_buf_base);</span><br><span class="line">    <span class="comment">// 标准出错流的文件描述符</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"file discriptor is %d\n\n"</span>, fileno(<span class="built_in">stderr</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后执行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ ./buf_test</span><br><span class="line">stdin is fully-buffered</span><br><span class="line">buffer size is 0</span><br><span class="line">file discriptor is 0</span><br><span class="line"></span><br><span class="line">stdout is line-buffered</span><br><span class="line">buffer size is 1024</span><br><span class="line">file discriptor is 1</span><br><span class="line"></span><br><span class="line">stderr is unbuffered</span><br><span class="line">buffer size is 0</span><br><span class="line">file discriptor is 2</span><br></pre></td></tr></table></figure>
+
+<h2 id="对缓存的操作"><a href="#对缓存的操作" class="headerlink" title="对缓存的操作"></a>对缓存的操作</h2><p>在进行基于流的I/O操作时，缓存的使用将是不可或缺的。</p>
+<h3 id="设置缓存的属性"><a href="#设置缓存的属性" class="headerlink" title="设置缓存的属性"></a>设置缓存的属性</h3><p>缓存的属性包括缓冲区的类型和大小，当调用fopen函数打开一个流时，就开辟了所需的缓冲区，系统通常会赋予其一个默认的属性值。可以通过如下函数设置缓冲区的属性值：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setbuf</span><span class="params">(FILE *fp, <span class="keyword">char</span> *buf)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setbuffer</span><span class="params">(FILE *fp, <span class="keyword">char</span> *buf, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setlinebuf</span><span class="params">(FILE *fp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setvbuf</span><span class="params">(FILE *fp, <span class="keyword">char</span> *buf, <span class="keyword">int</span> mode, <span class="keyword">size_t</span> size)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>setbuf用于将缓冲区设置为全缓存或无缓冲。参数buf为指向缓冲区的指针，当buf指向一个真实的缓冲区地址时，为全缓存；当buf为NULL时，为无缓存。</li>
+<li>setbuffer的功能与setbuf类似，区别是由程序员自行指定缓冲区的大小size。</li>
+<li>setlinebuf专用于将缓冲区设定为行缓存。</li>
+<li>setvbuf函数比较灵活，可以方便地设置缓存的属性。</li>
+</ul>
+<p>设置缓冲区属性，buf_set.c:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SIZE 1024 <span class="comment">// 缓冲区的大小</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">char</span> buf[SIZE]; <span class="comment">// 缓冲区</span></span><br><span class="line">    <span class="keyword">if</span>(setvbuf(<span class="built_in">stdin</span>, buf, _IONBF, SIZE)!=<span class="number">0</span>) <span class="comment">// 将标准输入的缓冲类型设为无缓冲</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"error!\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"OK, set successful!\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"stdin is"</span>); <span class="comment">// 判断标准输入流对象的缓冲区类型</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">stdin</span>-&gt;_flags&amp;_IO_UNBUFFERED)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"unbuffered\n"</span>);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">stdin</span>-&gt;_flags&amp;_IO_LINE_BUF)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"line-buffered\n"</span>);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fully-buffered\n"</span>);</span><br><span class="line">    <span class="comment">// 打印缓冲区大小</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"buffer size is %ld\n"</span>, <span class="built_in">stdin</span>-&gt;_IO_buf_end-<span class="built_in">stdin</span>-&gt;_IO_buf_base);</span><br><span class="line">    <span class="comment">// 输出文件描述符</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"file discriptor is %d\n\n"</span>, fileno(<span class="built_in">stdin</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将标准输入的缓冲区类型设置为全缓冲，缓存大小为1024</span></span><br><span class="line">    <span class="keyword">if</span>(setvbuf(<span class="built_in">stdin</span>, buf, _IOFBF, SIZE)!=<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"error!\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"OK, change successful!\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"stdin is"</span>); <span class="comment">// 再次判断标准输入流对象的缓冲区类型</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">stdin</span>-&gt;_flags&amp;_IO_UNBUFFERED)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"unbuffered\n"</span>);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">stdin</span>-&gt;_flags&amp;_IO_LINE_BUF)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"line-buffered\n"</span>);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fully-buffered\n"</span>);</span><br><span class="line">    <span class="comment">// 打印缓冲区大小</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"buffer size is %ld\n"</span>, <span class="built_in">stdin</span>-&gt;_IO_buf_end-<span class="built_in">stdin</span>-&gt;_IO_buf_base);</span><br><span class="line">    <span class="comment">// 输出文件描述符</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"file discriptor is %d\n\n"</span>, fileno(<span class="built_in">stdin</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后执行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ ./buf_set</span><br><span class="line">OK, set successful!</span><br><span class="line">stdin isunbuffered</span><br><span class="line">buffer size is 1</span><br><span class="line">file discriptor is 0</span><br><span class="line"></span><br><span class="line">OK, change successful!</span><br><span class="line">stdin isfully-buffered</span><br><span class="line">buffer size is 1024</span><br><span class="line">file discriptor is 0</span><br></pre></td></tr></table></figure>
+
+<p>可以看出，stdin的缓冲区类型发生了变化。</p>
+<h3 id="缓存的冲洗"><a href="#缓存的冲洗" class="headerlink" title="缓存的冲洗"></a>缓存的冲洗</h3><p>缓存冲洗是指将I/O操作写入缓存中的内容清空，清空可以是将流的内容完全丢掉，也可以是将其保存到文件中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fflush</span><span class="params">(FILE *fp)</span></span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio_ext.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fpurge</span><span class="params">(FILE *fp)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>fflush函数用于将缓冲区中尚未写入文件的数据强制性地保存到文件，调用成功返回0，失败返回EOF。</li>
+<li>fpurge函数用于将缓冲区中的数据完全清除，该函数使用较少。</li>
+</ul>
+<h1 id="流的打开与关闭"><a href="#流的打开与关闭" class="headerlink" title="流的打开与关闭"></a>流的打开与关闭</h1><p>当用户使用基于流的缓冲时会由C语言的库函数提供对缓冲的操作，用户则不用再耗费时间和精力控制缓冲区了。</p>
+<h2 id="流的打开"><a href="#流的打开" class="headerlink" title="流的打开"></a>流的打开</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function">FILE *<span class="title">fopen</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">const</span> <span class="keyword">char</span> *type)</span></span>;</span><br><span class="line"><span class="function">FILE *<span class="title">freopen</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">const</span> <span class="keyword">char</span> *type, FILE *fp)</span></span>;</span><br><span class="line"><span class="function">FILE *<span class="title">fdopen</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">char</span> *type)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>运行成功返回文件指针，出错返回NULL(空指针)。</p>
+<ul>
+<li>fopen打开一个路径名为pathname的文件。</li>
+<li>freopen在一个特定的流上(fp)打开一个指定的文件(pathname)，若该流已经打开，则先关闭该流。此函数一般用于将一个指定的文件打开为一个预定义的流：标准输入、标准输出或标准出错。</li>
+<li>fdopen取一个现存的文件描述符(可能从open、dup、dup2、fcntl、或pipe函数得到)，并使一个标准的I/O流与该描述符相结合。次函数常用于由创建管道和网络通信函数获得的描述符，因为这些特殊类型的文件不能使用标准I/O的fopen函数打开，首先必须先调用设备专用函数以获得一个文件描述符，然后调用fdopen使一个标准I/O流与该描述符相结合。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>type值</th>
+<th>操作文件类型</th>
+<th>是否新建文件</th>
+<th>是否清空文件</th>
+<th>可读</th>
+<th>可写</th>
+<th>读写开始位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>r</td>
+<td>文本文件</td>
+<td>×</td>
+<td>×</td>
+<td>√</td>
+<td>×</td>
+<td>文件开头</td>
+</tr>
+<tr>
+<td>r+</td>
+<td>文本文件</td>
+<td>√</td>
+<td>×</td>
+<td>√</td>
+<td>√</td>
+<td>文件开头</td>
+</tr>
+<tr>
+<td>w</td>
+<td>文本文件</td>
+<td>√</td>
+<td>√</td>
+<td>×</td>
+<td>√</td>
+<td>文件开头</td>
+</tr>
+<tr>
+<td>w+</td>
+<td>文本文件</td>
+<td>√</td>
+<td>√</td>
+<td>√</td>
+<td>√</td>
+<td>文件开头</td>
+</tr>
+<tr>
+<td>a</td>
+<td>文本文件</td>
+<td>×</td>
+<td>√</td>
+<td>×</td>
+<td>√</td>
+<td>文件结尾</td>
+</tr>
+<tr>
+<td>a+</td>
+<td>文本文件</td>
+<td>×</td>
+<td>√</td>
+<td>√</td>
+<td>√</td>
+<td>文件结尾</td>
+</tr>
+<tr>
+<td>rb</td>
+<td>二进制文件</td>
+<td>×</td>
+<td>×</td>
+<td>√</td>
+<td>×</td>
+<td>文件开头</td>
+</tr>
+<tr>
+<td>r+b或rb+</td>
+<td>二进制文件</td>
+<td>√</td>
+<td>×</td>
+<td>√</td>
+<td>√</td>
+<td>文件开头</td>
+</tr>
+<tr>
+<td>wb</td>
+<td>二进制文件</td>
+<td>√</td>
+<td>√</td>
+<td>×</td>
+<td>√</td>
+<td>文件开头</td>
+</tr>
+<tr>
+<td>w+b或wb+</td>
+<td>二进制文件</td>
+<td>√</td>
+<td>√</td>
+<td>√</td>
+<td>√</td>
+<td>文件开头</td>
+</tr>
+<tr>
+<td>ab</td>
+<td>二进制文件</td>
+<td>×</td>
+<td>√</td>
+<td>×</td>
+<td>√</td>
+<td>文件结尾</td>
+</tr>
+<tr>
+<td>a+b或ab+</td>
+<td>二进制文件</td>
+<td>×</td>
+<td>√</td>
+<td>√</td>
+<td>√</td>
+<td>文件结尾</td>
+</tr>
+</tbody></table>
+<p>fopen出错的一般原因：</p>
+<ul>
+<li>指定的文件路径有误</li>
+<li>type参数是一个非法字符串</li>
+<li>文件的操作权限不够</li>
+</ul>
+<h2 id="流的关闭"><a href="#流的关闭" class="headerlink" title="流的关闭"></a>流的关闭</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fclose</span><span class="params">(FILE *fp)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>运行成功返回0，出错返回EOF。</p>
+<blockquote>
+<p>EOF是一个定义在&lt;stdio.h&gt;中的宏定义，其值为-1。</p>
+</blockquote>
+<p>打开与关闭一个流测试，stream.c:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line">    <span class="keyword">int</span> fd;</span><br><span class="line">    <span class="comment">// 以读写方式打开流，从文件开头开始读写</span></span><br><span class="line">    <span class="keyword">if</span>((fp = fopen(<span class="string">"hello.txt"</span>, <span class="string">"r+"</span>)) == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fail to open!\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 向该流输出一段信息</span></span><br><span class="line">    <span class="built_in">fprintf</span>(fp, <span class="string">"Hello! I like Linux C program!\n"</span>);</span><br><span class="line">    fclose(fp); <span class="comment">// 关闭流</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 以读写方式打开文件，基于文件描述符的方式</span></span><br><span class="line">    <span class="keyword">if</span>((fd = open(<span class="string">"hello.txt"</span>, O_RDWR)) == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fail to open!\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在打开的文件上打开一个流，并从文件尾开始读写</span></span><br><span class="line">    <span class="keyword">if</span>((fp = fdopen(fd, <span class="string">"a+"</span>)) == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fail to open stream!\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 向该流输出一段信息</span></span><br><span class="line">    <span class="built_in">fprintf</span>(fp, <span class="string">"I am doing Linux C programs!\n"</span>);</span><br><span class="line">    fclose(fp); <span class="comment">// 关闭流</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后运行(运行前先在当前目录新建一个hello.txt空文件)：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./stream</span><br></pre></td></tr></table></figure>
+
+<p>程序没有输出(本来就没有)，看一下hello.txt:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ cat hello.txt</span><br><span class="line">Hello! I like Linux C program!</span><br><span class="line">I am doing Linux C programs!</span><br></pre></td></tr></table></figure>
+
+<p>再次运行程序后，查看hello.txt:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./stream</span><br><span class="line">$ cat hello.txt</span><br><span class="line">Hello! I like Linux C program!</span><br><span class="line">I am doing Linux C programs!</span><br><span class="line">I am doing Linux C programs!</span><br></pre></td></tr></table></figure>
+
+<p>可以看到输出追加了一条，原因在于文件头的被覆盖，文件尾的被追加。</p>
+<h1 id="流的读写"><a href="#流的读写" class="headerlink" title="流的读写"></a>流的读写</h1><p>一旦打开了流，则可在4种不同类型的I/O中进行选择，来对其进行读写操作：</p>
+<ul>
+<li>基于字符的I/O：每次读写一个字符数据</li>
+<li>基于行的I/O：当输入内容遇到换行符<code>\n</code>时，将之前的内容送到缓冲区</li>
+<li>直接I/O：输入输出操作以记录为单位进行读写</li>
+<li>格式化I/O：格式化输入输出为最常见的方式，如printf或scanf</li>
+</ul>
+<h2 id="基于字符的I-O"><a href="#基于字符的I-O" class="headerlink" title="基于字符的I/O"></a>基于字符的I/O</h2><h3 id="字符的输入"><a href="#字符的输入" class="headerlink" title="字符的输入"></a>字符的输入</h3><p>以下3个函数用于一次读取一个字符：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getc</span><span class="params">(FILE *fp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fgetc</span><span class="params">(FILE *fp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getchar</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>运行成功返回读入字符的值，出错返回EOF。</p>
+<h3 id="字符的输出"><a href="#字符的输出" class="headerlink" title="字符的输出"></a>字符的输出</h3><p>以下3个函数用于字符输出：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">putc</span><span class="params">(<span class="keyword">int</span> c, FILE *fp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fputc</span><span class="params">(<span class="keyword">int</span> c, FILE *fp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">putchar</span><span class="params">(<span class="keyword">int</span> c)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>运行成功返回读入字符的值，出错饭返回EOF。</p>
+<p>基于字符I/O方式的文字复制，char_copy.c:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Src_File <span class="meta-string">"./hello.txt"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Des_File <span class="meta-string">"./test.txt"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    FILE *fp1, *fp2; <span class="comment">// 源文件和目标文件的文件指针</span></span><br><span class="line">    <span class="keyword">int</span> c; <span class="comment">// 要进行输入和输出的字符</span></span><br><span class="line">    <span class="comment">// 以只读方式打开源文件hello.txt</span></span><br><span class="line">    <span class="keyword">if</span>((fp1=fopen(Src_File, <span class="string">"rb"</span>)) == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fail to open source file\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 以只写方式打开目标文件test.txt</span></span><br><span class="line">    <span class="keyword">if</span>((fp2=fopen(Des_File, <span class="string">"wb"</span>)) == <span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fail to open source file\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 开始复制文件，每次读写一个字符。直到文件内容全部读完</span></span><br><span class="line">    <span class="keyword">while</span>((c=fgetc(fp1))!=EOF)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(fputc(c, fp2) == EOF) <span class="comment">// 将读入的内容写入目标文件</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"fail to write\n"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(fputc(c, <span class="built_in">stdout</span>) == EOF) <span class="comment">// 将读入的内容输出到屏幕</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"fail to write\n"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    fclose(fp1);</span><br><span class="line">    fclose(fp2);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后运行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ./char_copy</span><br><span class="line">Hello! I like Linux C program!</span><br><span class="line">I am doing Linux C programs!</span><br><span class="line">I am doing Linux C programs!</span><br></pre></td></tr></table></figure>
+
+<p>查看test.txt：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat test.txt</span><br><span class="line">Hello! I like Linux C program!</span><br><span class="line">I am doing Linux C programs!</span><br><span class="line">I am doing Linux C programs!</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，从hello.txt复制的内容已输出到屏幕和test.txt。</p>
+<h2 id="基于行的I-O"><a href="#基于行的I-O" class="headerlink" title="基于行的I/O"></a>基于行的I/O</h2><h3 id="行的输入"><a href="#行的输入" class="headerlink" title="行的输入"></a>行的输入</h3><p>fgets和gets函数实现输入一行字符串，函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">fgets</span><span class="params">(<span class="keyword">char</span> *buf, <span class="keyword">int</span> n, FILE *fp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">gets</span><span class="params">(<span class="keyword">char</span> *buf)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>运行成功返回缓冲区的首地址，出错或已到文件尾返回EOF。</p>
+<p>gets函数与fgets函数最大的不同是gets的缓冲区虽然由用户提供，但无法指定一次最多读入多少字节的内容。因此<strong>gets函数使用起来有风险，不推荐使用</strong>。</p>
+<h3 id="行的输出"><a href="#行的输出" class="headerlink" title="行的输出"></a>行的输出</h3><p>fputs和puts函数实现输出一行字符串，函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">char</span> <span class="title">fputs</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *buf, FILE *<span class="keyword">restrict</span> fp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">char</span> <span class="title">puts</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *str)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>fputs函数的第1个参数为输出缓冲区，第2个参数为要输出的文件。成功返回输出字节数，失败返回-1。</li>
+<li>puts函数用于向标准输出输出一行字符串。</li>
+</ul>
+<h2 id="直接I-O"><a href="#直接I-O" class="headerlink" title="直接I/O"></a>直接I/O</h2><p>直接I/O，也称执行二进制I/O操作，可以直接读取NULL回换行符，函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="keyword">size_t</span> fread(<span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> size, <span class="keyword">size_t</span> nmemb, FILE *fp);</span><br><span class="line"><span class="keyword">size_t</span> fwrite(<span class="keyword">const</span> <span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> size, <span class="keyword">size_t</span> nmember, FILE *fp);</span><br></pre></td></tr></table></figure>
+
+<p>函数返回读或写的对象数。</p>
+<ul>
+<li><p>fread用于执行直接输出操作</p>
+</li>
+<li><p>fwrite用于执行直接输入操作，此函数有两个常见的用法：</p>
+<ul>
+<li><p>读写一个二进制组，如将一个浮点型数组的第2~5个元素写到一个文件上：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> data[<span class="number">10</span>];</span><br><span class="line"><span class="keyword">if</span>(fwrite(&amp;data[<span class="number">2</span>], <span class="keyword">sizeof</span>(<span class="keyword">float</span>), <span class="number">4</span>, fp)!=<span class="number">4</span>)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"fwrite error!\n"</span>);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>读或写一个结构：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">short</span> count;</span><br><span class="line">    <span class="keyword">long</span> total;</span><br><span class="line">    <span class="keyword">char</span> name[NAME_SIZE];</span><br><span class="line">&#125;item;</span><br><span class="line"><span class="keyword">if</span>(fwrite(&amp;item, <span class="keyword">sizeof</span>(item), <span class="number">1</span>, fp)!=<span class="number">1</span>)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"fwrite error!\n"</span>);</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<p>基于直接I/O方式的文件复制，direct_copy.c:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Src_File <span class="meta-string">"./hello.txt"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Des_File <span class="meta-string">"./test.txt"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    FILE *fp1, *fp2;</span><br><span class="line">    <span class="keyword">char</span> buf[<span class="number">1024</span>];</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="comment">// 以只读方式打开源文件，读起始位置为文件头</span></span><br><span class="line">    <span class="keyword">if</span>((fp1=fopen(Src_File, <span class="string">"rb"</span>))==<span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fail to open source file\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 以只写方式打目标文件，写起始位置为文件尾</span></span><br><span class="line">    <span class="keyword">if</span>((fp2=fopen(Des_File, <span class="string">"ab"</span>))==<span class="literal">NULL</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fail to open des file\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 开始复制文件，文件可能较大，缓冲一次装不下，需要使用一个循环进行读写</span></span><br><span class="line">    <span class="comment">// 读源文件，直到将文件内容全部读完</span></span><br><span class="line">    <span class="keyword">while</span>((n=fread(buf, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), <span class="number">1024</span>, fp1))&gt;<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 将读出的内容全部写到目标文件中去</span></span><br><span class="line">        <span class="keyword">if</span>(fwrite(buf, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), n, fp2)==<span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"fail to write\n"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果因为读入字节小于0而跳出循环，则说明出错了</span></span><br><span class="line">    <span class="keyword">if</span>(n==<span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fail to read\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fclose(fp1);</span><br><span class="line">    fclose(fp2);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该程序是将hello.txt中的内容复制追加到test.txt，编译后执行，并查看test.txt:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ ./direct_copy</span><br><span class="line">$ cat test.txt</span><br><span class="line">Hello! I like Linux C program!</span><br><span class="line">I am doing Linux C programs!</span><br><span class="line">I am doing Linux C programs!</span><br><span class="line">Hello! I like Linux C program!</span><br><span class="line">I am doing Linux C programs!</span><br><span class="line">I am doing Linux C programs!</span><br></pre></td></tr></table></figure>
+
+<p>可以看到内容被复制到了test.txt。</p>
+<h2 id="格式化I-O"><a href="#格式化I-O" class="headerlink" title="格式化I/O"></a>格式化I/O</h2><h3 id="格式化输出"><a href="#格式化输出" class="headerlink" title="格式化输出"></a>格式化输出</h3><p>4个printf函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">printf</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fprintf</span><span class="params">(FILE *fp, <span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sprintf</span><span class="params">(<span class="keyword">char</span> *str, <span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">snprintf</span><span class="params">(<span class="keyword">char</span> *str, <span class="keyword">size_t</span> size, <span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>printf用于向标准输出流中输出数据</li>
+<li>fprintf用于向指定的流中输出数据，参数fp指向要进行输出的流</li>
+<li>sprintf用于向指定的流中输出一个字符串</li>
+<li>snprintf的作用与sprintf相似，不同的是snprintf可以处理缓冲区</li>
+</ul>
+<h3 id="格式化输入"><a href="#格式化输入" class="headerlink" title="格式化输入"></a>格式化输入</h3><p>3个scanf函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">scanf</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fscanf</span><span class="params">(FILE *fp, <span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sscanf</span><span class="params">(<span class="keyword">char</span> *str, <span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>scanf用于从标准输入流中输入数据</li>
+<li>fscanf用于从指定的流中输入数据，参数fp指向该的流</li>
+<li>sscanf用于从指定的字符串中输入数据，参数str指向该字符串</li>
+</ul>
+<p>使用fprintf和fscanf函数实现输入和输出，format_io.c:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> File_path <span class="meta-string">"./hello.txt"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line">    <span class="keyword">char</span> buf[] = <span class="string">"Hello! Linux C"</span>;</span><br><span class="line">    <span class="keyword">char</span> buf2[<span class="number">80</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 以只写方式打开文件</span></span><br><span class="line">    fp = fopen(File_path, <span class="string">"w"</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(fp, <span class="string">"%s"</span>, buf);<span class="comment">// 向该文件流输出字符串数据buf</span></span><br><span class="line">    <span class="built_in">fprintf</span>(fp, <span class="string">"\n"</span>);</span><br><span class="line">    fclose(fp);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 再以只读方式打开文件</span></span><br><span class="line">    fp = fopen(File_path, <span class="string">"r"</span>);</span><br><span class="line">    <span class="built_in">fscanf</span>(fp, <span class="string">"%s"</span>, &amp;buf2);<span class="comment">// 将该文件流中的数据读入到buf2</span></span><br><span class="line">    fclose(fp);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s\n"</span>, buf2);<span class="comment">// 打印buf2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译后运行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ./format_io</span><br><span class="line">Hello!</span><br></pre></td></tr></table></figure>
+
+<p>查看hello.txt中的内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat hello.txt</span><br><span class="line">Hello! Linux C</span><br></pre></td></tr></table></figure>
+
+<p>可以看到buf中的字符串已写入到hello.txt(该文件原来有内容，现在被清除了)。另外，打印的buf2的结果只是一部分，原因是scanf读取文件流时，遇到空格符、制表符和回车符时会自动终止读取字符。</p>
+<p>参考：<a href="https://item.jd.com/11747092.html" target="_blank" rel="noopener">《精通Linux C编程》-  程国钢</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+            
+              <a href="/tags/流I-O/" rel="tag"># 流I/O</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/12/20/Linux文件IO操作/" rel="next" title="Linux文件IO操作">
+                  <i class="fa fa-chevron-left"></i> Linux文件IO操作
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#流与缓存"><span class="nav-number">1.</span> <span class="nav-text">流与缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#流和FILE对象"><span class="nav-number">1.1.</span> <span class="nav-text">流和FILE对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存"><span class="nav-number">1.2.</span> <span class="nav-text">缓存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对缓存的操作"><span class="nav-number">1.3.</span> <span class="nav-text">对缓存的操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#设置缓存的属性"><span class="nav-number">1.3.1.</span> <span class="nav-text">设置缓存的属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存的冲洗"><span class="nav-number">1.3.2.</span> <span class="nav-text">缓存的冲洗</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#流的打开与关闭"><span class="nav-number">2.</span> <span class="nav-text">流的打开与关闭</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#流的打开"><span class="nav-number">2.1.</span> <span class="nav-text">流的打开</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流的关闭"><span class="nav-number">2.2.</span> <span class="nav-text">流的关闭</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#流的读写"><span class="nav-number">3.</span> <span class="nav-text">流的读写</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基于字符的I-O"><span class="nav-number">3.1.</span> <span class="nav-text">基于字符的I/O</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#字符的输入"><span class="nav-number">3.1.1.</span> <span class="nav-text">字符的输入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符的输出"><span class="nav-number">3.1.2.</span> <span class="nav-text">字符的输出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基于行的I-O"><span class="nav-number">3.2.</span> <span class="nav-text">基于行的I/O</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#行的输入"><span class="nav-number">3.2.1.</span> <span class="nav-text">行的输入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#行的输出"><span class="nav-number">3.2.2.</span> <span class="nav-text">行的输出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#直接I-O"><span class="nav-number">3.3.</span> <span class="nav-text">直接I/O</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#格式化I-O"><span class="nav-number">3.4.</span> <span class="nav-text">格式化I/O</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#格式化输出"><span class="nav-number">3.4.1.</span> <span class="nav-text">格式化输出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#格式化输入"><span class="nav-number">3.4.2.</span> <span class="nav-text">格式化输入</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
