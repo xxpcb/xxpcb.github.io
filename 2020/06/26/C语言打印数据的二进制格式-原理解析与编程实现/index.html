@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="问题引出C语言中，在需要用到16进制数据的时候，可以通过printf函数的%x格式打印数据的16进制形式。在某些位标记、位操作的场合，需要用到2进制格式的数据，但printf函数不能输出2进制格式，虽然可以通过使用itoa或_itoa的方法转为2进制的字符串打印，但显示的长度是不固定的，无法显示有效数位前面的0。">
+<meta name="keywords" content="2进制格式输出">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C语言打印数据的二进制格式-原理解析与编程实现">
+<meta property="og:url" content="https://xxpcb.github.io/2020/06/26/C语言打印数据的二进制格式-原理解析与编程实现/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="问题引出C语言中，在需要用到16进制数据的时候，可以通过printf函数的%x格式打印数据的16进制形式。在某些位标记、位操作的场合，需要用到2进制格式的数据，但printf函数不能输出2进制格式，虽然可以通过使用itoa或_itoa的方法转为2进制的字符串打印，但显示的长度是不固定的，无法显示有效数位前面的0。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/C/printbin-%E5%86%85%E5%AD%98-258.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/C/printbin-%E5%AD%97%E8%8A%82%E5%BA%8F.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/C/printbin-%E5%8E%9F%E5%8F%8D%E8%A1%A5%E7%A0%81.png">
+<meta property="og:updated_time" content="2020-06-26T07:30:18.654Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C语言打印数据的二进制格式-原理解析与编程实现">
+<meta name="twitter:description" content="问题引出C语言中，在需要用到16进制数据的时候，可以通过printf函数的%x格式打印数据的16进制形式。在某些位标记、位操作的场合，需要用到2进制格式的数据，但printf函数不能输出2进制格式，虽然可以通过使用itoa或_itoa的方法转为2进制的字符串打印，但显示的长度是不固定的，无法显示有效数位前面的0。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/C/printbin-%E5%86%85%E5%AD%98-258.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2020/06/26/C语言打印数据的二进制格式-原理解析与编程实现/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>C语言打印数据的二进制格式-原理解析与编程实现 | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2020/06/26/C语言打印数据的二进制格式-原理解析与编程实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">C语言打印数据的二进制格式-原理解析与编程实现
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-06-26 15:27:46 / 修改时间：15:30:18" itemprop="dateCreated datePublished" datetime="2020-06-26T15:27:46+08:00">2020-06-26</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C编程小技巧/" itemprop="url" rel="index"><span itemprop="name">C编程小技巧</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="问题引出"><a href="#问题引出" class="headerlink" title="问题引出"></a>问题引出</h1><p>C语言中，在需要用到16进制数据的时候，可以通过<code>printf</code>函数的<code>%x</code>格式打印数据的16进制形式。在某些位标记、位操作的场合，需要用到2进制格式的数据，但<code>printf</code>函数不能输出2进制格式，虽然可以通过使用<code>itoa</code>或<code>_itoa</code>的方法转为2进制的字符串打印，但显示的长度是不固定的，无法显示有效数位前面的0。</p>
+<a id="more"></a>
+
+<p>例如：现在需要打印数字258的2进制格式，且需要将32位全部显示出来，即想要得到结果<code>00000000 00000000 00000001 00000010</code>，而使用<code>_itoa</code>的方法和打印结果为：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">258</span>;	</span><br><span class="line"><span class="keyword">char</span> s[<span class="number">32</span>];</span><br><span class="line">_itoa(a, s, <span class="number">2</span>);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"a --&gt; %s\n"</span>, s);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a --&gt; 100000010</span><br></pre></td></tr></table></figure>
+
+<p>不是我们想要的格式！</p>
+<h1 id="数据存储原理探析"><a href="#数据存储原理探析" class="headerlink" title="数据存储原理探析"></a>数据存储原理探析</h1><p>那要怎么办呢？自己写个小程序吧，思路如下：</p>
+<p>首先弄清楚数据在计算机中是如何存储的，对应int型数字，在32或64位计算机中都占4个字节，而计算机中的数据存储是以字节(Byte)为单位，1个字节包含8个位(bit)，例如，数字258的16进制形式为<code>0x00000102</code>，2进制形式为：<code>00000000 00000000 00000001 00000010</code>，其在计算机内存中的存储方式如图所示：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/C/printbin-%E5%86%85%E5%AD%98-258.png" alt></p>
+<p>右侧的16进制数是内存的地址，向上递增，方框里的二进制数是内存单元实际存储的字节内存，我们可以通过程序测试验证一下，因为unsigned char或char类型在系统是占用一个字节，因此可以定义该变量的指针，分别指向int的4个字节，打印其内存地址和实际存储的内存进行验证，代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a = <span class="number">258</span>;</span><br><span class="line"><span class="comment">//使用unsigned char来验证int的每一个字节</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *p1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a;   <span class="comment">//获取a的首地址</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *p2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a+<span class="number">1</span>; <span class="comment">//获取a的首地址的后一个字节地址</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *p3 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a+<span class="number">2</span>; <span class="comment">//获取a的首地址的后两个字节地址</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *p4 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a+<span class="number">3</span>; <span class="comment">//获取a的首地址的后三个字节地址</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"[a] p1:%x, %d\r\n"</span>, p1, *p1); <span class="comment">//打印p1的地址与存储的字节内容</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"[a] p2:%x, %d\r\n"</span>, p2, *p2); <span class="comment">//打印p2的地址与存储的字节内容</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"[a] p3:%x, %d\r\n"</span>, p3, *p3); <span class="comment">//打印p3的地址与存储的字节内容</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"[a] p4:%x, %d\r\n"</span>, p4, *p4); <span class="comment">//打印p4的地址与存储的字节内容</span></span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[a] p1:5216f804, 2</span><br><span class="line">[a] p2:5216f805, 1</span><br><span class="line">[a] p3:5216f806, 0</span><br><span class="line">[a] p4:5216f807, 0</span><br></pre></td></tr></table></figure>
+
+<p>可以看出，随着地址的增加，存储的内存依次是2、1、0、0，对应数字258的从底到高的4个字节的值，另外每次运行程序，变量a的地址是自动分配的，所以每次的输出与上面示意图的地址是不同的，但都是4个连续增加的地址值。</p>
+<p>另外补充一下，这是一种<strong>小端字节序</strong>的存储方法，即将一个数据的低字节存储在内存的低地址，或理解为先存储数据的低字节。与之对应的是大端字节序存储方式，即先存储数据的高位字节，类似与我们书写数字时从左到右先写高位数字一样。由于计算机先处理地位字节的效率比较高，因此计算机内部的数据处理均采用小端字节序，而为了方便人的阅读，除了计算机内部处理，其它场合是采用大端字节序的。可通过下面的示意图助记：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/C/printbin-%E5%AD%97%E8%8A%82%E5%BA%8F.png" alt></p>
+<p>另外，需要区分一点，无论大端还小端字节序，在一个字节的内部的8位2进制数，都是按照人类的习惯从左到右存放，如<code>00000010</code></p>
+<p>在字节中也是按照这样存储的，不需要反过来。</p>
+<h1 id="C代码实现"><a href="#C代码实现" class="headerlink" title="C代码实现"></a>C代码实现</h1><p>分析了这么多，可以编写代码来输出一个数字的2进制格式形式了。具体的代码实现：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf_bin</span><span class="params">(<span class="keyword">int</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i, j, k;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;<span class="comment">//p先指向num后面第3个字节的地址，即num的最高位字节地址</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) <span class="comment">//依次处理4个字节(32位）</span></span><br><span class="line">	&#123;</span><br><span class="line">		j = *(p - i); <span class="comment">//取每个字节的首地址，从高位字节到低位字节，即p p-1 p-2 p-3地址处</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">7</span>; k &gt;= <span class="number">0</span>; k--) <span class="comment">//处理每个字节的8个位，注意字节内部的二进制数是按照人的习惯存储！</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (j &amp; (<span class="number">1</span> &lt;&lt; k))<span class="comment">//1左移k位，与单前的字节内容j进行或运算，如k=7时，00000000&amp;10000000=0 -&gt;该字节的最高位为0</span></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"1"</span>);</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"0"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">" "</span>);<span class="comment">//每8位加个空格，方便查看</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>数字258的实际运行效果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">00000000 00000000 00000001 00000010</span><br></pre></td></tr></table></figure>
+
+<p>对应unsigned char型的数字，如果只需要显示8位2进制数，可以对上述小程序简化：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf_bin_8</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> k;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">7</span>; k &gt;= <span class="number">0</span>; k--) <span class="comment">//处理8个位</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (*p &amp; (<span class="number">1</span> &lt;&lt; k))</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"1"</span>);</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"0"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>数字12的运行效果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">00001100</span><br></pre></td></tr></table></figure>
+
+<h1 id="关于负数"><a href="#关于负数" class="headerlink" title="关于负数"></a>关于负数</h1><p>上面测试的都是正数，当然，对于负数，也是可以显示的，因为负数在计算机中是以对应正数的补码来存储的，因而显示的2进制数也是补码形式，这里顺便再复习一下补码：</p>
+<p>对于负数-9，对应的正数位9，9的原码，反码，补码如下：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/C/printbin-%E5%8E%9F%E5%8F%8D%E8%A1%A5%E7%A0%81.png" alt></p>
+<p>这里只画出8位示意，int型数字实际是占32位，对应的高位全是0或1。</p>
+<p>使用程序测试一下-9的2进制格式输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">11111111 11111111 11111111 11110111</span><br></pre></td></tr></table></figure>
+
+<p>可以正确显示。</p>
+<h1 id="完整测试代码"><a href="#完整测试代码" class="headerlink" title="完整测试代码"></a>完整测试代码</h1><p>下面是整个本文的整个测试程序：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf_bin</span><span class="params">(<span class="keyword">int</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i, j, k;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) <span class="comment">//处理4个字节(32位）</span></span><br><span class="line">	&#123;</span><br><span class="line">		j = *(p - i); <span class="comment">//取每个字节的首地址</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">7</span>; k &gt;= <span class="number">0</span>; k--) <span class="comment">//处理每个字节的8个位</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (j &amp; (<span class="number">1</span> &lt;&lt; k))</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"1"</span>);</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"0"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">" "</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf_bin_8</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> k;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">7</span>; k &gt;= <span class="number">0</span>; k--) <span class="comment">//处理8个位</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span> (*p &amp; (<span class="number">1</span> &lt;&lt; k))</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"1"</span>);</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"0"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">258</span>;</span><br><span class="line">	<span class="keyword">int</span> b = <span class="number">-9</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"定义int a=%d, int b=%d\r\n"</span>, a, b);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//使用unsigned char来验证int的每一个字节</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a;  <span class="comment">//获取a的首地址</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a+<span class="number">1</span>;<span class="comment">//获取a的首地址的后一个字节地址</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p3 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a+<span class="number">2</span>;<span class="comment">//获取a的首地址的后两个字节地址</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p4 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a+<span class="number">3</span>;<span class="comment">//获取a的首地址的后三个字节地址</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n查看a的每个字节的地址与内容：\r\n"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[a] p1:%x, %d\r\n"</span>, p1, *p1);<span class="comment">//打印p1的地址与存储的字节内容</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[a] p2:%x, %d\r\n"</span>, p2, *p2);<span class="comment">//打印p2的地址与存储的字节内容</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[a] p3:%x, %d\r\n"</span>, p3, *p3);<span class="comment">//打印p3的地址与存储的字节内容</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[a] p4:%x, %d\r\n"</span>, p4, *p4);<span class="comment">//打印p4的地址与存储的字节内容</span></span><br><span class="line"></span><br><span class="line">	p1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;b;</span><br><span class="line">	p2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;b + <span class="number">1</span>;</span><br><span class="line">	p3 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;b + <span class="number">2</span>;</span><br><span class="line">	p4 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;b + <span class="number">3</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n查看b的每个字节的地址与内容：\r\n"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[b] p1:%x, %d\r\n"</span>, p1, *p1);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[b] p2:%x, %d\r\n"</span>, p2, *p2);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[b] p3:%x, %d\r\n"</span>, p3, *p3);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[b] p4:%x, %d\r\n"</span>, p4, *p4);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//自己的方法1</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\na的2进制格式(显示32位)：\r\n"</span>);</span><br><span class="line">	printf_bin(a);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\nb的2进制格式(显示32位)：\r\n"</span>);</span><br><span class="line">	printf_bin(b);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//自己的方法2</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> c = <span class="number">12</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n定义unsigned char c=%d\r\n"</span>, c);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"c的2进制格式(显示8位)：\r\n"</span>);</span><br><span class="line">	printf_bin_8(c);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">//调用函数的方法</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n使用_itoa函数显示2进制格式\r\n"</span>);</span><br><span class="line">	<span class="keyword">char</span> s[<span class="number">32</span>];</span><br><span class="line">	_itoa(a, s, <span class="number">2</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"a --&gt; %s\n"</span>, s);</span><br><span class="line">	_itoa(b, s, <span class="number">2</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"b --&gt; %s\n"</span>, s);   </span><br><span class="line">	_itoa(c, s, <span class="number">2</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"c --&gt; %s\n"</span>, s);</span><br><span class="line"></span><br><span class="line">	getchar();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">定义int a=258, int b=-9</span><br><span class="line"></span><br><span class="line">查看a的每个字节的地址与内容：</span><br><span class="line">[a] p1:a739f4d4, 2</span><br><span class="line">[a] p2:a739f4d5, 1</span><br><span class="line">[a] p3:a739f4d6, 0</span><br><span class="line">[a] p4:a739f4d7, 0</span><br><span class="line"></span><br><span class="line">查看b的每个字节的地址与内容：</span><br><span class="line">[b] p1:a739f4f4, 247</span><br><span class="line">[b] p2:a739f4f5, 255</span><br><span class="line">[b] p3:a739f4f6, 255</span><br><span class="line">[b] p4:a739f4f7, 255</span><br><span class="line"></span><br><span class="line">a的2进制格式(显示32位)：</span><br><span class="line">00000000 00000000 00000001 00000010</span><br><span class="line"></span><br><span class="line">b的2进制格式(显示32位)：</span><br><span class="line">11111111 11111111 11111111 11110111</span><br><span class="line"></span><br><span class="line">定义unsigned char c=12</span><br><span class="line">c的2进制格式(显示8位)：</span><br><span class="line">00001100</span><br><span class="line"></span><br><span class="line">使用_itoa函数显示2进制格式</span><br><span class="line">a --&gt; 100000010</span><br><span class="line">b --&gt; 11111111111111111111111111110111</span><br><span class="line">c --&gt; 1100</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎扫描关注我的微信公众号『码农爱学习』(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2020/06/26/C语言打印数据的二进制格式-原理解析与编程实现/">C语言打印数据的二进制格式-原理解析与编程实现</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb 的个人博客">xxpcb</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2020/06/26/C语言打印数据的二进制格式-原理解析与编程实现/" title="C语言打印数据的二进制格式-原理解析与编程实现">https://xxpcb.github.io/2020/06/26/C语言打印数据的二进制格式-原理解析与编程实现/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2020/06/26/C语言打印数据的二进制格式-原理解析与编程实现/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/2进制格式输出/" rel="tag"># 2进制格式输出</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/06/06/FreeRTOS例程2-任务挂起恢复与使用中断遇到的坑/" rel="next" title="FreeRTOS例程2-任务挂起恢复与使用中断遇到的坑!">
+                  <i class="fa fa-chevron-left"></i> FreeRTOS例程2-任务挂起恢复与使用中断遇到的坑!
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">58</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">44</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#问题引出"><span class="nav-number">1.</span> <span class="nav-text">问题引出</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据存储原理探析"><span class="nav-number">2.</span> <span class="nav-text">数据存储原理探析</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#C代码实现"><span class="nav-number">3.</span> <span class="nav-text">C代码实现</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#关于负数"><span class="nav-number">4.</span> <span class="nav-text">关于负数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#完整测试代码"><span class="nav-number">5.</span> <span class="nav-text">完整测试代码</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
