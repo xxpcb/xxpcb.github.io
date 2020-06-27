@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="问题引出实际的编程应用中，特别是数据传输通信等场合，需要传输float等类型的数据，而常用的数据传输形式一般为hex格式或字符串格式，通常我们会选用hex格式，更接近计算机的2进制，而这种传输方式就需要将float转换为hex格式了。">
+<meta name="keywords" content="float转hex">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C语言将float拆分为4个hex传输与重组">
+<meta property="og:url" content="https://xxpcb.github.io/2020/06/27/C语言将float拆分为4个hex传输与重组/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="问题引出实际的编程应用中，特别是数据传输通信等场合，需要传输float等类型的数据，而常用的数据传输形式一般为hex格式或字符串格式，通常我们会选用hex格式，更接近计算机的2进制，而这种传输方式就需要将float转换为hex格式了。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-06-27T06:58:48.680Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C语言将float拆分为4个hex传输与重组">
+<meta name="twitter:description" content="问题引出实际的编程应用中，特别是数据传输通信等场合，需要传输float等类型的数据，而常用的数据传输形式一般为hex格式或字符串格式，通常我们会选用hex格式，更接近计算机的2进制，而这种传输方式就需要将float转换为hex格式了。">
+  <link rel="canonical" href="https://xxpcb.github.io/2020/06/27/C语言将float拆分为4个hex传输与重组/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>C语言将float拆分为4个hex传输与重组 | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2020/06/27/C语言将float拆分为4个hex传输与重组/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">C语言将float拆分为4个hex传输与重组
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-06-27 14:57:29 / 修改时间：14:58:48" itemprop="dateCreated datePublished" datetime="2020-06-27T14:57:29+08:00">2020-06-27</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C编程小技巧/" itemprop="url" rel="index"><span itemprop="name">C编程小技巧</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="问题引出"><a href="#问题引出" class="headerlink" title="问题引出"></a>问题引出</h1><p>实际的编程应用中，特别是数据传输通信等场合，需要传输float等类型的数据，而常用的数据传输形式一般为<strong>hex格式</strong>或<strong>字符串格式</strong>，通常我们会选用hex格式，更接近计算机的2进制，而这种传输方式就需要将float转换为hex格式了。</p>
+<a id="more"></a>
+
+<p>在计算机中，float占用4个字节，因此可以考虑将float拆分为4个hex格式的16进制数，完成数据传输后，接收方再将4个hex重组为float即可还原出原来的数据，这有点像数据的编码和解码的意味。</p>
+<h1 id="分步测试"><a href="#分步测试" class="headerlink" title="分步测试"></a>分步测试</h1><h2 id="float型的2进制形式"><a href="#float型的2进制形式" class="headerlink" title="float型的2进制形式"></a>float型的2进制形式</h2><p>float的计算机中占用4个字节，具体是如何在计算机中存储的可以参考上一篇笔记：C语言打印数据的二进制格式-原理解析与编程实现，上次的int数据打印2进制的函数这里也可以用来测试，只需将参数类型改成float：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf_bin</span><span class="params">(<span class="keyword">float</span> num)</span><span class="comment">//注意这次这里的参数类型改成了float</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i, j, k;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) <span class="comment">//处理4个字节(32位）</span></span><br><span class="line">	&#123;</span><br><span class="line">		j = *(p - i); <span class="comment">//取每个字节的首地址</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">7</span>; k &gt;= <span class="number">0</span>; k--) <span class="comment">//处理每个字节的8个位</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (j &amp; (<span class="number">1</span> &lt;&lt; k))</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"1"</span>);</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"0"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">" "</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在来测试一个float数据的2进制形式：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> a = <span class="number">3.887</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//使用上次自己写的printf_bin函数打印一下float a的2进制形式</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"查看一下float型a=%f的2进制形式:\r\n"</span>, a);</span><br><span class="line">printf_bin(a);</span><br><span class="line"></span><br><span class="line"><span class="comment">//使用unsigned char来验证float的每一个字节</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *p1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a;  <span class="comment">//获取a的首地址</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *p2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a + <span class="number">1</span>;<span class="comment">//获取a的首地址的后一个字节地址</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *p3 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a + <span class="number">2</span>;<span class="comment">//获取a的首地址的后两个字节地址</span></span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span> *p4 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a + <span class="number">3</span>;<span class="comment">//获取a的首地址的后三个字节地址</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"\r\n查看a的每个字节的地址(16进制)与内容(10进制(+16进制))：\r\n"</span>);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"[a] p1:%x, %d(%x)\r\n"</span>, p1, *p1, *p1);<span class="comment">//打印p1的地址与存储的字节内容</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"[a] p2:%x, %d(%x)\r\n"</span>, p2, *p2, *p2);<span class="comment">//打印p2的地址与存储的字节内容</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"[a] p3:%x, %d(%x)\r\n"</span>, p3, *p3, *p3);<span class="comment">//打印p3的地址与存储的字节内容</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"[a] p4:%x, %d(%x)\r\n"</span>, p4, *p4, *p4);<span class="comment">//打印p4的地址与存储的字节内容</span></span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">查看一下float型a=3.887000的2进制形式:</span><br><span class="line">01000000 01111000 11000100 10011100</span><br><span class="line">    </span><br><span class="line">查看a的每个字节的地址(16进制)与内容(10进制(+16进制))：</span><br><span class="line">[a] p1:5b5bf554, 156(9c)</span><br><span class="line">[a] p2:5b5bf555, 196(c4)</span><br><span class="line">[a] p3:5b5bf556, 120(78)</span><br><span class="line">[a] p4:5b5bf557, 64(40)</span><br></pre></td></tr></table></figure>
+
+<p>这个输出结果实际上我们也无法直接看出拆分的到底对不对，上次测试int是对的，理论上也适用于float，因为2者都是4字节储存。</p>
+<p>我们可以先继续拆分测试，最后重组看看是否可以还原数据。</p>
+<h2 id="数据拆分与重组"><a href="#数据拆分与重组" class="headerlink" title="数据拆分与重组"></a>数据拆分与重组</h2><p>这里写了测试函数，先将float拆分为4个字节，保存在<code>tbuf[0]~tbuf[3]</code>中，并先打印查看是否正确。如果是在实际应用中，这时就可以将4个数据以hex的形式发送出去了。</p>
+<p>然后将数据重组，这里直接使用<code>tbuf[0]~tbuf[3]</code>模拟接收方接收到的4个hex数据，将重组后的数据保存在res变量中，重组的方法也是根据float在计算机占4个字节，通过<code>unsigned char</code>指针依次为float的4个字节赋值即可</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test_float_to_4hex</span><span class="params">(<span class="keyword">float</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> tbuf[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;<span class="comment">//指针p先指向float的最高字节</span></span><br><span class="line">	<span class="keyword">float</span> res;<span class="comment">//验证float拆分为4个字节后，重组为float的结果</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//先打印一下传入的float的值</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n传入的float的值：%f"</span>, num);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//获取对应的4个字节，从低位到高位，这时就可以用于hex格式的数据传输了</span></span><br><span class="line">	tbuf[<span class="number">0</span>] = *(p<span class="number">-3</span>);</span><br><span class="line">	tbuf[<span class="number">1</span>] = *(p<span class="number">-2</span>);</span><br><span class="line">	tbuf[<span class="number">2</span>] = *(p<span class="number">-1</span>);</span><br><span class="line">	tbuf[<span class="number">3</span>] = *p;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打印看一下</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n查看float的每个字节内容(16进制):\r\n"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"%x,%x,%x,%x\r\n"</span>, tbuf[<span class="number">0</span>], tbuf[<span class="number">1</span>], tbuf[<span class="number">2</span>], tbuf[<span class="number">3</span>]);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//对拆分后的4个字节进行重组，模拟接收到hex后的数据还原过程</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *pp = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;res;</span><br><span class="line">	pp[<span class="number">0</span>] = tbuf[<span class="number">0</span>];</span><br><span class="line">	pp[<span class="number">1</span>] = tbuf[<span class="number">1</span>];  </span><br><span class="line">	pp[<span class="number">2</span>] = tbuf[<span class="number">2</span>];</span><br><span class="line">	pp[<span class="number">3</span>] = tbuf[<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n重组后的float的值：%f\r\n"</span>, res);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  测试一下该函数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//模拟测试float转为4个16进制数进行数据传输的过程</span></span><br><span class="line">test_float_to_4hex(a);</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">传入的float的值：3.887000</span><br><span class="line">查看float的每个字节内容(16进制):</span><br><span class="line">9c,c4,78,40</span><br><span class="line"></span><br><span class="line">重组后的float的值：3.887000</span><br></pre></td></tr></table></figure>
+
+<p>数据重组后可以还原，方法是可以的。</p>
+<h1 id="关于int型数据"><a href="#关于int型数据" class="headerlink" title="关于int型数据"></a>关于int型数据</h1><p>int型数据与float一样都是占用4个字节，所以该方法也适用于将int转换为4个hex，只需修改float类型为int即可：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test_int_to_4hex</span><span class="params">(<span class="keyword">int</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> tbuf[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;<span class="comment">//指针p先指向int的最高字节</span></span><br><span class="line">	<span class="keyword">int</span> res;<span class="comment">//验证int拆分为4个字节后，重组为float的结果</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//先打印一下传入的int的值</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n传入的int的值：%d"</span>, num);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//获取对应的4个字节，从低位到高位，这时就可以用于hex格式的数据传输了</span></span><br><span class="line">	tbuf[<span class="number">0</span>] = *(p - <span class="number">3</span>);</span><br><span class="line">	tbuf[<span class="number">1</span>] = *(p - <span class="number">2</span>);</span><br><span class="line">	tbuf[<span class="number">2</span>] = *(p - <span class="number">1</span>);</span><br><span class="line">	tbuf[<span class="number">3</span>] = *p;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打印看一下</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n查看int的每个字节内容(16进制):\r\n"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"%x,%x,%x,%x\r\n"</span>, tbuf[<span class="number">0</span>], tbuf[<span class="number">1</span>], tbuf[<span class="number">2</span>], tbuf[<span class="number">3</span>]);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//对拆分后的4个字节进行重组，模拟接收到hex后的数据还原过程</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *pp = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;res;</span><br><span class="line">	pp[<span class="number">0</span>] = tbuf[<span class="number">0</span>];</span><br><span class="line">	pp[<span class="number">1</span>] = tbuf[<span class="number">1</span>];</span><br><span class="line">	pp[<span class="number">2</span>] = tbuf[<span class="number">2</span>];</span><br><span class="line">	pp[<span class="number">3</span>] = tbuf[<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n重组后的int的值：%d\r\n"</span>, res);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实测：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> b = <span class="number">-85776553</span>;</span><br><span class="line">test_int_to_4hex(b);</span><br></pre></td></tr></table></figure>
+
+<p>结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">传入的int的值：-85776553</span><br><span class="line">查看int的每个字节内容(16进制):</span><br><span class="line">57,27,e3,fa</span><br><span class="line"></span><br><span class="line">重组后的int的值：-85776553</span><br></pre></td></tr></table></figure>
+
+<h1 id="完整测试代码"><a href="#完整测试代码" class="headerlink" title="完整测试代码"></a>完整测试代码</h1><p>下面是整个本文的整个测试程序：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf_bin</span><span class="params">(<span class="keyword">float</span> num)</span><span class="comment">//注意这次这里的参数类型改成了float</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i, j, k;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) <span class="comment">//处理4个字节(32位）</span></span><br><span class="line">	&#123;</span><br><span class="line">		j = *(p - i); <span class="comment">//取每个字节的首地址</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">7</span>; k &gt;= <span class="number">0</span>; k--) <span class="comment">//处理每个字节的8个位</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (j &amp; (<span class="number">1</span> &lt;&lt; k))</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"1"</span>);</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"0"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">" "</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test_float_to_4hex</span><span class="params">(<span class="keyword">float</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> tbuf[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;<span class="comment">//指针p先指向float的最高字节</span></span><br><span class="line">	<span class="keyword">float</span> res;<span class="comment">//验证float拆分为4个字节后，重组为float的结果</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//先打印一下传入的float的值</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n传入的float的值：%f"</span>, num);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//获取对应的4个字节，从低位到高位，这时就可以用于hex格式的数据传输了</span></span><br><span class="line">	tbuf[<span class="number">0</span>] = *(p<span class="number">-3</span>);</span><br><span class="line">	tbuf[<span class="number">1</span>] = *(p<span class="number">-2</span>);</span><br><span class="line">	tbuf[<span class="number">2</span>] = *(p<span class="number">-1</span>);</span><br><span class="line">	tbuf[<span class="number">3</span>] = *p;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打印看一下</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n查看float的每个字节内容(16进制):\r\n"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"%x,%x,%x,%x\r\n"</span>, tbuf[<span class="number">0</span>], tbuf[<span class="number">1</span>], tbuf[<span class="number">2</span>], tbuf[<span class="number">3</span>]);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//对拆分后的4个字节进行重组，模拟接收到hex后的数据还原过程</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *pp = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;res;</span><br><span class="line">	pp[<span class="number">0</span>] = tbuf[<span class="number">0</span>];</span><br><span class="line">	pp[<span class="number">1</span>] = tbuf[<span class="number">1</span>];  </span><br><span class="line">	pp[<span class="number">2</span>] = tbuf[<span class="number">2</span>];</span><br><span class="line">	pp[<span class="number">3</span>] = tbuf[<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n重组后的float的值：%f\r\n"</span>, res);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test_int_to_4hex</span><span class="params">(<span class="keyword">int</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> tbuf[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;<span class="comment">//指针p先指向int的最高字节</span></span><br><span class="line">	<span class="keyword">int</span> res;<span class="comment">//验证int拆分为4个字节后，重组为float的结果</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//先打印一下传入的int的值</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n传入的int的值：%d"</span>, num);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//获取对应的4个字节，从低位到高位，这时就可以用于hex格式的数据传输了</span></span><br><span class="line">	tbuf[<span class="number">0</span>] = *(p - <span class="number">3</span>);</span><br><span class="line">	tbuf[<span class="number">1</span>] = *(p - <span class="number">2</span>);</span><br><span class="line">	tbuf[<span class="number">2</span>] = *(p - <span class="number">1</span>);</span><br><span class="line">	tbuf[<span class="number">3</span>] = *p;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//打印看一下</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n查看int的每个字节内容(16进制):\r\n"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"%x,%x,%x,%x\r\n"</span>, tbuf[<span class="number">0</span>], tbuf[<span class="number">1</span>], tbuf[<span class="number">2</span>], tbuf[<span class="number">3</span>]);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//对拆分后的4个字节进行重组，模拟接收到hex后的数据还原过程</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *pp = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;res;</span><br><span class="line">	pp[<span class="number">0</span>] = tbuf[<span class="number">0</span>];</span><br><span class="line">	pp[<span class="number">1</span>] = tbuf[<span class="number">1</span>];</span><br><span class="line">	pp[<span class="number">2</span>] = tbuf[<span class="number">2</span>];</span><br><span class="line">	pp[<span class="number">3</span>] = tbuf[<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n重组后的int的值：%d\r\n"</span>, res);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">float</span> a = <span class="number">3.887</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//使用上次自己写的printf_bin函数打印一下float a的2进制形式</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"查看一下float型a=%f的2进制形式:\r\n"</span>, a);</span><br><span class="line">	printf_bin(a);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//使用unsigned char来验证float的每一个字节</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p1 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a;  <span class="comment">//获取a的首地址</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p2 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a + <span class="number">1</span>;<span class="comment">//获取a的首地址的后一个字节地址</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p3 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a + <span class="number">2</span>;<span class="comment">//获取a的首地址的后两个字节地址</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p4 = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;a + <span class="number">3</span>;<span class="comment">//获取a的首地址的后三个字节地址</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n查看a的每个字节的地址(16进制)与内容(10进制(+16进制))：\r\n"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[a] p1:%x, %d(%x)\r\n"</span>, p1, *p1, *p1);<span class="comment">//打印p1的地址与存储的字节内容</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[a] p2:%x, %d(%x)\r\n"</span>, p2, *p2, *p2);<span class="comment">//打印p2的地址与存储的字节内容</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[a] p3:%x, %d(%x)\r\n"</span>, p3, *p3, *p3);<span class="comment">//打印p3的地址与存储的字节内容</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"[a] p4:%x, %d(%x)\r\n"</span>, p4, *p4, *p4);<span class="comment">//打印p4的地址与存储的字节内容</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//模拟测试float转为4个16进制数进行数据传输的过程</span></span><br><span class="line">	test_float_to_4hex(a);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//测试int型的转换</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n该方法也有可以传输int,因为float和int在计算机中都是占4个字节，测试如下：\r\n"</span>);</span><br><span class="line">	<span class="keyword">int</span> b = <span class="number">-85776553</span>;</span><br><span class="line">	test_int_to_4hex(b);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">查看一下float型a=3.887000的2进制形式:</span><br><span class="line">01000000 01111000 11000100 10011100</span><br><span class="line"></span><br><span class="line">查看a的每个字节的地址(16进制)与内容(10进制(+16进制))：</span><br><span class="line">[a] p1:d750f694, 156(9c)</span><br><span class="line">[a] p2:d750f695, 196(c4)</span><br><span class="line">[a] p3:d750f696, 120(78)</span><br><span class="line">[a] p4:d750f697, 64(40)</span><br><span class="line"></span><br><span class="line">传入的float的值：3.887000</span><br><span class="line">查看float的每个字节内容(16进制):</span><br><span class="line">9c,c4,78,40</span><br><span class="line"></span><br><span class="line">重组后的float的值：3.887000</span><br><span class="line"></span><br><span class="line">该方法也有可以传输int,因为float和int在计算机中都是占4个字节，测试如下：</span><br><span class="line"></span><br><span class="line">传入的int的值：-85776553</span><br><span class="line">查看int的每个字节内容(16进制):</span><br><span class="line">57,27,e3,fa</span><br><span class="line"></span><br><span class="line">重组后的int的值：-85776553</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎扫描关注我的微信公众号『码农爱学习』(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2020/06/27/C语言将float拆分为4个hex传输与重组/">C语言将float拆分为4个hex传输与重组</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb 的个人博客">xxpcb</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2020/06/27/C语言将float拆分为4个hex传输与重组/" title="C语言将float拆分为4个hex传输与重组">https://xxpcb.github.io/2020/06/27/C语言将float拆分为4个hex传输与重组/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2020/06/27/C语言将float拆分为4个hex传输与重组/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/float转hex/" rel="tag"># float转hex</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/06/26/C语言打印数据的二进制格式-原理解析与编程实现/" rel="next" title="C语言打印数据的二进制格式-原理解析与编程实现">
+                  <i class="fa fa-chevron-left"></i> C语言打印数据的二进制格式-原理解析与编程实现
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">45</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#问题引出"><span class="nav-number">1.</span> <span class="nav-text">问题引出</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分步测试"><span class="nav-number">2.</span> <span class="nav-text">分步测试</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#float型的2进制形式"><span class="nav-number">2.1.</span> <span class="nav-text">float型的2进制形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据拆分与重组"><span class="nav-number">2.2.</span> <span class="nav-text">数据拆分与重组</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#关于int型数据"><span class="nav-number">3.</span> <span class="nav-text">关于int型数据</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#完整测试代码"><span class="nav-number">4.</span> <span class="nav-text">完整测试代码</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
