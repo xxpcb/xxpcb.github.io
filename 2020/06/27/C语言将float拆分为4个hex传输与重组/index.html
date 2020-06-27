@@ -63,7 +63,7 @@
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
 <meta property="og:description" content="问题引出实际的编程应用中，特别是数据传输通信等场合，需要传输float等类型的数据，而常用的数据传输形式一般为hex格式或字符串格式，通常我们会选用hex格式，更接近计算机的2进制，而这种传输方式就需要将float转换为hex格式了。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-06-27T06:58:48.680Z">
+<meta property="og:updated_time" content="2020-06-27T07:10:15.286Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C语言将float拆分为4个hex传输与重组">
 <meta name="twitter:description" content="问题引出实际的编程应用中，特别是数据传输通信等场合，需要传输float等类型的数据，而常用的数据传输形式一般为hex格式或字符串格式，通常我们会选用hex格式，更接近计算机的2进制，而这种传输方式就需要将float转换为hex格式了。">
@@ -284,7 +284,7 @@
                 
               
 
-              <time title="创建时间：2020-06-27 14:57:29 / 修改时间：14:58:48" itemprop="dateCreated datePublished" datetime="2020-06-27T14:57:29+08:00">2020-06-27</time>
+              <time title="创建时间：2020-06-27 14:57:29 / 修改时间：15:10:15" itemprop="dateCreated datePublished" datetime="2020-06-27T14:57:29+08:00">2020-06-27</time>
             </span>
           
             
@@ -320,7 +320,7 @@
 <a id="more"></a>
 
 <p>在计算机中，float占用4个字节，因此可以考虑将float拆分为4个hex格式的16进制数，完成数据传输后，接收方再将4个hex重组为float即可还原出原来的数据，这有点像数据的编码和解码的意味。</p>
-<h1 id="分步测试"><a href="#分步测试" class="headerlink" title="分步测试"></a>分步测试</h1><h2 id="float型的2进制形式"><a href="#float型的2进制形式" class="headerlink" title="float型的2进制形式"></a>float型的2进制形式</h2><p>float的计算机中占用4个字节，具体是如何在计算机中存储的可以参考上一篇笔记：C语言打印数据的二进制格式-原理解析与编程实现，上次的int数据打印2进制的函数这里也可以用来测试，只需将参数类型改成float：</p>
+<h1 id="分步测试"><a href="#分步测试" class="headerlink" title="分步测试"></a>分步测试</h1><h2 id="float型的2进制形式"><a href="#float型的2进制形式" class="headerlink" title="float型的2进制形式"></a>float型的2进制形式</h2><p>float的计算机中占用4个字节，具体是如何在计算机中存储的可以参考上一篇笔记：<a href="https://xxpcb.github.io/2020/06/26/C%E8%AF%AD%E8%A8%80%E6%89%93%E5%8D%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%BC%E5%BC%8F-%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E4%B8%8E%E7%BC%96%E7%A8%8B%E5%AE%9E%E7%8E%B0/">C语言打印数据的二进制格式-原理解析与编程实现</a>，上次的int数据打印2进制的函数这里也可以用来测试，只需将参数类型改成float：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printf_bin</span><span class="params">(<span class="keyword">float</span> num)</span><span class="comment">//注意这次这里的参数类型改成了float</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i, j, k;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *p = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*)&amp;num + <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) <span class="comment">//处理4个字节(32位）</span></span><br><span class="line">	&#123;</span><br><span class="line">		j = *(p - i); <span class="comment">//取每个字节的首地址</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">7</span>; k &gt;= <span class="number">0</span>; k--) <span class="comment">//处理每个字节的8个位</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (j &amp; (<span class="number">1</span> &lt;&lt; k))</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"1"</span>);</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"0"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">" "</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\r\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>现在来测试一个float数据的2进制形式：</p>
