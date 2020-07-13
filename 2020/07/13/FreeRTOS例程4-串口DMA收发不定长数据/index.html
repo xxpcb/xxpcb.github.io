@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="基础知识点DMADMA(Direct Memory Access)，即直接内存存储，在一些数据的传输中，如串口、SPI等，采用DMA方式，传输过程不需要CPU参与，可用让CPU有更多的时间处理其他的事情。">
+<meta name="keywords" content="FreeRTOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FreeRTOS例程4-串口DMA收发不定长数据">
+<meta property="og:url" content="https://xxpcb.github.io/2020/07/13/FreeRTOS例程4-串口DMA收发不定长数据/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="基础知识点DMADMA(Direct Memory Access)，即直接内存存储，在一些数据的传输中，如串口、SPI等，采用DMA方式，传输过程不需要CPU参与，可用让CPU有更多的时间处理其他的事情。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/rtos-4-dma1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/rtos-4-dma2.png">
+<meta property="og:updated_time" content="2020-07-13T15:48:19.879Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="FreeRTOS例程4-串口DMA收发不定长数据">
+<meta name="twitter:description" content="基础知识点DMADMA(Direct Memory Access)，即直接内存存储，在一些数据的传输中，如串口、SPI等，采用DMA方式，传输过程不需要CPU参与，可用让CPU有更多的时间处理其他的事情。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/rtos-4-dma1.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2020/07/13/FreeRTOS例程4-串口DMA收发不定长数据/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>FreeRTOS例程4-串口DMA收发不定长数据 | xxpcb's Blog</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2020/07/13/FreeRTOS例程4-串口DMA收发不定长数据/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">FreeRTOS例程4-串口DMA收发不定长数据
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-07-13 23:47:04 / 修改时间：23:48:19" itemprop="dateCreated datePublished" datetime="2020-07-13T23:47:04+08:00">2020-07-13</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/FreeRTOS/" itemprop="url" rel="index"><span itemprop="name">FreeRTOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="基础知识点"><a href="#基础知识点" class="headerlink" title="基础知识点"></a>基础知识点</h1><h2 id="DMA"><a href="#DMA" class="headerlink" title="DMA"></a>DMA</h2><p>DMA(Direct Memory Access)，即直接内存存储，在一些数据的传输中，如串口、SPI等，采用DMA方式，传输过程不需要CPU参与，可用让CPU有更多的时间处理其他的事情。</p>
+<a id="more"></a>
+
+<p>STM32F4的DMA通道选择如下：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/rtos-4-dma1.png" alt></p>
+<p>接下来的程序思路如下：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/rtos-4-dma2.png" alt></p>
+<h1 id="编程要点"><a href="#编程要点" class="headerlink" title="编程要点"></a>编程要点</h1><h2 id="DMA发送"><a href="#DMA发送" class="headerlink" title="DMA发送"></a>DMA发送</h2><h3 id="串口DMA发送配置"><a href="#串口DMA发送配置" class="headerlink" title="串口DMA发送配置"></a>串口DMA发送配置</h3><p>由于是发送不定长的数据，先不需要配置发送的长度，在每次的发送时，再配置。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="comment">//串口DMA发送配置</span></span><br><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dma_uart_tx_init</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	DMA_InitTypeDef  DMA_InitStructure;</span><br><span class="line">	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2,ENABLE);<span class="comment">//DMA2时钟使能 </span></span><br><span class="line">	</span><br><span class="line">	DMA_DeInit(Uart_Tx_DMAStream);<span class="comment">//使用-----&gt;DMA2_Stream7</span></span><br><span class="line">	<span class="keyword">while</span> (DMA_GetCmdStatus(Uart_Tx_DMAStream) != DISABLE)&#123;&#125;<span class="comment">//等待DMA可配置 </span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 配置 DMA Stream */</span></span><br><span class="line">	DMA_InitStructure.DMA_Channel            = DMA_Channel_4;              <span class="comment">//通道选择</span></span><br><span class="line">	DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&amp;USART1-&gt;DR;           <span class="comment">//目的：DMA外设地址</span></span><br><span class="line">	DMA_InitStructure.DMA_Memory0BaseAddr    = (u32)SendBuff;              <span class="comment">//源：DMA存储器0地址</span></span><br><span class="line">	DMA_InitStructure.DMA_DIR                = DMA_DIR_MemoryToPeripheral; <span class="comment">//方向：存储器到外设模式</span></span><br><span class="line">	<span class="comment">//DMA_InitStructure.DMA_BufferSize       = BUF_SIZE;                   //长度：数据传输量(先不配置)</span></span><br><span class="line">	DMA_InitStructure.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;  <span class="comment">//外设非增量模式</span></span><br><span class="line">	DMA_InitStructure.DMA_MemoryInc          = DMA_MemoryInc_Enable;       <span class="comment">//存储器增量模式</span></span><br><span class="line">	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;<span class="comment">//外设数据长度:8位</span></span><br><span class="line">	DMA_InitStructure.DMA_MemoryDataSize     = DMA_MemoryDataSize_Byte;    <span class="comment">//存储器数据长度:8位</span></span><br><span class="line">	DMA_InitStructure.DMA_Mode               = DMA_Mode_Normal;            <span class="comment">//使用普通模式 </span></span><br><span class="line">	DMA_InitStructure.DMA_Priority           = DMA_Priority_Medium;        <span class="comment">//DMA优先级：中等优先级</span></span><br><span class="line">	DMA_InitStructure.DMA_FIFOMode           = DMA_FIFOMode_Disable;       <span class="comment">//FIFO模式 </span></span><br><span class="line">	DMA_InitStructure.DMA_FIFOThreshold      = DMA_FIFOThreshold_Full;     <span class="comment">//FIFO大小</span></span><br><span class="line">	DMA_InitStructure.DMA_MemoryBurst        = DMA_MemoryBurst_Single;     <span class="comment">//存储器单次传输</span></span><br><span class="line">	DMA_InitStructure.DMA_PeripheralBurst    = DMA_PeripheralBurst_Single; <span class="comment">//外设单次传输</span></span><br><span class="line">	DMA_Init(Uart_Tx_DMAStream, &amp;DMA_InitStructure);<span class="comment">//初始化DMA Stream</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment">//中断配置</span></span><br><span class="line">	DMA_ITConfig(Uart_Tx_DMAStream,DMA_IT_TC,ENABLE);  <span class="comment">//配置DMA发送完成后产生中断</span></span><br><span class="line">	NVIC_InitTypeDef NVIC_InitStructure;</span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream7_IRQn;<span class="comment">//</span></span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=<span class="number">7</span>;<span class="comment">//抢占优先级8</span></span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelSubPriority =<span class="number">0</span>;		<span class="comment">//子优先级0</span></span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			<span class="comment">//IRQ通道使能</span></span><br><span class="line">	NVIC_Init(&amp;NVIC_InitStructure);	<span class="comment">//根据指定的参数初始化VIC寄存器</span></span><br><span class="line">	</span><br><span class="line">	USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);  <span class="comment">//使能串口1的DMA发送</span></span><br><span class="line">	DMA_Cmd (Uart_Tx_DMAStream,DISABLE);<span class="comment">//先不要使能DMA！           </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>中断服务函数的<strong>串口空闲中断</strong>，清除标志位只能通过先读SR寄存器，再读DR寄存器清除！</p>
+<h3 id="DMA发送完成中断"><a href="#DMA发送完成中断" class="headerlink" title="DMA发送完成中断"></a>DMA发送完成中断</h3><p>DMA发送完成后，触发DMA发送完成中断，这里可用释放自定义的DMA发送完成信号量，表明下次的DMA传输可用进行。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="comment">//DMA发送完成中断服务程序</span></span><br><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">DMA2_Stream7_IRQHandler</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	BaseType_t xHigherPriorityTaskWoken;</span><br><span class="line">	<span class="comment">//printf("ooooooo\r\n");</span></span><br><span class="line">    <span class="keyword">if</span>(DMA_GetITStatus(Uart_Tx_DMAStream,DMA_IT_TCIF7)!= RESET) <span class="comment">//检查DMA传输完成中断 DMA_IT_TCIF7</span></span><br><span class="line">    &#123;</span><br><span class="line">        DMA_ClearITPendingBit(Uart_Tx_DMAStream,DMA_IT_TCIF7); </span><br><span class="line">		<span class="comment">//printf("dma tx ok\r\n");</span></span><br><span class="line">		<span class="keyword">if</span>(uartDMATCSemaphore!=<span class="literal">NULL</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="comment">//释放二值信号量</span></span><br><span class="line">			xSemaphoreGiveFromISR(uartDMATCSemaphore,&amp;xHigherPriorityTaskWoken);	<span class="comment">//释放DMA传输完成二值信号量</span></span><br><span class="line">		&#125;</span><br><span class="line">		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);<span class="comment">//如果需要的话进行一次任务切换</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="DMA发送函数接口"><a href="#DMA发送函数接口" class="headerlink" title="DMA发送函数接口"></a>DMA发送函数接口</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="comment">//串口DMA发送函数</span></span><br><span class="line"><span class="comment">//======================================= </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">uart_DMA_send</span><span class="params">(u8 *str,u16 ndtr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	u8 i;</span><br><span class="line">	u8 *p=str;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">while</span>(xSemaphoreTake(uartDMATCSemaphore,<span class="number">2</span>)!=pdTRUE);<span class="comment">//获取信号量，等待DMA发送可用</span></span><br><span class="line">	</span><br><span class="line">	DMA_Cmd(Uart_Tx_DMAStream, DISABLE);                      <span class="comment">//关闭DMA传输 </span></span><br><span class="line">	<span class="keyword">while</span> (DMA_GetCmdStatus(Uart_Tx_DMAStream) != DISABLE)&#123;&#125;	<span class="comment">//确保DMA可以被设置  </span></span><br><span class="line">	DMA_SetCurrDataCounter(Uart_Tx_DMAStream,ndtr);          <span class="comment">//数据传输量 </span></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;ndtr;i++)</span><br><span class="line">	&#123;</span><br><span class="line">		SendBuff[i]=*p++;</span><br><span class="line">	&#125;</span><br><span class="line">	DMA_Cmd(Uart_Tx_DMAStream, ENABLE);                      <span class="comment">//开启DMA传输 </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="DMA接收"><a href="#DMA接收" class="headerlink" title="DMA接收"></a>DMA接收</h2><h3 id="串口DMA接收配置"><a href="#串口DMA接收配置" class="headerlink" title="串口DMA接收配置"></a>串口DMA接收配置</h3><p>需要配置一个接收地址和一个接收长度，用于DMA接收数据的暂存。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="comment">//串口DMA接收配置</span></span><br><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dma_uart_rx_init</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	DMA_InitTypeDef  DMA_InitStructure;</span><br><span class="line">	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2,ENABLE);<span class="comment">//DMA2时钟使能 </span></span><br><span class="line">	</span><br><span class="line">	DMA_DeInit(Uart_Rx_DMAStream);<span class="comment">//使用-----&gt;DMA2_Stream5</span></span><br><span class="line">	<span class="keyword">while</span> (DMA_GetCmdStatus(Uart_Rx_DMAStream) != DISABLE)&#123;&#125;<span class="comment">//等待DMA可配置 </span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 配置 DMA Stream */</span></span><br><span class="line">	DMA_InitStructure.DMA_Channel            = DMA_Channel_4;              <span class="comment">//通道选择</span></span><br><span class="line">	DMA_InitStructure.DMA_PeripheralBaseAddr = (u32)&amp;USART1-&gt;DR;           <span class="comment">//源：DMA外设地址</span></span><br><span class="line">	DMA_InitStructure.DMA_Memory0BaseAddr    = (u32)ReceiveBuff;           <span class="comment">//目的：DMA存储器0地址</span></span><br><span class="line">	DMA_InitStructure.DMA_DIR                = DMA_DIR_PeripheralToMemory; <span class="comment">//方向：外设到存储器模式</span></span><br><span class="line">	DMA_InitStructure.DMA_BufferSize         = BUF_SIZE;                   <span class="comment">//长度：数据传输量</span></span><br><span class="line">	DMA_InitStructure.DMA_PeripheralInc      = DMA_PeripheralInc_Disable;  <span class="comment">//外设非增量模式</span></span><br><span class="line">	DMA_InitStructure.DMA_MemoryInc          = DMA_MemoryInc_Enable;       <span class="comment">//存储器增量模式</span></span><br><span class="line">	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;<span class="comment">//外设数据长度:8位</span></span><br><span class="line">	DMA_InitStructure.DMA_MemoryDataSize     = DMA_MemoryDataSize_Byte;    <span class="comment">//存储器数据长度:8位</span></span><br><span class="line">	DMA_InitStructure.DMA_Mode               = DMA_Mode_Normal;            <span class="comment">//使用普通模式 </span></span><br><span class="line">	DMA_InitStructure.DMA_Priority           = DMA_Priority_Medium;        <span class="comment">//DMA优先级：中等优先级</span></span><br><span class="line">	DMA_InitStructure.DMA_FIFOMode           = DMA_FIFOMode_Disable;       <span class="comment">//FIFO模式 </span></span><br><span class="line">	DMA_InitStructure.DMA_FIFOThreshold      = DMA_FIFOThreshold_Full;     <span class="comment">//FIFO大小</span></span><br><span class="line">	DMA_InitStructure.DMA_MemoryBurst        = DMA_MemoryBurst_Single;     <span class="comment">//存储器单次传输</span></span><br><span class="line">	DMA_InitStructure.DMA_PeripheralBurst    = DMA_PeripheralBurst_Single; <span class="comment">//外设单次传输</span></span><br><span class="line">	DMA_Init(Uart_Rx_DMAStream, &amp;DMA_InitStructure);<span class="comment">//初始化DMA Stream</span></span><br><span class="line">	</span><br><span class="line">	USART_DMACmd(USART1,USART_DMAReq_Rx,ENABLE);  <span class="comment">//使能串口1的DMA接收</span></span><br><span class="line">	DMA_Cmd (Uart_Rx_DMAStream,ENABLE);<span class="comment">//使能          </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="串口空闲中断"><a href="#串口空闲中断" class="headerlink" title="串口空闲中断"></a>串口空闲中断</h3><p>串口空闲中断的作用与上一篇介绍的一样，都是在发送完一串字符后被触发，这次由于使用了DMA接收，所以接收的数据在DMA缓冲区，且接收的数据长度可用根DMA接收通道的总长度与剩余长度的差值来计算，将接收的数据复制出来使用即可，同时释放自定义的串口空闲信号量，以便其它任务可用及时获取串口接收到的数据。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="comment">//串口1空闲中断服务程序，用于DMA接收</span></span><br><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">USART1_IRQHandler</span><span class="params">(<span class="keyword">void</span>)</span>                	</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">uint8_t</span> data;<span class="comment">//接收数据暂存变量</span></span><br><span class="line">	BaseType_t xHigherPriorityTaskWoken;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span>(USART_GetITStatus(USART1, USART_IT_IDLE) != RESET)<span class="comment">//空闲中断</span></span><br><span class="line">	&#123;</span><br><span class="line">		data = USART1-&gt;SR;</span><br><span class="line">		data = USART1-&gt;DR;</span><br><span class="line">		</span><br><span class="line">		DMA_Cmd(Uart_Rx_DMAStream,DISABLE);<span class="comment">//关闭DMA接收</span></span><br><span class="line">		<span class="keyword">while</span> (DMA_GetCmdStatus(Uart_Rx_DMAStream) != DISABLE)&#123;&#125;	<span class="comment">//确保DMA可以被设置 </span></span><br><span class="line">		rx_cnt = BUF_SIZE - DMA_GetCurrDataCounter(Uart_Rx_DMAStream);<span class="comment">//得到真正接收数据个数  </span></span><br><span class="line">		DMA_SetCurrDataCounter(Uart_Rx_DMAStream,BUF_SIZE);<span class="comment">//重新设置接收数据个数    </span></span><br><span class="line">	    <span class="comment">//printf("rx_cnt:%d\r\n",rx_cnt);</span></span><br><span class="line">		<span class="built_in">memcpy</span>(rxbuf,ReceiveBuff,rx_cnt);<span class="comment">//先复制出来，防止下次的数据来了之后将其覆盖</span></span><br><span class="line">	    DMA_ClearFlag(Uart_Rx_DMAStream,DMA_FLAG_TCIF5 | DMA_FLAG_FEIF5 | DMA_FLAG_DMEIF5 | DMA_FLAG_TEIF5 | DMA_FLAG_HTIF5);<span class="comment">//这里的各种标志还没搞懂</span></span><br><span class="line">		DMA_Cmd(Uart_Rx_DMAStream,ENABLE); <span class="comment">//开启DMA接收</span></span><br><span class="line">			</span><br><span class="line">		<span class="keyword">if</span>(uartRxIDLESemaphore!=<span class="literal">NULL</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="comment">//printf("nnnnnnn\r\n");</span></span><br><span class="line">			<span class="comment">//释放二值信号量</span></span><br><span class="line">			xSemaphoreGiveFromISR(uartRxIDLESemaphore,&amp;xHigherPriorityTaskWoken);<span class="comment">//释放串口空闲中断二值信号量</span></span><br><span class="line">		&#125;</span><br><span class="line">		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);<span class="comment">//如果需要的话进行一次任务切换</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="串口配置与测试任务"><a href="#串口配置与测试任务" class="headerlink" title="串口配置与测试任务"></a>串口配置与测试任务</h2><h3 id="串口配置"><a href="#串口配置" class="headerlink" title="串口配置"></a>串口配置</h3><p>基础的GPIO配置，以及串口空闲中断配置，并调用上面的串口DMA发送与接收配置。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="comment">//串口配置</span></span><br><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">uart_init</span><span class="params">(u32 bound)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//GPIO端口设置</span></span><br><span class="line">	GPIO_InitTypeDef GPIO_InitStructure;</span><br><span class="line">	USART_InitTypeDef USART_InitStructure;</span><br><span class="line">	NVIC_InitTypeDef NVIC_InitStructure;</span><br><span class="line"></span><br><span class="line">	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE); <span class="comment">//使能GPIOA时钟</span></span><br><span class="line">	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE);<span class="comment">//使能USART1时钟</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//串口1对应引脚复用映射</span></span><br><span class="line">	GPIO_PinAFConfig(GPIOA,GPIO_PinSource9,GPIO_AF_USART1); <span class="comment">//GPIOA9复用为USART1</span></span><br><span class="line">	GPIO_PinAFConfig(GPIOA,GPIO_PinSource10,GPIO_AF_USART1); <span class="comment">//GPIOA10复用为USART1</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//USART1端口配置</span></span><br><span class="line">	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_9 | GPIO_Pin_10; <span class="comment">//GPIOA9与GPIOA10</span></span><br><span class="line">	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;             <span class="comment">//复用功能</span></span><br><span class="line">	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	      <span class="comment">//速度50MHz</span></span><br><span class="line">	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;            <span class="comment">//推挽复用输出</span></span><br><span class="line">	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;             <span class="comment">//上拉</span></span><br><span class="line">	GPIO_Init(GPIOA,&amp;GPIO_InitStructure); <span class="comment">//初始化PA9，PA10</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//USART1 初始化设置</span></span><br><span class="line">	USART_InitStructure.USART_BaudRate            = bound;                         <span class="comment">//波特率设置</span></span><br><span class="line">	USART_InitStructure.USART_WordLength          = USART_WordLength_8b;           <span class="comment">//字长为8位数据格式</span></span><br><span class="line">	USART_InitStructure.USART_StopBits            = USART_StopBits_1;              <span class="comment">//一个停止位</span></span><br><span class="line">	USART_InitStructure.USART_Parity              = USART_Parity_No;               <span class="comment">//无奇偶校验位</span></span><br><span class="line">	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;<span class="comment">//无硬件数据流控制</span></span><br><span class="line">	USART_InitStructure.USART_Mode                = USART_Mode_Rx | USART_Mode_Tx; <span class="comment">//收发模式</span></span><br><span class="line">	USART_Init(USART1, &amp;USART_InitStructure); <span class="comment">//初始化串口1</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//DMA Config</span></span><br><span class="line">    dma_uart_tx_init();<span class="comment">//串口DMA发送配置</span></span><br><span class="line">	dma_uart_rx_init();<span class="comment">//串口DMA接收配置</span></span><br><span class="line">	</span><br><span class="line">	USART_ITConfig(USART1, USART_IT_IDLE, ENABLE);<span class="comment">//开启串口空闲中断</span></span><br><span class="line">	<span class="comment">//Usart1 NVIC 配置</span></span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;       <span class="comment">//串口1中断通道</span></span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=<span class="number">6</span>; <span class="comment">//抢占优先级8</span></span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelSubPriority =<span class="number">0</span>;		<span class="comment">//子优先级0</span></span><br><span class="line">	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			<span class="comment">//IRQ通道使能</span></span><br><span class="line">	NVIC_Init(&amp;NVIC_InitStructure);	<span class="comment">//根据指定的参数初始化VIC寄存器</span></span><br><span class="line">	</span><br><span class="line">	USART_Cmd(USART1, ENABLE);  <span class="comment">//使能串口1 </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试任务"><a href="#测试任务" class="headerlink" title="测试任务"></a>测试任务</h3><p>创建DMA发送完成信号量和串口空闲信号量，并先释放DMA发送完成信号量，用于第一次DMA发送时获取信号量。然后测试两条DMA发送不定长字符串，最后测试DMA接收不定长字符串。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//打印任务函数(测试任务)</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_task</span><span class="params">(<span class="keyword">void</span> *pvParameters)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">//创建二值信号量</span></span><br><span class="line">	uartDMATCSemaphore = xSemaphoreCreateBinary();</span><br><span class="line">	uartRxIDLESemaphore = xSemaphoreCreateBinary();</span><br><span class="line">	xSemaphoreGive(uartDMATCSemaphore);</span><br><span class="line">	</span><br><span class="line">	u8 str1[]=<span class="string">"ma nong ai xue xi\r\n"</span>;</span><br><span class="line">	uart_DMA_send(str1,<span class="keyword">sizeof</span>(str1));</span><br><span class="line">	</span><br><span class="line">	u8 str2[]=<span class="string">"xxpcb.github.io\r\n"</span>;</span><br><span class="line">	uart_DMA_send(str2,<span class="keyword">sizeof</span>(str2));</span><br><span class="line">	</span><br><span class="line">	BaseType_t err = pdFALSE;</span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		err=xSemaphoreTake(uartRxIDLESemaphore,<span class="number">5</span>);	<span class="comment">//获取信号量</span></span><br><span class="line">		<span class="keyword">if</span>(err==pdTRUE)							<span class="comment">//获取信号量成功</span></span><br><span class="line">		&#123;  </span><br><span class="line">			uart_DMA_send(<span class="string">"receive:"</span>,<span class="keyword">sizeof</span>(<span class="string">"receive:"</span>));</span><br><span class="line">			uart_DMA_send(rxbuf,rx_cnt);</span><br><span class="line">			uart_DMA_send(<span class="string">"\r\n"</span>,<span class="keyword">sizeof</span>(<span class="string">"\r\n"</span>));</span><br><span class="line">			</span><br><span class="line">			rx_cnt=<span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h1><p>通过串口助手，可以先接收到DMA发送的两个字符串（第一条hello是测试串口的，不是DMA发的），然后通过串口调试助手发送两次nice to meet you，测试DMA接收。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hello</span><br><span class="line">ma nong ai xue xi</span><br><span class="line">xxpcb.github.io</span><br><span class="line">receive:nice to meet you</span><br><span class="line">receive:nice to meet you</span><br></pre></td></tr></table></figure>
+
+<p>完整工程代码已保存至GitHub:<a href="https://github.com/xxpcb/FreeRTOS-STM32F407-examples" target="_blank" rel="noopener">https://github.com/xxpcb/FreeRTOS-STM32F407-examples</a></p>
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎关注我的微信公众号『码农爱学习』，一起学习进步(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2020/07/13/FreeRTOS例程4-串口DMA收发不定长数据/">FreeRTOS例程4-串口DMA收发不定长数据</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb 的个人博客">xxpcb</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2020/07/13/FreeRTOS例程4-串口DMA收发不定长数据/" title="FreeRTOS例程4-串口DMA收发不定长数据">https://xxpcb.github.io/2020/07/13/FreeRTOS例程4-串口DMA收发不定长数据/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2020/07/13/FreeRTOS例程4-串口DMA收发不定长数据/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/FreeRTOS/" rel="tag"># FreeRTOS</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/07/05/FreeRTOS例程3-串口中断接收不定长的数据与二值信号量的使用/" rel="next" title="FreeRTOS例程3-串口中断接收不定长的数据与二值信号量的使用">
+                  <i class="fa fa-chevron-left"></i> FreeRTOS例程3-串口中断接收不定长的数据与二值信号量的使用
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">62</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">46</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#基础知识点"><span class="nav-number">1.</span> <span class="nav-text">基础知识点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DMA"><span class="nav-number">1.1.</span> <span class="nav-text">DMA</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#编程要点"><span class="nav-number">2.</span> <span class="nav-text">编程要点</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DMA发送"><span class="nav-number">2.1.</span> <span class="nav-text">DMA发送</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#串口DMA发送配置"><span class="nav-number">2.1.1.</span> <span class="nav-text">串口DMA发送配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DMA发送完成中断"><span class="nav-number">2.1.2.</span> <span class="nav-text">DMA发送完成中断</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DMA发送函数接口"><span class="nav-number">2.1.3.</span> <span class="nav-text">DMA发送函数接口</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DMA接收"><span class="nav-number">2.2.</span> <span class="nav-text">DMA接收</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#串口DMA接收配置"><span class="nav-number">2.2.1.</span> <span class="nav-text">串口DMA接收配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#串口空闲中断"><span class="nav-number">2.2.2.</span> <span class="nav-text">串口空闲中断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#串口配置与测试任务"><span class="nav-number">2.3.</span> <span class="nav-text">串口配置与测试任务</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#串口配置"><span class="nav-number">2.3.1.</span> <span class="nav-text">串口配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试任务"><span class="nav-number">2.3.2.</span> <span class="nav-text">测试任务</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实验结果"><span class="nav-number">3.</span> <span class="nav-text">实验结果</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/字符串切分/">字符串切分</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
