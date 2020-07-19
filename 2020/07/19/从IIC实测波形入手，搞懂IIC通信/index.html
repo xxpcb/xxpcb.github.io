@@ -63,7 +63,7 @@
 <meta property="og:site_name" content="xxpcb&#39;s Blog">
 <meta property="og:description" content="玩单片机的朋友都知道IIC通信这个工具，但好多人只是会用，内部的原理不求甚解，或是想要了解其原理，但却对抽象的时序描述一头雾水。本文将从实测的IIC波形入手，带你看到真实的IIC样子，进而去理解IIC的通信原理。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="g:%5CTestProject%5Cmarkdown_html%5C%E5%8D%95%E7%89%87%E6%9C%BA%5CIIC%E9%80%9A%E4%BF%A1%5C20200719110223.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-connect.png">
 <meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E6%80%BB%E7%BA%BF%E6%97%B6%E5%BA%8F%E5%9B%BE.png">
 <meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E8%B5%B7%E5%A7%8B%E4%B8%8E%E5%81%9C%E6%AD%A2.png">
 <meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E5%BA%94%E7%AD%94.png">
@@ -76,11 +76,11 @@
 <meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wave2.png">
 <meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-sda.png">
 <meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wave3.png">
-<meta property="og:updated_time" content="2020-07-19T12:03:58.932Z">
+<meta property="og:updated_time" content="2020-07-19T12:27:03.586Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从IIC实测波形入手，搞懂IIC通信">
 <meta name="twitter:description" content="玩单片机的朋友都知道IIC通信这个工具，但好多人只是会用，内部的原理不求甚解，或是想要了解其原理，但却对抽象的时序描述一头雾水。本文将从实测的IIC波形入手，带你看到真实的IIC样子，进而去理解IIC的通信原理。">
-<meta name="twitter:image" content="g:%5CTestProject%5Cmarkdown_html%5C%E5%8D%95%E7%89%87%E6%9C%BA%5CIIC%E9%80%9A%E4%BF%A1%5C20200719110223.png">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-connect.png">
   <link rel="canonical" href="https://xxpcb.github.io/2020/07/19/从IIC实测波形入手，搞懂IIC通信/">
 
 
@@ -307,7 +307,7 @@
                 
               
 
-              <time title="创建时间：2020-07-19 19:25:55 / 修改时间：20:03:58" itemprop="dateCreated datePublished" datetime="2020-07-19T19:25:55+08:00">2020-07-19</time>
+              <time title="创建时间：2020-07-19 19:25:55 / 修改时间：20:27:03" itemprop="dateCreated datePublished" datetime="2020-07-19T19:25:55+08:00">2020-07-19</time>
             </span>
           
             
@@ -360,7 +360,7 @@
 <li>多个IIC器件可以并联在IIC总线上，每个器件有特定的地址，分时共享IIC总线</li>
 <li>实际使用IIC当然还要连接电源以及共地哦</li>
 </ul>
-<p><img src="G:%5CTestProject%5Cmarkdown_html%5C%E5%8D%95%E7%89%87%E6%9C%BA%5CIIC%E9%80%9A%E4%BF%A1%5C20200719110223.png" alt></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-connect.png" alt></p>
 <h2 id="IIC时序"><a href="#IIC时序" class="headerlink" title="IIC时序"></a>IIC时序</h2><p>网上查找IIC的基础知识，可能会搜到这样的时序图：</p>
 <p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E6%80%BB%E7%BA%BF%E6%97%B6%E5%BA%8F%E5%9B%BE.png" alt></p>
 <p>看起来好复杂的样子，这时可能一部分人就放弃思考了。</p>
