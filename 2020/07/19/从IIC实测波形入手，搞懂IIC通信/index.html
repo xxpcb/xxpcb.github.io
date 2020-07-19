@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="玩单片机的朋友都知道IIC通信这个工具，但好多人只是会用，内部的原理不求甚解，或是想要了解其原理，但却对抽象的时序描述一头雾水。本文将从实测的IIC波形入手，带你看到真实的IIC样子，进而去理解IIC的通信原理。">
+<meta name="keywords" content="IIC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从IIC实测波形入手，搞懂IIC通信">
+<meta property="og:url" content="https://xxpcb.github.io/2020/07/19/从IIC实测波形入手，搞懂IIC通信/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="玩单片机的朋友都知道IIC通信这个工具，但好多人只是会用，内部的原理不求甚解，或是想要了解其原理，但却对抽象的时序描述一头雾水。本文将从实测的IIC波形入手，带你看到真实的IIC样子，进而去理解IIC的通信原理。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="g:%5CTestProject%5Cmarkdown_html%5C%E5%8D%95%E7%89%87%E6%9C%BA%5CIIC%E9%80%9A%E4%BF%A1%5C20200719110223.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E6%80%BB%E7%BA%BF%E6%97%B6%E5%BA%8F%E5%9B%BE.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E8%B5%B7%E5%A7%8B%E4%B8%8E%E5%81%9C%E6%AD%A2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E5%BA%94%E7%AD%94.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E5%AE%8C%E6%95%B4%E6%97%B6%E5%BA%8F.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-w1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wx.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-r1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-rx.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wave1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wave2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-sda.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wave3.png">
+<meta property="og:updated_time" content="2020-07-19T11:54:52.238Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从IIC实测波形入手，搞懂IIC通信">
+<meta name="twitter:description" content="玩单片机的朋友都知道IIC通信这个工具，但好多人只是会用，内部的原理不求甚解，或是想要了解其原理，但却对抽象的时序描述一头雾水。本文将从实测的IIC波形入手，带你看到真实的IIC样子，进而去理解IIC的通信原理。">
+<meta name="twitter:image" content="g:%5CTestProject%5Cmarkdown_html%5C%E5%8D%95%E7%89%87%E6%9C%BA%5CIIC%E9%80%9A%E4%BF%A1%5C20200719110223.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2020/07/19/从IIC实测波形入手，搞懂IIC通信/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>从IIC实测波形入手，搞懂IIC通信 | xxpcb's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2020/07/19/从IIC实测波形入手，搞懂IIC通信/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">从IIC实测波形入手，搞懂IIC通信
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-07-19 19:25:55 / 修改时间：19:54:52" itemprop="dateCreated datePublished" datetime="2020-07-19T19:25:55+08:00">2020-07-19</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/嵌入式基础/" itemprop="url" rel="index"><span itemprop="name">嵌入式基础</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>玩单片机的朋友都知道IIC通信这个工具，但好多人只是会用，内部的原理不求甚解，或是想要了解其原理，但却对抽象的时序描述一头雾水。本文将从实测的IIC波形入手，带你看到真实的IIC样子，进而去理解IIC的通信原理。</p>
+<a id="more"></a>
+
+<h1 id="IIC基础知识"><a href="#IIC基础知识" class="headerlink" title="IIC基础知识"></a>IIC基础知识</h1><p>首先复习一下IIC基础知识，这部分看不懂的请先带着疑问，然后我们通过分析IIC的真实波形，这些疑问可能就豁然开朗了~</p>
+<h2 id="IIC是什么"><a href="#IIC是什么" class="headerlink" title="IIC是什么"></a>IIC是什么</h2><p>IIC(Inter Integrated Circuit，集成电路总线)是一种由 PHILIPS 公司开发的两线式串行总线，用于连接微控制器及其外围设备。它是由<strong>数据线</strong> <strong>SDA</strong> 和<strong>时钟</strong> <strong>SCL</strong> 构成的串行总线，可发送和接收数据。在 CPU (单片机)与IIC模块之间、IIC模块与IIC模块之间进行双向传送。</p>
+<p>IIC的一些特点：</p>
+<ul>
+<li><strong>IIC是半双工，而不是全双工</strong></li>
+<li><strong>IIC是真正的多主机总线</strong>，（对比SPI在每次通信前都需要把主机定死，而IIC可以在通讯过程中，改变主机），如果两个或更多的主机同时请求总线，可以通过冲突检测和仲裁防止总线数据被破坏</li>
+<li><strong>起始和终止信号都是由主机发出的</strong>，连接到I2C总线上的器件，若具有I2C总线的硬件接口，则很容易检测到起始和终止信号</li>
+<li>在<strong>起始信号后</strong>必须发送一个<strong>7位从机地址+1位方向位</strong>，用“0”表示主机发送数据<strong>，</strong>“1”表示主机接收数据。</li>
+<li>每当主机向从机发送完一个字节的数据，<strong>主机总是需要等待从机给出一个应答信号</strong>，以确认从机是否成功接收到了数据</li>
+<li><strong>起始信号是必需的</strong>，结束信号和应答信号，都可以不要</li>
+</ul>
+<p><strong>注</strong>：实际使用中，<strong>一般是单片机作为主机，其它器件作为从机</strong>，单片机先向器件发送信息表示要读取数据，之后转变传输方向，器件发送数据到单片机。</p>
+<h2 id="IIC物理连接"><a href="#IIC物理连接" class="headerlink" title="IIC物理连接"></a>IIC物理连接</h2><p>使用IIC通信的IIC器件有很多，比如陀螺仪加速度计MPU6050，EEPROM存储芯片AT24C02等，通过IIC总线，可以与单片机之间进行数据传输。</p>
+<ul>
+<li>IIC通信线只有只有两根，数据线SDA的高低电平<strong>传输2进制的数据</strong>，时钟线SCL通过方波信号<strong>提供时钟节拍</strong></li>
+<li>多个IIC器件可以并联在IIC总线上，每个器件有特定的地址，分时共享IIC总线</li>
+<li>实际使用IIC当然还要连接电源以及共地哦</li>
+</ul>
+<p><img src="G:%5CTestProject%5Cmarkdown_html%5C%E5%8D%95%E7%89%87%E6%9C%BA%5CIIC%E9%80%9A%E4%BF%A1%5C20200719110223.png" alt></p>
+<h2 id="IIC时序"><a href="#IIC时序" class="headerlink" title="IIC时序"></a>IIC时序</h2><p>网上查找IIC的基础知识，可能会搜到这样的时序图：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E6%80%BB%E7%BA%BF%E6%97%B6%E5%BA%8F%E5%9B%BE.png" alt></p>
+<p>看起来好复杂的样子，这时可能一部分人就放弃思考了。</p>
+<h3 id="IIC起始结束信号"><a href="#IIC起始结束信号" class="headerlink" title="IIC起始结束信号"></a>IIC起始结束信号</h3><p>好吧，换个简单点的图，你也可能会搜到这样的图：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E8%B5%B7%E5%A7%8B%E4%B8%8E%E5%81%9C%E6%AD%A2.png" alt></p>
+<p>这张图看起来更简单一些，描述了IIC的<strong>起始和停止</strong>条件：</p>
+<ul>
+<li>起始：时钟线SCL为高时，数据线SDA由高到低</li>
+<li>停止：时钟线SCL为高时，数据线SDA由低到高</li>
+</ul>
+<p>注：SDA和SCL同时为高时，为IIC总线的空闲状态</p>
+<h3 id="IIC应答"><a href="#IIC应答" class="headerlink" title="IIC应答"></a>IIC应答</h3><p>再来看下面这张图：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E5%BA%94%E7%AD%94.png" alt></p>
+<p>这表示IIC的应答机制</p>
+<ul>
+<li>下面的波形：SCL，主机产生的时钟脉冲</li>
+<li>上面的波形：SDA，主机发送的8位数据</li>
+<li>中间的波形：SDA，从机在第9个时钟信号进行<strong>拉低回应</strong>，表示收到了主机发来的数据，<strong>拉高则表示不应答</strong></li>
+</ul>
+<p>注：实际上，上面和中间是同样的SDA线，这里只是分开示意。因为IIC应答是一种相互关系，单片机发数据给IIC器件，IIC器件要进行应答，表示收到了数据，同样，单片机接收IIC器件的数据后，也要给IIC器件一个应答。</p>
+<p>既然发送完都需要对方回应，那什么时候使用不应答呢？就是在读取到本次数据后，如果不需要继续读取，则发送非应答，对方以为你没收到这次数据，则就不会继续发送了。</p>
+<h3 id="IIC完整传输时序"><a href="#IIC完整传输时序" class="headerlink" title="IIC完整传输时序"></a>IIC完整传输时序</h3><p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC%E5%AE%8C%E6%95%B4%E6%97%B6%E5%BA%8F.png" alt></p>
+<ul>
+<li>开始标志（S）发出后，主设备会传送一个7 位的Slave 地址，并且后面跟着一个第8位，称为Read/Write 位。</li>
+<li>R/W 位表示主设备是在接受从设备的数据还是在向其写数据。</li>
+<li>然后，主设备释放SDA 线，等待从设备的应答信号（ACK）。每个字节的传输都要跟随有一个应答位。</li>
+<li>应答产生时，从设备将SDA 线拉低并且在SCL 为高电平时保持低。</li>
+<li>数据传输以停止标志（P）结束，然后释放总线。但主设备也可以产生重复的开始信号去操作另一台从设备，而不发出结束标志。</li>
+<li><strong>所有的SDA 信号变化都要在SCL 时钟为低电平时进行，除了开始和结束标志</strong></li>
+</ul>
+<h2 id="常用的数据收发方式-时序"><a href="#常用的数据收发方式-时序" class="headerlink" title="常用的数据收发方式(时序)"></a>常用的数据收发方式(时序)</h2><p>上面1.3小节是IIC的基础时序，在实际使用中，一般是对某个IIC器件的某个寄存器进行读写操作，因此，对于寄存器的读写操作，还要遵循下面的组合时序逻辑。</p>
+<h3 id="写一个字节"><a href="#写一个字节" class="headerlink" title="写一个字节"></a>写一个字节</h3><p>用于对IIC器件某个寄存器的配置，如对MPU6050的某些参数进行设置。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-w1.png" alt></p>
+<ul>
+<li>写寄存器时，主设备除了发出开始标志和地址位，还要加一个R/W 位，0 为写，1 为读</li>
+<li>在第9 个时钟周期（高电平时），MPU6050 产生应答信号</li>
+<li>主设备开始传送寄存器地址，并接到应答</li>
+<li>然后开始传送寄存器数据，仍然要有应答信号</li>
+<li>最后主设备发送停止信号。</li>
+</ul>
+<h3 id="连续写多个字节"><a href="#连续写多个字节" class="headerlink" title="连续写多个字节"></a>连续写多个字节</h3><p>对连续地址的写入，这个用的较少。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wx.png" alt></p>
+<p>通信时序与上面的“写一个字节”类似，上面是写一个字节后就停止了，若要连续写，则继续写即可，只要可以收到从机Ack。</p>
+<h3 id="读一个字节"><a href="#读一个字节" class="headerlink" title="读一个字节"></a>读一个字节</h3><p>用于读取IIC器件某个寄存器的数值。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-r1.png" alt></p>
+<ul>
+<li>首先由主设备产生开始信号，然后发送从设备地址位和一个写数据位，等待应答</li>
+<li>然后发送寄存器地址，才能开始读寄存器</li>
+<li>收到应答信号后，主设备再发一个开始信号，然后发送从设备地址位和一个读数据位</li>
+<li>然后，作为从设备的MPU6050 产生应答信号并开始发送寄存器中的数据</li>
+<li>通信以主设备产生的拒绝应答信号（nACK）和结束标志（Stop）结束</li>
+<li>拒绝应答信号（nACK）产生定义为SDA 数据在第9 个时钟周期一直为高</li>
+</ul>
+<h3 id="连续读多个字节"><a href="#连续读多个字节" class="headerlink" title="连续读多个字节"></a>连续读多个字节</h3><p>也是用于读取IIC器件某个寄存器的数值，当某些数据一位字节不够表示，或有一组连续的数据需要读时，可以使用该模式。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-rx.png" alt></p>
+<p>通信时序与上面的“读一个字节”类似，上面是读一个字节后就nAck叫停，若要连续写，则发送Ack，直到不需要继续读时再回复nAck。</p>
+<p>复习了这么多，之前对IIC懵懵懂懂的是否依然犯迷糊，好了，现在从理论进入实践，看看真实的IIC是什么样子。</p>
+<h1 id="初识IIC真实波形"><a href="#初识IIC真实波形" class="headerlink" title="初识IIC真实波形"></a>初识IIC真实波形</h1><p>下面这张图是通过示波器抓取的IIC波形，可以看到：</p>
+<ul>
+<li>时钟线SCL是一种间歇性的方波（需要通信时才产生方波）</li>
+<li>数据线SDA根据SCL提供的节拍，高电平代表数据1，低电平代表数据0</li>
+<li>没有数据传输时，SDA和SCL均为高电平状态</li>
+<li>起始信号后，数据是9个一组，包括8位的数据和另一方的1位回应</li>
+</ul>
+<p>图中<strong>红色数字表示单片机发送的8位数据，黄色数字表示IIC器件回应的信号</strong>，低电平0表示器件收到了单片机发来的数据。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wave1.png" alt></p>
+<p>现在对IIC波形有没有多了一些直观的认识？下面再进入编程阶段，看看程序是怎么控制这两根线的。</p>
+<h1 id="编写IIC通信函数"><a href="#编写IIC通信函数" class="headerlink" title="编写IIC通信函数"></a>编写IIC通信函数</h1><p>IIC通信可以使用单片机自带的硬件IIC，它提供了固定的引脚接口和函数库。也可以自己通过软件编写来实现IIC时序，这时就可以任选引脚，也方便其它硬件平台的移植。</p>
+<p>下面通过软件IIC的编写，从软件角度理解IIC通信逻辑。</p>
+<p>以下函数都是单片机在执行，即主机发出的动作，所以一定要从单片机的角度思考哦~</p>
+<p>另外，不要看到程序就匆匆掠过，为帮助理解，我对代码进行了一定的注解，仔细分析每条代码，想想与IIC的逻辑如何对应起来，IIC逻辑还没懂的，读完本篇，分析过真实的IIC波形后，再来看看代码，会有不一样的体会。</p>
+<h2 id="起始IIC-Start"><a href="#起始IIC-Start" class="headerlink" title="起始IIC_Start()"></a>起始IIC_Start()</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="comment">//产生IIC起始信号</span></span><br><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">IIC_Start</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	SDA_OUT();   <span class="comment">//sda线输出</span></span><br><span class="line">	IIC_SDA=<span class="number">1</span>;	  </span><br><span class="line">	delay_us(<span class="number">2</span>);	</span><br><span class="line">	IIC_SCL=<span class="number">1</span>;   <span class="comment">//时钟线为高时</span></span><br><span class="line">	delay_us(<span class="number">2</span>);</span><br><span class="line"> 	IIC_SDA=<span class="number">0</span>;   <span class="comment">//数据线由高到低</span></span><br><span class="line">	delay_us(<span class="number">4</span>);</span><br><span class="line">	IIC_SCL=<span class="number">0</span>;   <span class="comment">//时钟线拉低，钳住IIC总线，准备发送数据</span></span><br></pre></td></tr></table></figure>
+
+<p>最后一句SCL拉低，然后就准备产生时钟信号，发送数据了。</p>
+<h2 id="停止IIC-Stop"><a href="#停止IIC-Stop" class="headerlink" title="停止IIC_Stop()"></a>停止IIC_Stop()</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="comment">//产生IIC停止信号</span></span><br><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">IIC_Stop</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	SDA_OUT();  <span class="comment">//sda线输出</span></span><br><span class="line">	IIC_SCL=<span class="number">0</span>;  <span class="comment">//确保时钟线为低时，数据线才能变化为0，否则这就可能成起始信号了！</span></span><br><span class="line">	delay_us(<span class="number">2</span>);</span><br><span class="line">	IIC_SDA=<span class="number">0</span>;</span><br><span class="line"> 	delay_us(<span class="number">2</span>);</span><br><span class="line">	IIC_SCL=<span class="number">1</span>;  <span class="comment">//时钟线为高时</span></span><br><span class="line">	IIC_SDA=<span class="number">1</span>;  <span class="comment">//数据线由低到高</span></span><br><span class="line">	delay_us(<span class="number">4</span>);							   	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>停止前也要确保SCL是拉低的状态。</p>
+<p>最后SDA和SCL都为高，即释放IIC总线，IIC总线进入空闲状态。</p>
+<h2 id="等待应答IIC-wait-Ack"><a href="#等待应答IIC-wait-Ack" class="headerlink" title="等待应答IIC_wait_Ack()"></a>等待应答IIC_wait_Ack()</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="comment">//等待应答信号到来</span></span><br><span class="line"><span class="comment">//用于发送模式下，发送8位后，等待器件应答第9位</span></span><br><span class="line"><span class="comment">//返回值：1，接收应答失败</span></span><br><span class="line"><span class="comment">//        0，接收应答成功</span></span><br><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="function">u8 <span class="title">IIC_Wait_Ack</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	u8 ucErrTime=<span class="number">0</span>;</span><br><span class="line">	SDA_IN();                 <span class="comment">//SDA设置为输入  </span></span><br><span class="line">	IIC_SDA=<span class="number">1</span>;delay_us(<span class="number">1</span>);	  <span class="comment">//SDA先拉高，若被从机拉低则说明收到应答信号</span></span><br><span class="line">	IIC_SCL=<span class="number">1</span>;delay_us(<span class="number">1</span>);	  <span class="comment">//SCL拉高，产生第9位的脉冲</span></span><br><span class="line">	<span class="keyword">while</span>(READ_SDA)</span><br><span class="line">	&#123;</span><br><span class="line">		ucErrTime++;</span><br><span class="line">		<span class="keyword">if</span>(ucErrTime&gt;<span class="number">250</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			IIC_Stop();</span><br><span class="line">			<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	IIC_SCL=<span class="number">0</span>;<span class="comment">//时钟输出0 	  //SCL拉低，结束第9位的脉冲 </span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在一定是时间内检测SDA是否被从机拉低，被拉低则说明从机收到了数据。</p>
+<h2 id="产生应答IIC-Ack"><a href="#产生应答IIC-Ack" class="headerlink" title="产生应答IIC_Ack()"></a>产生应答IIC_Ack()</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="comment">//产生ACK应答</span></span><br><span class="line"><span class="comment">//用于读取模式(SDA为in)读了8位器件数据后，在第9位给出一个应答，我还要继续读</span></span><br><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">IIC_Ack</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	IIC_SCL=<span class="number">0</span>;    <span class="comment">//确保时钟线为低时，数据线才能变化为0，否则这就可能成起始信号了！</span></span><br><span class="line">	SDA_OUT();    <span class="comment">//SDA由读取改为发送</span></span><br><span class="line">	delay_us(<span class="number">2</span>);</span><br><span class="line">	IIC_SDA=<span class="number">0</span>;    <span class="comment">//拉低SDA，表示应答</span></span><br><span class="line">	delay_us(<span class="number">2</span>);</span><br><span class="line">	IIC_SCL=<span class="number">1</span>;    <span class="comment">//SCL先上升</span></span><br><span class="line">	delay_us(<span class="number">2</span>);</span><br><span class="line">	IIC_SCL=<span class="number">0</span>;    <span class="comment">//SCL再下降，形成一个脉冲，应答才生效</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>单片机在接收器件数据后，进行回应，表示接收到了器件的数据。</p>
+<p>该函数用在连续读取多个字节时，每读完一个字节(8位)，产生回应，表示还要进行读，这时器件就可以继续发数据了。</p>
+<p>当单片机不需要继续读，如连续读的最后一个字节，或只读一个字节，单片机发送非应答信号，这时器件以为单片机没有收到数据，接下来就不会再发数据了。</p>
+<p>非应答函数如下，就是拉高SDA：</p>
+<h2 id="不产生应答IIC-nAck"><a href="#不产生应答IIC-nAck" class="headerlink" title="不产生应答IIC_nAck()"></a>不产生应答IIC_nAck()</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="comment">//不产生ACK应答	</span></span><br><span class="line"><span class="comment">//用于读取模式(SDA为in)读了8位器件数据后，在第9位给出一个应答，我不想读了</span></span><br><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">IIC_NAck</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	IIC_SCL=<span class="number">0</span>;    <span class="comment">//确保时钟线为低时，数据线才能变化为0，否则这就可能成起始信号了！</span></span><br><span class="line">	SDA_OUT();    <span class="comment">//SDA由读取改为发送</span></span><br><span class="line">	IIC_SDA=<span class="number">1</span>;    <span class="comment">//拉高SDA，表示不应答</span></span><br><span class="line">	delay_us(<span class="number">2</span>);</span><br><span class="line">	IIC_SCL=<span class="number">1</span>;    <span class="comment">//SCL先上升</span></span><br><span class="line">	delay_us(<span class="number">2</span>);</span><br><span class="line">	IIC_SCL=<span class="number">0</span>;    <span class="comment">//SCL再下降，形成一个脉冲，不应答才生效</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="IIC发送一个字节"><a href="#IIC发送一个字节" class="headerlink" title="IIC发送一个字节"></a>IIC发送一个字节</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="comment">//IIC发送一个字节</span></span><br><span class="line"><span class="comment">//返回从机有无应答</span></span><br><span class="line"><span class="comment">//1，有应答</span></span><br><span class="line"><span class="comment">//0，无应答	</span></span><br><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">IIC_Send_Byte</span><span class="params">(u8 txd)</span></span></span><br><span class="line"><span class="function"></span>&#123;                        </span><br><span class="line">    u8 t;   </span><br><span class="line">	SDA_OUT(); 	               <span class="comment">//SDA发送模式</span></span><br><span class="line">    IIC_SCL=<span class="number">0</span>;                 <span class="comment">//拉低时钟开始数据传输</span></span><br><span class="line">    <span class="keyword">for</span>(t=<span class="number">0</span>;t&lt;<span class="number">8</span>;t++)</span><br><span class="line">    &#123;              </span><br><span class="line">        IIC_SDA=(txd&amp;<span class="number">0x80</span>)&gt;&gt;<span class="number">7</span>; <span class="comment">//SDA高低电平表示数据1和0</span></span><br><span class="line">        txd&lt;&lt;=<span class="number">1</span>; 	  </span><br><span class="line">		delay_us(<span class="number">2</span>);           <span class="comment">//对TEA5767这三个延时都是必须的</span></span><br><span class="line">		IIC_SCL=<span class="number">1</span>;             <span class="comment">//SCL先上升</span></span><br><span class="line">		delay_us(<span class="number">2</span>); </span><br><span class="line">		IIC_SCL=<span class="number">0</span>;	           <span class="comment">//SCL再下降，形成一个脉冲，发送一位数据生效</span></span><br><span class="line">		delay_us(<span class="number">2</span>);</span><br><span class="line">    &#125;	 </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>发送一个字节，就是分8次循环，产生8个时钟信号，并将SDA赋值为0或1。</p>
+<h2 id="IIC读取一个字节"><a href="#IIC读取一个字节" class="headerlink" title="IIC读取一个字节"></a>IIC读取一个字节</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="comment">//读1个字节</span></span><br><span class="line"><span class="comment">//ack=1时，发送ACK，ack=0，发送nACK  </span></span><br><span class="line"><span class="comment">//==================================</span></span><br><span class="line"><span class="function">u8 <span class="title">IIC_Read_Byte</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> ack)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> i,receive=<span class="number">0</span>;</span><br><span class="line">	SDA_IN();                  <span class="comment">//SDA输入模式</span></span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">8</span>;i++ )</span><br><span class="line">	&#123;</span><br><span class="line">        IIC_SCL=<span class="number">0</span>;             <span class="comment">//SCL先下降，通过循环，形成时钟脉冲</span></span><br><span class="line">        delay_us(<span class="number">2</span>);</span><br><span class="line">		IIC_SCL=<span class="number">1</span>;             <span class="comment">//SCL上升</span></span><br><span class="line">        receive&lt;&lt;=<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span>(READ_SDA)</span><br><span class="line">			receive++;         <span class="comment">//读取并组合记录数据，++表示读到1了，最低位置1</span></span><br><span class="line">		delay_us(<span class="number">1</span>); </span><br><span class="line">    &#125;	</span><br><span class="line">    <span class="comment">//读取8位后，主机需要变为发送模式，在第9位进行应答或不应答</span></span><br><span class="line">    <span class="comment">//此时CLK还是高电平状态，不过下面的应答会先将CLK拉低的	</span></span><br><span class="line">    <span class="keyword">if</span> (!ack)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">//读1个字节，或读多个字节读到最后一个字节时，使用nACK</span></span><br><span class="line">		<span class="comment">//然后配合使用IIC停止信号</span></span><br><span class="line">        IIC_NAck();<span class="comment">//发送nACK</span></span><br><span class="line">	&#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">//读多个字节还没读完时，使用ACK，表示现在读的ok，还要继续读</span></span><br><span class="line">        IIC_Ack(); <span class="comment">//发送ACK </span></span><br><span class="line">	&#125;		</span><br><span class="line">    <span class="keyword">return</span> receive;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>读取一个字节，也是分8次循环，产生8个时钟信号，并读取SDA的高低电平信号，最后，根据要不要继续读下一个字节，发送第9位的Ack或nACK。</p>
+<h1 id="真实IIC波形详细分析"><a href="#真实IIC波形详细分析" class="headerlink" title="真实IIC波形详细分析"></a>真实IIC波形详细分析</h1><h2 id="读取从机数据（单字节读）"><a href="#读取从机数据（单字节读）" class="headerlink" title="读取从机数据（单字节读）"></a>读取从机数据（单字节读）</h2><p>这张图展示IIC读某个器件的寄存器的一个字节的真实波形（注：实际是读了2个不同寄存器的值，每个寄存器读了1个字节，所以，可以先只看前半部分哦~），我已对波形进行了详细的注解。</p>
+<p>对照着图，再来温习一下各个信号的特点：</p>
+<ul>
+<li>起始信号：时钟线SCL为高时，数据线SDA由高到低</li>
+<li>停止信号：时钟线SCL为高时，数据线SDA由低到高</li>
+<li>数据信号：连续的8位，每一个SCL脉冲时钟对应的SDA，高电平为数据1，低电平为数据0</li>
+<li>应答信号：第9位(数据信号后)，由对方产生的回应，0为产生回应，1为不产生回应</li>
+</ul>
+<p>这幅图中，单片机先产生<strong>起始信号</strong>，然后发送<strong>7位器件地址+1位写标志</strong>(绿色的0)，并<strong>等待从机回应</strong>(从机拉低SDA表示收到数据)，接着发送<strong>8位寄存器地址</strong>，并<strong>等待从机回应</strong>。然后，单片机先再次产生<strong>起始信号</strong>，发送<strong>7位器件地址+1位读标志</strong>(绿色的1)，并<strong>等待从机回应</strong>。从机收到读的信号后，<strong>从机开始发送8位数据</strong>，主机接收到数据后，<strong>主机发送nAck不应答信号</strong>（图中的Ack(1)，主机将SDA拉高，从机则认为主机刚才没有收到它发送的数据，从机将不再继续发送），接着<strong>主机发送结束信号</strong>，读取完成。</p>
+<p>此图后半部分是以相同方式读了另一个寄存器的值。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wave2.png" alt></p>
+<p>上图中，SCL信号都是由单片机产生，SDA信号由单片机和IIC器件(从机)共同产生，当需要对IIC器件的寄存器写时，单片机产生SDA数据，当需要读取IIC器件的寄存器数据时，改变传输方向，IIC器件产生SDA数据。</p>
+<p>对于主机和从机什么时候控制SDA，还可以参考这个图帮助理解：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC-sda.png" alt></p>
+<h2 id="读取从机数据（多字节读）"><a href="#读取从机数据（多字节读）" class="headerlink" title="读取从机数据（多字节读）"></a>读取从机数据（多字节读）</h2><p>上面是单字节读的波形，再来看看多字节的波形，前面的<strong>写器件地址</strong>、<strong>写寄存器地址1</strong>与单字节读一样，这张图只显示了后面不一样的部分，主要区别在于单片机接收到数据1后，产生低电平的应答，从而可以继续读取数据2。</p>
+<p>（注意，因为传感器这次测得的数据不一样，所以读出的数据也不一样哦~）</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IIC/IIC_wave3.png" alt></p>
+<p>注：以上的IIC真实波形，是使用是硬件IIC，自己编写的软件IIC测得的波形，可能在两个信号的前后延时时间上稍有差别，但整体的时序逻辑肯定是一样的。</p>
+<h2 id="配置从机寄存器（单字节写与多字节写）"><a href="#配置从机寄存器（单字节写与多字节写）" class="headerlink" title="配置从机寄存器（单字节写与多字节写）"></a>配置从机寄存器（单字节写与多字节写）</h2><p>对于寄存器的配置，也就是IIC的写寄存器操作，我就不放图了，参考上面的“<strong>常用的数据收发方式(时序)</strong>”以及上面的IIC读寄存器的真实波形，IIC的写寄存器的真实波形，应该可以脑补出哦，哈哈~</p>
+<p><strong>最后</strong></p>
+<p>通过真实的IIC波形分析，对IIC通信逻辑有没有更加直观的认识呢？</p>
+<p>原创不易，觉得有用请多多关注支持~</p>
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎关注我的微信公众号『码农爱学习』，一起学习进步(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2020/07/19/从IIC实测波形入手，搞懂IIC通信/">从IIC实测波形入手，搞懂IIC通信</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb 的个人博客">xxpcb</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2020/07/19/从IIC实测波形入手，搞懂IIC通信/" title="从IIC实测波形入手，搞懂IIC通信">https://xxpcb.github.io/2020/07/19/从IIC实测波形入手，搞懂IIC通信/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2020/07/19/从IIC实测波形入手，搞懂IIC通信/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/IIC/" rel="tag"># IIC</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/07/13/FreeRTOS例程4-串口DMA收发不定长数据/" rel="next" title="FreeRTOS例程4-串口DMA收发不定长数据">
+                  <i class="fa fa-chevron-left"></i> FreeRTOS例程4-串口DMA收发不定长数据
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb">
+  <p class="site-author-name" itemprop="name">xxpcb</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">63</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">47</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#IIC基础知识"><span class="nav-number">1.</span> <span class="nav-text">IIC基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#IIC是什么"><span class="nav-number">1.1.</span> <span class="nav-text">IIC是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IIC物理连接"><span class="nav-number">1.2.</span> <span class="nav-text">IIC物理连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IIC时序"><span class="nav-number">1.3.</span> <span class="nav-text">IIC时序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IIC起始结束信号"><span class="nav-number">1.3.1.</span> <span class="nav-text">IIC起始结束信号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IIC应答"><span class="nav-number">1.3.2.</span> <span class="nav-text">IIC应答</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IIC完整传输时序"><span class="nav-number">1.3.3.</span> <span class="nav-text">IIC完整传输时序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常用的数据收发方式-时序"><span class="nav-number">1.4.</span> <span class="nav-text">常用的数据收发方式(时序)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#写一个字节"><span class="nav-number">1.4.1.</span> <span class="nav-text">写一个字节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连续写多个字节"><span class="nav-number">1.4.2.</span> <span class="nav-text">连续写多个字节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读一个字节"><span class="nav-number">1.4.3.</span> <span class="nav-text">读一个字节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连续读多个字节"><span class="nav-number">1.4.4.</span> <span class="nav-text">连续读多个字节</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#初识IIC真实波形"><span class="nav-number">2.</span> <span class="nav-text">初识IIC真实波形</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#编写IIC通信函数"><span class="nav-number">3.</span> <span class="nav-text">编写IIC通信函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#起始IIC-Start"><span class="nav-number">3.1.</span> <span class="nav-text">起始IIC_Start()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#停止IIC-Stop"><span class="nav-number">3.2.</span> <span class="nav-text">停止IIC_Stop()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#等待应答IIC-wait-Ack"><span class="nav-number">3.3.</span> <span class="nav-text">等待应答IIC_wait_Ack()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#产生应答IIC-Ack"><span class="nav-number">3.4.</span> <span class="nav-text">产生应答IIC_Ack()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不产生应答IIC-nAck"><span class="nav-number">3.5.</span> <span class="nav-text">不产生应答IIC_nAck()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IIC发送一个字节"><span class="nav-number">3.6.</span> <span class="nav-text">IIC发送一个字节</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IIC读取一个字节"><span class="nav-number">3.7.</span> <span class="nav-text">IIC读取一个字节</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#真实IIC波形详细分析"><span class="nav-number">4.</span> <span class="nav-text">真实IIC波形详细分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#读取从机数据（单字节读）"><span class="nav-number">4.1.</span> <span class="nav-text">读取从机数据（单字节读）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#读取从机数据（多字节读）"><span class="nav-number">4.2.</span> <span class="nav-text">读取从机数据（多字节读）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置从机寄存器（单字节写与多字节写）"><span class="nav-number">4.3.</span> <span class="nav-text">配置从机寄存器（单字节写与多字节写）</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IIC/">IIC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/字符串切分/">字符串切分</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
