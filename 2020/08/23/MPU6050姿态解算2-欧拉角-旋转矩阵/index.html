@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="IMU姿态解算IMU，即惯性测量单元，一般包含三轴陀螺仪与三轴加速度计。之前的文章MPU6050姿态解算1-DMP方式已将对MPU6050这款IMU作了简单的介绍，并通过其内部的DMP处理单元直接得到姿态解算的四元数结果。本篇将通过软件解算的方式，利用欧拉角与旋转矩阵来对陀螺仪与加速度计的原始数据进行姿态求解，并将两种姿态进行互补融合，最终得到IMU的实时姿态。">
+<meta name="keywords" content="旋转矩阵,姿态解算,欧拉角">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MPU6050姿态解算2-欧拉角&amp;旋转矩阵">
+<meta property="og:url" content="https://xxpcb.github.io/2020/08/23/MPU6050姿态解算2-欧拉角-旋转矩阵/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="IMU姿态解算IMU，即惯性测量单元，一般包含三轴陀螺仪与三轴加速度计。之前的文章MPU6050姿态解算1-DMP方式已将对MPU6050这款IMU作了简单的介绍，并通过其内部的DMP处理单元直接得到姿态解算的四元数结果。本篇将通过软件解算的方式，利用欧拉角与旋转矩阵来对陀螺仪与加速度计的原始数据进行姿态求解，并将两种姿态进行互补融合，最终得到IMU的实时姿态。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/1.gif">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/3.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/4.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/5.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/6.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/7.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/8.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/9.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/10.png">
+<meta property="og:updated_time" content="2020-08-23T10:24:13.905Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MPU6050姿态解算2-欧拉角&amp;旋转矩阵">
+<meta name="twitter:description" content="IMU姿态解算IMU，即惯性测量单元，一般包含三轴陀螺仪与三轴加速度计。之前的文章MPU6050姿态解算1-DMP方式已将对MPU6050这款IMU作了简单的介绍，并通过其内部的DMP处理单元直接得到姿态解算的四元数结果。本篇将通过软件解算的方式，利用欧拉角与旋转矩阵来对陀螺仪与加速度计的原始数据进行姿态求解，并将两种姿态进行互补融合，最终得到IMU的实时姿态。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/1.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2020/08/23/MPU6050姿态解算2-欧拉角-旋转矩阵/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>MPU6050姿态解算2-欧拉角&旋转矩阵 | xxpcb's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2020/08/23/MPU6050姿态解算2-欧拉角-旋转矩阵/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb(码农爱学习)">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">MPU6050姿态解算2-欧拉角&旋转矩阵
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-08-23 17:17:42 / 修改时间：18:24:13" itemprop="dateCreated datePublished" datetime="2020-08-23T17:17:42+08:00">2020-08-23</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/姿态解算/" itemprop="url" rel="index"><span itemprop="name">姿态解算</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="IMU姿态解算"><a href="#IMU姿态解算" class="headerlink" title="IMU姿态解算"></a>IMU姿态解算</h1><p>IMU，即惯性测量单元，一般包含三轴陀螺仪与三轴加速度计。之前的文章<a href="https://xxpcb.gitee.io/2020/08/23/MPU6050%E5%A7%BF%E6%80%81%E8%A7%A3%E7%AE%971-DMP%E6%96%B9%E5%BC%8F/" target="_blank" rel="noopener">MPU6050姿态解算1-DMP方式</a>已将对MPU6050这款IMU作了简单的介绍，并通过其内部的DMP处理单元直接得到姿态解算的四元数结果。本篇将通过软件解算的方式，利用欧拉角与旋转矩阵来对陀螺仪与加速度计的原始数据进行姿态求解，并将两种姿态进行互补融合，最终得到IMU的实时姿态。</p>
+<a id="more"></a>
+
+<p>本篇的姿态解算选用的旋转顺序为<strong>ZYX</strong>，即IMU坐标系初始时刻与大地坐标系重合，然后依次绕自己的Z、Y、X轴进行旋转，这里先自定义一下每次的旋转名称和符号：</p>
+<ul>
+<li>绕IMU的<strong>Z轴</strong>旋转：<strong>航向角yaw</strong>，  转动 <strong>y</strong> 角度</li>
+<li>绕IMU的<strong>Y轴</strong>旋转：<strong>俯仰角pitch</strong>，转动 <strong>p</strong> 角度</li>
+<li>绕IMU的<strong>X轴</strong>旋转：<strong>横滚角row</strong>，   转动 <strong>r</strong> 角度</li>
+</ul>
+<p>三次旋转的示意图如下：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/1.png" alt></p>
+<p>另外，<strong>横滚roll，俯仰pitch，偏航yaw</strong>的实际含义如下图：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/1.gif" alt></p>
+<h1 id="旋转矩阵"><a href="#旋转矩阵" class="headerlink" title="旋转矩阵"></a>旋转矩阵</h1><p>旋转矩阵的知识请先参阅<a href="https://xxpcb.gitee.io/2020/08/07/3%E7%BB%B4%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5%E6%8E%A8%E5%AF%BC%E4%B8%8E%E5%8A%A9%E8%AE%B0/" target="_blank" rel="noopener">3维旋转矩阵推导与助记</a>以及<a href="https://xxpcb.gitee.io/2020/08/14/3%E7%BB%B4%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5%E6%8E%A8%E5%AF%BC%E4%B8%8E%E5%8A%A9%E8%AE%B0-%E8%A1%A5%E5%85%85%E7%AF%87/" target="_blank" rel="noopener">3维旋转矩阵推导与助记-补充篇</a>，这里只列出本篇需要用到的3个旋转矩阵，注意这3个旋转矩阵是坐标变换的旋转矩阵。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/2.png" alt></p>
+<h1 id="欧拉角旋转"><a href="#欧拉角旋转" class="headerlink" title="欧拉角旋转"></a>欧拉角旋转</h1><p>欧拉角旋转的知识请先参阅<a href="https://xxpcb.gitee.io/2020/08/16/%E6%AC%A7%E6%8B%89%E8%A7%92%E6%97%8B%E8%BD%AC/" target="_blank" rel="noopener">欧拉角旋转</a>，这里需要说明的是，本篇需要用到的<strong>绕着自己运动的轴，以ZYX顺序</strong>旋转。</p>
+<h1 id="加速度计解算姿态角"><a href="#加速度计解算姿态角" class="headerlink" title="加速度计解算姿态角"></a>加速度计解算姿态角</h1><p>加速度计测量的是其<strong>感受到的加速度</strong>，在<strong>静止</strong>的时候，其本身是没有加速运动的，但因为重力加速度的作用，根据相对运动理论，其感受的加速度与重力加速度正好相反，即读到的数据是竖直向上的。加速度计的英文简写为acc，下面用<strong>首字母a</strong>代表加速度计数据。</p>
+<p>加速度利用静止时刻感受到重力加速度，计算姿态：</p>
+<ul>
+<li><p>当加速度计水平放置，即Z轴竖直向上时，Z轴可以读到1g的数值（g为重力加速度），X轴和Y轴两个方向读到0，可以记作（0，0，g）。</p>
+</li>
+<li><p>当加速度计旋转一定的姿态时，重力加速度会在加速度的3个轴上产生相应的分量，其<strong>本质是大地坐标系下的（0，0，g）在新的加速度计自身坐标系下的坐标</strong>，加速度计读到的3个值就是（0，0，g）向量的新坐标。</p>
+</li>
+</ul>
+<p>姿态的旋转选用ZYX顺序的3次旋转方式，则上述描述可表示为：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/3.png" alt></p>
+<p>解这个方程，可以得到roll和pitch角（由于绕Z旋转时，感受到的重力加速度是不变的，因此加速度计无法计算yaw角）</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/4.png" alt></p>
+<p>3次旋转过程的分解过程如下图：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/5.png" alt></p>
+<h1 id="陀螺仪解算姿态角"><a href="#陀螺仪解算姿态角" class="headerlink" title="陀螺仪解算姿态角"></a>陀螺仪解算姿态角</h1><p>陀螺仪测量的绕3个轴转动的角速度，因此，对角速度积分，可以得到角度。陀螺仪的英文简写为gyro，下面用<strong>首字母g</strong>代表陀螺仪数据。</p>
+<p>如下图，IMU在第n个时刻的姿态角度为r、p、y，其含义为IMU坐标系从初始位置，经过绕Z旋转y角度，绕Y旋转p角度，绕X旋转r角度，得到了最终的姿态，此时需要计算下一个时刻(n+1)的姿态。设n+1时刻的姿态角为r+Δr、p+Δp、y+Δy，该姿态也是经历了3次旋转。要想计算n+1时刻的姿态，只要在n时刻姿态的基础上，加上对应的姿态角度变化量即可。姿态角度的变化量可以通过角速度与采用时间周期积分即可。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/6.png" alt></p>
+<p>这里<strong>红框中dr/dt等角速度</strong>实际是假想的角速度，用于<strong>姿态更新</strong>，姿态更新是以大地坐标系为参考，而陀螺仪在第n个状态读出的角速度是以它自己所在的坐标系为参考，需要将读到的gyro陀螺数据经过变换，才能用于计算更新第n+1次的姿态。</p>
+<p>那dr/dt等角速度该怎样理解呢？看下面这个图，还是将其分解为3次旋转：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/7.png" alt></p>
+<p><strong>首先来看dy/dt</strong>，它是3次旋转过程中<strong>绕Z轴的yaw角的角速度</strong>，3次旋转首先就是绕着Z轴旋转，Z轴方向的单位向量可表示为[0 0 1]T，T表示向量转置，因此[0 0 dy/dt]T表示在图中状态①的坐标中绕Z的角速度。由于之后该坐标系还要经历<strong>绕Y和绕X的两次旋转</strong>，因此这里[0 0 dy/dt]T角速度在经历两次旋转后，在最终的坐标系(状态③)中的坐标也要经历两次变换。图中的[gx_Z gy_Z gz_Z]T表示3次旋转过程中绕Z轴的yaw角的角速度在最终姿态中的<strong>等效</strong>转动角速度，实际就是状态①坐标系中绕Z轴的角速度在状态③坐标系中的新的坐标。</p>
+<p><strong>同理</strong>，dp/dt还需要经历1次旋转变换，而dr/dt不需要经历旋转。</p>
+<p>将dy/dt，dp/dt，dr/dt三者都变换到状态③坐标系中的新的坐标相加，实际就是状态③时刻陀螺仪自己读到的gyro数据。</p>
+<p><strong>所以</strong>，从dr/dt等角速度到陀螺仪读到的角速度gx等的转换关系推导过程如下：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/8.png" alt></p>
+<p><strong>进一步</strong>，再把这里的状态③理解为状态n，则根据状态n时刻读到的陀螺仪数据，反解dy/dt等角速度数据，即可更新得到状态n+1的姿态。反解就是求逆矩阵，即：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/9.png" alt></p>
+<h1 id="姿态融合"><a href="#姿态融合" class="headerlink" title="姿态融合"></a>姿态融合</h1><p>由上面的分析可知，<strong>加速度计</strong>在静止时刻，根据感受到的重力加速度，可以计算出roll和pitch角，并且角度计算只与当前姿态有关。而<strong>陀螺仪</strong>是对时间间隔内的角速度积分，得到每一次的角度变换量，累加到上一次的姿态角上，得到新的姿态角，陀螺仪可以计算roll、pitch、yaw三个角。</p>
+<p>实际上，加速度仅在静止时刻可以得到较准确的姿态，而陀螺仪仅对转动时的姿态变化敏感，且陀螺仪若本身存在误差，则经过连续的时间积分，误差会不断增大。因此，需要结合两者计算的姿态，进行互补融合。当然，这里只能对roll和pitch融合，因为加速度计没有得到yaw。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/math/%E5%A7%BF%E6%80%81-%E6%AC%A7%E6%8B%89%E8%A7%92-%E6%97%8B%E8%BD%AC%E7%9F%A9%E9%98%B5/10.png" alt></p>
+<p>K为比例系数，需要根据实际来调整，如选用0.4。</p>
+<h1 id="MATLAB公式推导"><a href="#MATLAB公式推导" class="headerlink" title="MATLAB公式推导"></a>MATLAB公式推导</h1><p>上面的一些推导计算过程，可用MATLAB来辅助计算，防止手工计算出错：</p>
+<h2 id="先定义3个旋转矩阵Y"><a href="#先定义3个旋转矩阵Y" class="headerlink" title="先定义3个旋转矩阵Y"></a>先定义3个旋转矩阵Y</h2><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 旋转顺序：Z,Y,X（从大地坐标系到IMU坐标系）</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 定义一些符号 r=row p=pitch y=yaw</span></span><br><span class="line">syms r p y</span><br><span class="line"></span><br><span class="line"><span class="comment">% 3个旋转矩阵（坐标系旋转,注意负号的位置！）</span></span><br><span class="line">M_x = [  <span class="number">1</span>,       <span class="number">0</span>,      <span class="number">0</span>;</span><br><span class="line">         <span class="number">0</span>,  <span class="built_in">cos</span>(r), <span class="built_in">sin</span>(r); </span><br><span class="line">         <span class="number">0</span>, -<span class="built_in">sin</span>(r), <span class="built_in">cos</span>(r)];</span><br><span class="line">  </span><br><span class="line">M_y = [<span class="built_in">cos</span>(p),   <span class="number">0</span>, -<span class="built_in">sin</span>(p);</span><br><span class="line">            <span class="number">0</span>,   <span class="number">1</span>,       <span class="number">0</span>;</span><br><span class="line">       <span class="built_in">sin</span>(p),   <span class="number">0</span>,  <span class="built_in">cos</span>(p)]; </span><br><span class="line"></span><br><span class="line">M_z = [ <span class="built_in">cos</span>(y),  <span class="built_in">sin</span>(y),  <span class="number">0</span>;</span><br><span class="line">       -<span class="built_in">sin</span>(y),  <span class="built_in">cos</span>(y),  <span class="number">0</span>;</span><br><span class="line">            <span class="number">0</span>,       <span class="number">0</span>,   <span class="number">1</span>];</span><br></pre></td></tr></table></figure>
+
+<h2 id="推导陀螺仪的变换矩阵"><a href="#推导陀螺仪的变换矩阵" class="headerlink" title="推导陀螺仪的变换矩阵"></a>推导陀螺仪的变换矩阵</h2><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">%% 推导陀螺仪的变换矩阵</span></span><br><span class="line"></span><br><span class="line"><span class="comment">%定义一些符号 drdt dpdt dydt 指的是分别对 roll pitch yaw求导，也就是角速度</span></span><br><span class="line">syms drdt dpdt dydt</span><br><span class="line"></span><br><span class="line"><span class="comment">% 绕x轴转动 row 的角速度</span></span><br><span class="line">dr_t = [drdt;</span><br><span class="line">           <span class="number">0</span>;</span><br><span class="line">           <span class="number">0</span>]; </span><br><span class="line">       </span><br><span class="line"><span class="comment">% 绕y轴转动 pitch 的角速度</span></span><br><span class="line">dp_t = [   <span class="number">0</span>;</span><br><span class="line">        dpdt;</span><br><span class="line">           <span class="number">0</span>];</span><br><span class="line">       </span><br><span class="line"><span class="comment">% 绕z轴转动 yaw 的角速度</span></span><br><span class="line">dy_t = [   <span class="number">0</span>;</span><br><span class="line">           <span class="number">0</span>;</span><br><span class="line">        dydt]; </span><br><span class="line"></span><br><span class="line"><span class="comment">% [矩阵X*矩阵Y*yaw角速度(绕Z)] + [矩阵X*pitch角速度(绕Y)] + [roll角速度(绕X)]</span></span><br><span class="line"><span class="comment">% IMU_gyro实际就是IMU测得的3个陀螺仪数据</span></span><br><span class="line">IMU_gyro = M_x*M_y*dy_t + M_x*dp_t + dr_t;</span><br><span class="line">fprintf(<span class="string">'M_x*M_y*dy_t + M_x*dp_t + dr_t=\r\n'</span>)</span><br><span class="line"><span class="built_in">disp</span>(IMU_gyro)</span><br><span class="line"><span class="comment">% roll pitch yaw角速度组成的列向量，这个实际是要求的大地坐标系的3个角速度</span></span><br><span class="line">rpy_t = [drdt;</span><br><span class="line">         dpdt;</span><br><span class="line">         dydt]; </span><br><span class="line"></span><br><span class="line"><span class="comment">%手动分解IMU_gyro为矩阵M_gyro与列向量rpy_t相乘的形式</span></span><br><span class="line"><span class="comment">%根据IMU_gyro写出M_gyro，该矩阵将大地坐标系的角速度转换为IMU坐标系</span></span><br><span class="line">M_gyro = [ <span class="number">1</span>,     <span class="number">0</span>,       -<span class="built_in">sin</span>(p);</span><br><span class="line">           <span class="number">0</span>, <span class="built_in">cos</span>(r),<span class="built_in">cos</span>(p)*<span class="built_in">sin</span>(r);</span><br><span class="line">           <span class="number">0</span>,-<span class="built_in">sin</span>(r),<span class="built_in">cos</span>(p)*<span class="built_in">cos</span>(r)];</span><br><span class="line"><span class="comment">%验证一下</span></span><br><span class="line"><span class="keyword">if</span> M_gyro * rpy_t==IMU_gyro</span><br><span class="line">    fprintf(<span class="string">'M_gyro is true\r\n'</span>);</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    fprintf(<span class="string">'M_gyro is false\r\n'</span>);</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">fprintf(<span class="string">'M_gyro=\r\n'</span>)</span><br><span class="line"><span class="built_in">disp</span>(M_gyro)</span><br><span class="line"></span><br><span class="line"><span class="comment">% 对M_gyro求逆矩阵，用于将IMU坐标系的陀螺仪角速度值转换到大地坐标系</span></span><br><span class="line">M_gyro_inv = inv(M_gyro);</span><br><span class="line">fprintf(<span class="string">'M_gyro_inv=\r\n'</span>)</span><br><span class="line"><span class="built_in">disp</span>(M_gyro_inv)</span><br><span class="line"> </span><br><span class="line"> <span class="comment">% matlab求解的逆矩阵需要在再手工化简</span></span><br><span class="line">M_gyro_inv_ =[ <span class="number">1</span>, (<span class="built_in">sin</span>(p)*<span class="built_in">sin</span>(r))/<span class="built_in">cos</span>(p), (<span class="built_in">cos</span>(r)*<span class="built_in">sin</span>(p))/<span class="built_in">cos</span>(p);</span><br><span class="line">               <span class="number">0</span>,                 <span class="built_in">cos</span>(r),                -<span class="built_in">sin</span>(r);</span><br><span class="line">               <span class="number">0</span>,          <span class="built_in">sin</span>(r)/<span class="built_in">cos</span>(p),          <span class="built_in">cos</span>(r)/<span class="built_in">cos</span>(p)];</span><br><span class="line"> <span class="comment">% 验证一下，M_gyro_inv_ * M_gyro_inv应该是单位矩阵</span></span><br><span class="line">fprintf(<span class="string">'M_gyro_inv_ * M_gyro=\r\n'</span>)</span><br><span class="line"><span class="built_in">disp</span>(M_gyro_inv_ * M_gyro)</span><br><span class="line">fprintf(<span class="string">'M_gyro_inv_ =\r\n'</span>)</span><br><span class="line"><span class="built_in">disp</span>(M_gyro_inv_)</span><br></pre></td></tr></table></figure>
+
+<p>运行后的输出结果：</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">M_x*M_y*dy_t + M_x*dp_t + dr_t=</span><br><span class="line"></span><br><span class="line">               drdt - dydt*<span class="built_in">sin</span>(p)</span><br><span class="line"> dpdt*<span class="built_in">cos</span>(r) + dydt*<span class="built_in">cos</span>(p)*<span class="built_in">sin</span>(r)</span><br><span class="line"> dydt*<span class="built_in">cos</span>(p)*<span class="built_in">cos</span>(r) - dpdt*<span class="built_in">sin</span>(r)</span><br><span class="line"> </span><br><span class="line">M_gyro is <span class="built_in">true</span></span><br><span class="line"></span><br><span class="line">M_gyro=</span><br><span class="line"></span><br><span class="line">[ <span class="number">1</span>,       <span class="number">0</span>,       -<span class="built_in">sin</span>(p)]</span><br><span class="line">[ <span class="number">0</span>,  <span class="built_in">cos</span>(r), <span class="built_in">cos</span>(p)*<span class="built_in">sin</span>(r)]</span><br><span class="line">[ <span class="number">0</span>, -<span class="built_in">sin</span>(r), <span class="built_in">cos</span>(p)*<span class="built_in">cos</span>(r)]</span><br><span class="line"> </span><br><span class="line">M_gyro_inv=</span><br><span class="line"></span><br><span class="line">[ <span class="number">1</span>, (<span class="built_in">sin</span>(p)*<span class="built_in">sin</span>(r))/(<span class="built_in">cos</span>(p)*<span class="built_in">cos</span>(r)^<span class="number">2</span> + <span class="built_in">cos</span>(p)*<span class="built_in">sin</span>(r)^<span class="number">2</span>), (<span class="built_in">cos</span>(r)*<span class="built_in">sin</span>(p))/(<span class="built_in">cos</span>(p)*<span class="built_in">cos</span>(r)^<span class="number">2</span> + <span class="built_in">cos</span>(p)*<span class="built_in">sin</span>(r)^<span class="number">2</span>)]</span><br><span class="line">[ <span class="number">0</span>,                        <span class="built_in">cos</span>(r)/(<span class="built_in">cos</span>(r)^<span class="number">2</span> + <span class="built_in">sin</span>(r)^<span class="number">2</span>),                       -<span class="built_in">sin</span>(r)/(<span class="built_in">cos</span>(r)^<span class="number">2</span> + <span class="built_in">sin</span>(r)^<span class="number">2</span>)]</span><br><span class="line">[ <span class="number">0</span>,          <span class="built_in">sin</span>(r)/(<span class="built_in">cos</span>(p)*<span class="built_in">cos</span>(r)^<span class="number">2</span> + <span class="built_in">cos</span>(p)*<span class="built_in">sin</span>(r)^<span class="number">2</span>),          <span class="built_in">cos</span>(r)/(<span class="built_in">cos</span>(p)*<span class="built_in">cos</span>(r)^<span class="number">2</span> + <span class="built_in">cos</span>(p)*<span class="built_in">sin</span>(r)^<span class="number">2</span>)]</span><br><span class="line"> </span><br><span class="line">M_gyro_inv_ * M_gyro=</span><br><span class="line"></span><br><span class="line">[ <span class="number">1</span>,                   <span class="number">0</span>, <span class="built_in">cos</span>(r)^<span class="number">2</span>*<span class="built_in">sin</span>(p) - <span class="built_in">sin</span>(p) + <span class="built_in">sin</span>(p)*<span class="built_in">sin</span>(r)^<span class="number">2</span>]</span><br><span class="line">[ <span class="number">0</span>, <span class="built_in">cos</span>(r)^<span class="number">2</span> + <span class="built_in">sin</span>(r)^<span class="number">2</span>,                                          <span class="number">0</span>]</span><br><span class="line">[ <span class="number">0</span>,                   <span class="number">0</span>,                        <span class="built_in">cos</span>(r)^<span class="number">2</span> + <span class="built_in">sin</span>(r)^<span class="number">2</span>]</span><br><span class="line"> </span><br><span class="line">M_gyro_inv_ =</span><br><span class="line"></span><br><span class="line">[ <span class="number">1</span>, (<span class="built_in">sin</span>(p)*<span class="built_in">sin</span>(r))/<span class="built_in">cos</span>(p), (<span class="built_in">cos</span>(r)*<span class="built_in">sin</span>(p))/<span class="built_in">cos</span>(p)]</span><br><span class="line">[ <span class="number">0</span>,                 <span class="built_in">cos</span>(r),                -<span class="built_in">sin</span>(r)]</span><br><span class="line">[ <span class="number">0</span>,          <span class="built_in">sin</span>(r)/<span class="built_in">cos</span>(p),          <span class="built_in">cos</span>(r)/<span class="built_in">cos</span>(p)]</span><br></pre></td></tr></table></figure>
+
+<p>程序先计算出了<code>M_x*M_y*dy_t + M_x*dp_t + dr_t</code>，然后手工分解为<code>M_gyro</code>与<code>rpy_t</code>相乘的形式，最后求得<code>M_gyro</code>的逆矩阵<code>M_gyro_inv_</code>，即得到用于将IMU坐标系的陀螺仪角速度值转换到大地坐标系的旋转矩阵。</p>
+<h2 id="推导加速度计的变换矩阵"><a href="#推导加速度计的变换矩阵" class="headerlink" title="推导加速度计的变换矩阵"></a>推导加速度计的变换矩阵</h2><figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">%% 推导加速度计的变换矩阵</span></span><br><span class="line"></span><br><span class="line">M_acc=M_x*M_y*M_z;</span><br><span class="line">fprintf(<span class="string">'M_acc=\r\n'</span>)</span><br><span class="line"><span class="built_in">disp</span>(M_acc)</span><br><span class="line"></span><br><span class="line"><span class="comment">%重力向量</span></span><br><span class="line">syms g</span><br><span class="line">acc = [<span class="number">0</span>;</span><br><span class="line">       <span class="number">0</span>;</span><br><span class="line">       g]; </span><br><span class="line">IMU_acc=M_acc*acc;</span><br><span class="line">fprintf(<span class="string">'IMU_acc=\r\n'</span>)</span><br><span class="line"><span class="built_in">disp</span>(IMU_acc)</span><br></pre></td></tr></table></figure>
+
+<p>运行后的输出结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">M_acc=</span><br><span class="line"></span><br><span class="line">[                        cos(p)*cos(y),                        cos(p)*sin(y),       -sin(p)]</span><br><span class="line">[ cos(y)*sin(p)*sin(r) - cos(r)*sin(y), cos(r)*cos(y) + sin(p)*sin(r)*sin(y), cos(p)*sin(r)]</span><br><span class="line">[ sin(r)*sin(y) + cos(r)*cos(y)*sin(p), cos(r)*sin(p)*sin(y) - cos(y)*sin(r), cos(p)*cos(r)]</span><br><span class="line"> </span><br><span class="line">IMU_acc=</span><br><span class="line"></span><br><span class="line">       -g*sin(p)</span><br><span class="line"> g*cos(p)*sin(r)</span><br><span class="line"> g*cos(p)*cos(r)</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb(码农爱学习) wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎关注我的微信公众号『码农爱学习』，一起学习进步(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2020/08/23/MPU6050姿态解算2-欧拉角-旋转矩阵/">MPU6050姿态解算2-欧拉角&旋转矩阵</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb(码农爱学习) 的个人博客">xxpcb(码农爱学习)</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2020/08/23/MPU6050姿态解算2-欧拉角-旋转矩阵/" title="MPU6050姿态解算2-欧拉角&旋转矩阵">https://xxpcb.github.io/2020/08/23/MPU6050姿态解算2-欧拉角-旋转矩阵/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2020/08/23/MPU6050姿态解算2-欧拉角-旋转矩阵/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/旋转矩阵/" rel="tag"># 旋转矩阵</a>
+            
+              <a href="/tags/姿态解算/" rel="tag"># 姿态解算</a>
+            
+              <a href="/tags/欧拉角/" rel="tag"># 欧拉角</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2020/08/23/MPU6050姿态解算1-DMP方式/" rel="next" title="MPU6050姿态解算1-DMP方式">
+                  <i class="fa fa-chevron-left"></i> MPU6050姿态解算1-DMP方式
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb(码农爱学习)">
+  <p class="site-author-name" itemprop="name">xxpcb(码农爱学习)</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">68</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">52</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#IMU姿态解算"><span class="nav-number">1.</span> <span class="nav-text">IMU姿态解算</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#旋转矩阵"><span class="nav-number">2.</span> <span class="nav-text">旋转矩阵</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#欧拉角旋转"><span class="nav-number">3.</span> <span class="nav-text">欧拉角旋转</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#加速度计解算姿态角"><span class="nav-number">4.</span> <span class="nav-text">加速度计解算姿态角</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#陀螺仪解算姿态角"><span class="nav-number">5.</span> <span class="nav-text">陀螺仪解算姿态角</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#姿态融合"><span class="nav-number">6.</span> <span class="nav-text">姿态融合</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MATLAB公式推导"><span class="nav-number">7.</span> <span class="nav-text">MATLAB公式推导</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#先定义3个旋转矩阵Y"><span class="nav-number">7.1.</span> <span class="nav-text">先定义3个旋转矩阵Y</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#推导陀螺仪的变换矩阵"><span class="nav-number">7.2.</span> <span class="nav-text">推导陀螺仪的变换矩阵</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#推导加速度计的变换矩阵"><span class="nav-number">7.3.</span> <span class="nav-text">推导加速度计的变换矩阵</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMP/">DMP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IIC/">IIC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MPU6050/">MPU6050</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/姿态解算/">姿态解算</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/字符串切分/">字符串切分</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/旋转矩阵/">旋转矩阵</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/欧拉角/">欧拉角</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2019~<span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb(码农爱学习)</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
