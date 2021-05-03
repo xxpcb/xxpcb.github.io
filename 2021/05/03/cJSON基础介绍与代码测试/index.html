@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="JSON是什么JSON(JavaScript Object Notation) 是一种轻量级的数据交换格式。JSON 使用 Javascript语法来描述数据对象，但是 JSON 仍然独立于语言和平台。">
+<meta name="keywords" content="C,cJson">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cJSON基础介绍与代码测试">
+<meta property="og:url" content="https://xxpcb.github.io/2021/05/03/cJSON基础介绍与代码测试/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="JSON是什么JSON(JavaScript Object Notation) 是一种轻量级的数据交换格式。JSON 使用 Javascript语法来描述数据对象，但是 JSON 仍然独立于语言和平台。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-05-03T04:46:17.218Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="cJSON基础介绍与代码测试">
+<meta name="twitter:description" content="JSON是什么JSON(JavaScript Object Notation) 是一种轻量级的数据交换格式。JSON 使用 Javascript语法来描述数据对象，但是 JSON 仍然独立于语言和平台。">
+  <link rel="canonical" href="https://xxpcb.github.io/2021/05/03/cJSON基础介绍与代码测试/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>cJSON基础介绍与代码测试 | xxpcb's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2021/05/03/cJSON基础介绍与代码测试/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb(码农爱学习)">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">cJSON基础介绍与代码测试
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2021-05-03 12:43:59 / 修改时间：12:46:17" itemprop="dateCreated datePublished" datetime="2021-05-03T12:43:59+08:00">2021-05-03</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C语言/" itemprop="url" rel="index"><span itemprop="name">C语言</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="JSON是什么"><a href="#JSON是什么" class="headerlink" title="JSON是什么"></a>JSON是什么</h1><p>JSON(JavaScript Object Notation) 是一种轻量级的数据交换格式。JSON 使用 Javascript语法来描述数据对象，但是 JSON 仍然独立于语言和平台。</p>
+<a id="more"></a>
+
+<h2 id="JSON-基本语法"><a href="#JSON-基本语法" class="headerlink" title="JSON 基本语法"></a>JSON 基本语法</h2><ul>
+<li>数据以 <strong><code>key ：value</code></strong> (名称/值) 的形式存在</li>
+<li>数据由逗号 <strong><code>,</code></strong> 分隔</li>
+<li>大括号 <strong><code>{}</code></strong> 保存对象</li>
+<li>中括号 <strong><code>[]</code></strong> 保存数组，数组可以包含多个对象</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; name : C Primer pluse, pages : 626 &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="JSON值-value-的类型"><a href="#JSON值-value-的类型" class="headerlink" title="JSON值(value)的类型"></a>JSON值(value)的类型</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* cJSON Types: */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> cJSON_False 0</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> cJSON_True 1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> cJSON_NULL 2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> cJSON_Number 3</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> cJSON_String 4</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> cJSON_Array 5</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> cJSON_Object 6</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>逻辑值（true 或 false）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"flag"</span>:<span class="literal">true</span>&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>null</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"name"</span>:<span class="literal">null</span>&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>NUMBER 数字</strong>（整数或浮点数）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"pages"</span>:<span class="number">200</span>, <span class="attr">"price"</span>:<span class="number">35.00</span>&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>STRING 字符串</strong>（在双引号<code>&quot;&quot;</code>中）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"book"</span>:<span class="string">"C Primer pluse"</span>&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>ARRAY 数组</strong>（在中括号<code>[]</code>中）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    &#123;<span class="attr">"name"</span>:<span class="string">"C Primer pluse"</span>, <span class="attr">"author"</span>:<span class="string">"Stephen Prata"</span>&#125;,</span><br><span class="line">    &#123;<span class="attr">"name"</span>:<span class="string">"C程序设计"</span>, <span class="attr">"author"</span>:<span class="string">"谭浩强"</span>&#125;,</span><br><span class="line">    &#123;<span class="attr">"name"</span>:<span class="string">"C陷阱与缺陷"</span>, <span class="attr">"author"</span>:<span class="string">"Andrew Koenig"</span>&#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>OBJECT 对象</strong>（在大括号<code>{}</code>中）</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"name"</span>:<span class="string">"C Primer pluse"</span>, <span class="attr">"author"</span>:<span class="string">"Stephen Prata"</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然对象内部也可以是数组，如:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"books"</span>:[</span><br><span class="line">        &#123;<span class="attr">"name"</span>:<span class="string">"C Primer pluse"</span>, <span class="attr">"author"</span>:<span class="string">"Stephen Prata"</span>&#125;,</span><br><span class="line">        &#123;<span class="attr">"name"</span>:<span class="string">"C程序设计"</span>, <span class="attr">"author"</span>:<span class="string">"谭浩强"</span>&#125;,</span><br><span class="line">        &#123;<span class="attr">"name"</span>:<span class="string">"C陷阱与缺陷"</span>, <span class="attr">"author"</span>:<span class="string">"Andrew Koenig"</span>&#125;</span><br><span class="line">	]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对象 <strong>books</strong> 内部是一个数组，该数组又包含了三个对象</p>
+</li>
+</ul>
+<h1 id="cJSON又是个啥"><a href="#cJSON又是个啥" class="headerlink" title="cJSON又是个啥"></a>cJSON又是个啥</h1><p>cJSON是一个基于C的JSON解析库，这个库非常简短，源码内容只包含一个<code>cJSON.h</code>头文件和一个<code>cJSON.c</code>源文件，支持JSON的解析和封装，需要调用时，只需要<code>#include &quot;cJSON.h&quot;</code>就可以使用了。</p>
+<p>cJSON源文件开源项目地址：<a href="https://sourceforge.net/projects/cjson/" target="_blank" rel="noopener">https://sourceforge.net/projects/cjson/</a>。</p>
+<h1 id="cJSON编程实例"><a href="#cJSON编程实例" class="headerlink" title="cJSON编程实例"></a>cJSON编程实例</h1><h2 id="例子1"><a href="#例子1" class="headerlink" title="例子1"></a>例子1</h2><p>先演示一个最简单的JSON数据，如何使用cJSON库来解析。</p>
+<p>用于测试JSON数据，我们先用一个char型的字符串了保存，注意，由于JSON对象的key和value都需要使用引号（数值或逻辑型value除外），所以，<strong>使用C语言的字符串来保存JSON数据，在遇到引号时，要加反斜杠来转义</strong>。</p>
+<p>解析JSON数据时，首先要调用 <code>cJSON_Parse()</code> 这个函数，将JSON数据解析为 <code>cJSON</code> 型的对象：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cJSON *srcJsonData = cJSON_Parse(jsonData);</span><br></pre></td></tr></table></figure>
+
+<p>然后就可以使用cJSON库中提供的各种函数来操作这个对象。比如 :</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">value = cJSON_GetObjectItem(srcJsonData,<span class="string">"name"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>就是通过 <code>cJSON_GetObjectItem()</code> 来获取JSON数据中的一项数据，并通过指定key的方式来获取对应的value。</p>
+<p>整个测试程序如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"cJSON.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> jsonData[] = <span class="string">"&#123;\"name\":\"C Primer pluse\",\"pages\":626&#125;"</span>;</span><br><span class="line">	</span><br><span class="line">	cJSON *srcJsonData = cJSON_Parse(jsonData);</span><br><span class="line">	<span class="keyword">if</span>(!srcJsonData)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"Error:%s\r\n"</span>,cJSON_GetErrorPtr());</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/*获取Json数据的内容*/</span></span><br><span class="line">		cJSON *value;</span><br><span class="line">		value = cJSON_GetObjectItem(srcJsonData,<span class="string">"name"</span>);<span class="comment">/*通过key来获取value*/</span> </span><br><span class="line">		<span class="keyword">if</span>(value-&gt;type == cJSON_String)<span class="comment">/*字符串型的value*/</span> </span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"书名：%s\r\n"</span>,value-&gt;valuestring);</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		value = cJSON_GetObjectItem(srcJsonData,<span class="string">"pages"</span>);<span class="comment">/*通过key来获取value*/</span> </span><br><span class="line">		<span class="keyword">if</span>(value-&gt;type == cJSON_Number)<span class="comment">/*数值型的value*/</span> </span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"页数：%d\r\n"</span>,value-&gt;valueint);</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		cJSON_Delete(srcJsonData);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">书名：C Primer pluse</span><br><span class="line">页数：626</span><br><span class="line"></span><br><span class="line">--------------------------------</span><br><span class="line">Process exited after 0.01452 seconds with return value 0</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+<h2 id="例子2"><a href="#例子2" class="headerlink" title="例子2"></a>例子2</h2><p>上面是一个最基本的测试程序，JSON数据也是直接通过C语言的字符串保存的。</p>
+<p>实际的使用中，JSON数据的内容较为庞大，再使用C语言的字符串来保存，则会及其麻烦（想想那一堆反斜杠）。</p>
+<p>所以，<strong>一般都是使用文件的形式来保存JSON数据</strong>。</p>
+<p>准备一个原始数据用于测试，如下面的data.txt：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"class"</span>:<span class="string">"C语言书籍"</span>,</span><br><span class="line">    <span class="attr">"books"</span>:[&#123;</span><br><span class="line">        <span class="attr">"name"</span>:<span class="string">"C Primer pluse"</span>,</span><br><span class="line">        <span class="attr">"author"</span>:<span class="string">"Stephen Prata"</span>,</span><br><span class="line">        <span class="attr">"publishing"</span>:<span class="string">"人民邮电出版社"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        </span><br><span class="line">        &#123;</span><br><span class="line">        <span class="attr">"name"</span>:<span class="string">"C程序设计"</span>,</span><br><span class="line">        <span class="attr">"author"</span>:<span class="string">"谭浩强"</span>,</span><br><span class="line">        <span class="attr">"publishing"</span>:<span class="string">"清华大学出版社"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        </span><br><span class="line">        &#123;</span><br><span class="line">        <span class="attr">"name"</span>:<span class="string">"C陷阱与缺陷"</span>,</span><br><span class="line">        <span class="attr">"author"</span>:<span class="string">"Andrew Koenig"</span>,</span><br><span class="line">        <span class="attr">"publishing"</span>:<span class="string">"人民邮电出版社"</span></span><br><span class="line">        &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>先来分析下这个JSON数据的结构：</p>
+<ul>
+<li>最外面的大括号，表示这个一个JSON对象</li>
+<li>对象里面有2个数据，key1是class，key2是books</li>
+<li>books的value又是一个中括号表示的数组</li>
+<li>数组内又包含了3个对象，每个对象有3个数据，key1是name，key2是author，key3是publishing</li>
+</ul>
+<p>解析这种JSON文件，使用要使用 <code>fopen()</code> 来打开这个文件：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FILE *fp = fopen(<span class="string">"data.txt"</span>, <span class="string">"r"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>这里还要使用<code>fseek()</code>和<code>ftell()</code>来计算文件的大小，目的是用于后面的分配内存时指定大小。</p>
+<p>然后使用<code>fread()</code>将文件内存读入内存中分配的buf中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fread(buf, fileSize, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), fp);</span><br></pre></td></tr></table></figure>
+
+<p>接着，还是使用<code>cJSON_Parse()</code> 将JSON数据解析为 <code>cJSON</code> 型的对象</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cJSON *srcJsonData = cJSON_Parse(buf);</span><br></pre></td></tr></table></figure>
+
+<p>然后就可以使用cJSON库中提供的各种函数来操作这个对象了。</p>
+<p>这次会用到<code>cJSON_GetObjectItem()</code>、<code>cJSON_GetArrayItem()</code> 、<code>cJSON_GetArraySize()</code>、<code>cJSON_Print()</code>等函数。</p>
+<p>注意是使用完<code>cJSON_Print()</code>后，要使用<code>free()</code>来释放。</p>
+<p>具体的测试程序如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"cJSON.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/*打开JSON文件*/</span> </span><br><span class="line">	FILE *fp = fopen(<span class="string">"data.txt"</span>, <span class="string">"r"</span>);</span><br><span class="line">	<span class="keyword">if</span>(fp == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125; </span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*计算文件大小*/</span> </span><br><span class="line">	<span class="keyword">int</span> fileSize;</span><br><span class="line">	fseek(fp, <span class="number">0</span>, SEEK_END);<span class="comment">/*先移到文件末尾*/</span> </span><br><span class="line">	fileSize = ftell(fp);<span class="comment">/*计算文件的大小*/</span> </span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"fileSize: %d\r\n"</span>, fileSize);</span><br><span class="line">	fseek(fp, <span class="number">0</span>, SEEK_SET);<span class="comment">/*再移到文件开头*/</span> </span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*根据文件大小分配内存，并读取文件到内存*/</span> </span><br><span class="line">	<span class="keyword">char</span> *buf = (<span class="keyword">char</span> *)<span class="built_in">malloc</span>(fileSize * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));</span><br><span class="line">	<span class="built_in">memset</span>(buf, <span class="number">0</span>, fileSize);</span><br><span class="line">	<span class="keyword">int</span> ret = fread(buf, fileSize, <span class="keyword">sizeof</span>(<span class="keyword">char</span>), fp);</span><br><span class="line">	<span class="keyword">if</span>(ret == <span class="number">-1</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		fclose(fp);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"%s\r\n"</span>,buf);</span><br><span class="line">	fclose(fp);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*把该字符串数据转成JSON数据*/</span> </span><br><span class="line">	cJSON *srcJsonData = cJSON_Parse(buf);</span><br><span class="line">	<span class="built_in">free</span>(buf);</span><br><span class="line">	<span class="keyword">if</span>(srcJsonData == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"err\r\n"</span>);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	cJSON *value;</span><br><span class="line">	<span class="comment">/*根据key值(class)获取对应的value*/</span></span><br><span class="line">	value = cJSON_GetObjectItem(srcJsonData, <span class="string">"class"</span>);</span><br><span class="line">	<span class="keyword">if</span>(value == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"GetObjectItem err\r\n"</span>);</span><br><span class="line">		cJSON_Delete(srcJsonData);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*把value转成字符串输出*/</span></span><br><span class="line">	<span class="keyword">char</span> *data = cJSON_Print(value);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"class = %s\r\n"</span>,data);</span><br><span class="line">	<span class="built_in">free</span>(data);</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*根据key值(books)获取对应的value*/</span></span><br><span class="line">	value = cJSON_GetObjectItem(srcJsonData, <span class="string">"books"</span>);</span><br><span class="line">	<span class="keyword">if</span>(value == <span class="literal">NULL</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"GetObjectItem err\r\n"</span>);</span><br><span class="line">		cJSON_Delete(srcJsonData);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*获取该数组对象的大小*/</span></span><br><span class="line">	<span class="keyword">int</span> len = cJSON_GetArraySize(value);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"books data: len=%d\r\n"</span>,len);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*访问books中的每一项*/</span> </span><br><span class="line">	<span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;len; i++)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/*先获取每一条信息*/</span></span><br><span class="line">		cJSON *tmpValue = cJSON_GetArrayItem(value,i);</span><br><span class="line">		</span><br><span class="line">		<span class="comment">/*再获取每条信息中的具体内容*/</span> </span><br><span class="line">		cJSON *nameValue = cJSON_GetObjectItem(tmpValue,<span class="string">"name"</span>);</span><br><span class="line">		cJSON *authorValue = cJSON_GetObjectItem(tmpValue,<span class="string">"author"</span>);</span><br><span class="line">		cJSON *publishValue = cJSON_GetObjectItem(tmpValue,<span class="string">"publishing"</span>);</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">if</span>(nameValue == <span class="literal">NULL</span> || authorValue == <span class="literal">NULL</span> || publishValue == <span class="literal">NULL</span>)</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"GetObjectItem err\r\n"</span>);</span><br><span class="line">			cJSON_Delete(srcJsonData);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">/*打印出来*/</span> </span><br><span class="line">		<span class="keyword">char</span> *print1 = cJSON_Print(nameValue);</span><br><span class="line">		<span class="keyword">char</span> *print2 = cJSON_Print(authorValue);</span><br><span class="line">		<span class="keyword">char</span> *print3 = cJSON_Print(publishValue);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"[%d] %s \t %s \t %s\r\n"</span>,i+<span class="number">1</span>,print1,print2,print3);</span><br><span class="line">		<span class="built_in">free</span>(print1);</span><br><span class="line">		<span class="built_in">free</span>(print2);</span><br><span class="line">		<span class="built_in">free</span>(print3);</span><br><span class="line">	&#125;</span><br><span class="line">	cJSON_Delete(srcJsonData);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">fileSize: 433</span><br><span class="line">&#123;</span><br><span class="line">    "class":"C语言书籍",</span><br><span class="line">    "books":[&#123;</span><br><span class="line">        "name":"C Primer pluse",</span><br><span class="line">        "author":"Stephen Prata",</span><br><span class="line">        "publishing":"人民邮电出版社"</span><br><span class="line">        &#125;,</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line">        "name":"C程序设计",</span><br><span class="line">        "author":"谭浩强",</span><br><span class="line">        "publishing":"清华大学出版社"</span><br><span class="line">        &#125;,</span><br><span class="line"></span><br><span class="line">        &#123;</span><br><span class="line">        "name":"C陷阱与缺陷",</span><br><span class="line">        "author":"Andrew Koenig",</span><br><span class="line">        "publishing":"人民邮电出版社"</span><br><span class="line">        &#125;]</span><br><span class="line">&#125;</span><br><span class="line">class = "C语言书籍"</span><br><span class="line">books data: len=3</span><br><span class="line">[1] "C Primer pluse"     "Stephen Prata"         "人民邮电出版社"</span><br><span class="line">[2] "C程序设计"          "谭浩强"        "清华大学出版社"</span><br><span class="line">[3] "C陷阱与缺陷"        "Andrew Koenig"         "人民邮电出版社"</span><br><span class="line"></span><br><span class="line">--------------------------------</span><br><span class="line">Process exited after 0.01578 seconds with return value 0</span><br><span class="line">请按任意键继续. . .</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb(码农爱学习) wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎关注我的微信公众号『码农爱学习』，一起学习进步(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2021/05/03/cJSON基础介绍与代码测试/">cJSON基础介绍与代码测试</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb(码农爱学习) 的个人博客">xxpcb(码农爱学习)</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2021/05/03/cJSON基础介绍与代码测试/" title="cJSON基础介绍与代码测试">https://xxpcb.github.io/2021/05/03/cJSON基础介绍与代码测试/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2021/05/03/cJSON基础介绍与代码测试/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/C/" rel="tag"># C</a>
+            
+              <a href="/tags/cJson/" rel="tag"># cJson</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2021/05/03/电机控制基础-定时器编码器模式使用与转速计算/" rel="next" title="电机控制基础--定时器编码器模式使用与转速计算">
+                  <i class="fa fa-chevron-left"></i> 电机控制基础--定时器编码器模式使用与转速计算
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2021/05/03/介绍一款好玩且开源的机器人仿真软件Webots/" rel="prev" title="介绍一款好玩且开源的机器人仿真软件Webots">
+                  介绍一款好玩且开源的机器人仿真软件Webots <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb(码农爱学习)">
+  <p class="site-author-name" itemprop="name">xxpcb(码农爱学习)</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">88</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JSON是什么"><span class="nav-number">1.</span> <span class="nav-text">JSON是什么</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#JSON-基本语法"><span class="nav-number">1.1.</span> <span class="nav-text">JSON 基本语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JSON值-value-的类型"><span class="nav-number">1.2.</span> <span class="nav-text">JSON值(value)的类型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cJSON又是个啥"><span class="nav-number">2.</span> <span class="nav-text">cJSON又是个啥</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cJSON编程实例"><span class="nav-number">3.</span> <span class="nav-text">cJSON编程实例</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#例子1"><span class="nav-number">3.1.</span> <span class="nav-text">例子1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子2"><span class="nav-number">3.2.</span> <span class="nav-text">例子2</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMP/">DMP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IIC/">IIC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MPU6050/">MPU6050</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TFTP/">TFTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webots/">Webots</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cJson/">cJson</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/excel/">excel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/函数指针/">函数指针</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/单片机/">单片机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/姿态解算/">姿态解算</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/字符串切分/">字符串切分</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/存储/">存储</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/定时器/">定时器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件传输/">文件传输</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件操作/">文件操作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/旋转矩阵/">旋转矩阵</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/机器人/">机器人</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/欧拉角/">欧拉角</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/滤波/">滤波</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/电机/">电机</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序烧录/">程序烧录</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码器/">编码器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链表/">链表</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2019~<span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb(码农爱学习)</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>

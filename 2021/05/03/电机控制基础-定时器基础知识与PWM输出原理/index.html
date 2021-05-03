@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="单片机开发中，电机的控制与定时器有着密不可分的关系，无论是直流电机，步进电机还是舵机，都会用到定时器，比如最常用的有刷直流电机，会使用定时器产生PWM波来调节转速，通过定时器的正交编码器接口来测量转速等。 本篇先介绍定时器的基础知识，然后对照这些知识介绍一下定时器输出PWM的基本原理，以及编程实现与代码分析。">
+<meta name="keywords" content="电机,定时器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="电机控制基础--定时器基础知识与PWM输出原理">
+<meta property="og:url" content="https://xxpcb.github.io/2021/05/03/电机控制基础-定时器基础知识与PWM输出原理/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="单片机开发中，电机的控制与定时器有着密不可分的关系，无论是直流电机，步进电机还是舵机，都会用到定时器，比如最常用的有刷直流电机，会使用定时器产生PWM波来调节转速，通过定时器的正交编码器接口来测量转速等。 本篇先介绍定时器的基础知识，然后对照这些知识介绍一下定时器输出PWM的基本原理，以及编程实现与代码分析。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-3.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-4.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-cr1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-ccmr1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-cnt.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-psc.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-arr.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-ccr1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-ccmr1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-ccer.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm3.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm4.png">
+<meta property="og:updated_time" content="2021-05-03T04:41:35.346Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="电机控制基础--定时器基础知识与PWM输出原理">
+<meta name="twitter:description" content="单片机开发中，电机的控制与定时器有着密不可分的关系，无论是直流电机，步进电机还是舵机，都会用到定时器，比如最常用的有刷直流电机，会使用定时器产生PWM波来调节转速，通过定时器的正交编码器接口来测量转速等。 本篇先介绍定时器的基础知识，然后对照这些知识介绍一下定时器输出PWM的基本原理，以及编程实现与代码分析。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-1.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2021/05/03/电机控制基础-定时器基础知识与PWM输出原理/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>电机控制基础--定时器基础知识与PWM输出原理 | xxpcb's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2021/05/03/电机控制基础-定时器基础知识与PWM输出原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb(码农爱学习)">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">电机控制基础--定时器基础知识与PWM输出原理
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2021-05-03 12:40:33 / 修改时间：12:41:35" itemprop="dateCreated datePublished" datetime="2021-05-03T12:40:33+08:00">2021-05-03</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/电机/" itemprop="url" rel="index"><span itemprop="name">电机</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>单片机开发中，电机的控制与定时器有着密不可分的关系，无论是直流电机，步进电机还是舵机，都会用到定时器，比如最常用的有刷直流电机，会使用定时器产生PWM波来调节转速，通过定时器的正交编码器接口来测量转速等。</p>
+<p>本篇先介绍<strong>定时器的基础知识</strong>，然后对照这些知识介绍一下<strong>定时器输出PWM的基本原理</strong>，以及<strong>编程实现与代码分析</strong>。</p>
+<a id="more"></a>
+
+<p>首先来看一下定时器的基础介绍。</p>
+<h1 id="1-定时器基础知识"><a href="#1-定时器基础知识" class="headerlink" title="1 定时器基础知识"></a>1 定时器基础知识</h1><h2 id="1-1-定时器种类"><a href="#1-1-定时器种类" class="headerlink" title="1.1 定时器种类"></a>1.1 定时器种类</h2><p>以STM32F4为例，一共有14个定时器：</p>
+<ul>
+<li><p>高级定时器（TIM1、TIM8）</p>
+</li>
+<li><p>通用定时器（TIM2<del>TIM5，TIM9</del>TIM14）</p>
+<ul>
+<li>TIM2~TIM5（通用定时器里功能较多的）</li>
+<li>TIM9/TIM12</li>
+<li>TIM10/TIM11和TIM13/TIM14</li>
+</ul>
+</li>
+<li><p>基本定时器  (TIM6、TIM7)</p>
+</li>
+</ul>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-1.png" alt></p>
+<h2 id="1-2-各种定时器的特性"><a href="#1-2-各种定时器的特性" class="headerlink" title="1.2 各种定时器的特性"></a>1.2 各种定时器的特性</h2><h3 id="1-2-1-高级定时器与通用定时器"><a href="#1-2-1-高级定时器与通用定时器" class="headerlink" title="1.2.1 高级定时器与通用定时器"></a>1.2.1 高级定时器与通用定时器</h3><p>这里列举高级定时器的特性，在此基础上，对比添加其与通用定时器的不同之处：</p>
+<ul>
+<li>16 位递增、递减、递增/递减自动重载计数器（<strong>TIM2 和 TIM5为32位</strong>）</li>
+<li>16 位可编程预分频器，用于对计数器时钟频率进行分频（即运行时修改），分频系数介于 1 到 65536 之间。</li>
+<li>多达 4 个独立通道（<strong>TIM9/TIM12有2个，TIM10/TIM11，TIM13/TIM14只有1个</strong>），可用于：<ul>
+<li>输入捕获</li>
+<li>输出比较</li>
+<li>PWM 生成（边沿和中心对齐模式）（<strong>高级定时器和TIM2~TIM5特有，其它是只有边沿对齐模式</strong>）</li>
+<li>单脉冲模式输出</li>
+</ul>
+</li>
+<li>带可编程死区的互补输出（<strong>高级定时器特有</strong>）。</li>
+<li>使用外部信号控制定时器且可实现多个定时器互连的同步电路（<strong>TIM10/TIM11，TIM13/TIM14没有</strong>）。</li>
+<li>重复计数器，用于仅在给定数目的计数器周期后更新定时器寄存器（<strong>高级定时器特有</strong>）。</li>
+<li>用于将定时器的输出信号置于复位状态或已知状态的断路输入（<strong>高级定时器特有</strong>）。</li>
+<li>发生如下事件时生成中断/DMA 请求：<ul>
+<li>更新：计数器上溢/下溢、计数器初始化（通过软件或内部/外部触发）</li>
+<li>触发事件（计数器启动、停止、初始化或通过内部/外部触发计数）（<strong>TIM10/TIM11和TIM13/TIM14没有此功能</strong>）</li>
+<li>输入捕获</li>
+<li>输出比较</li>
+<li>断路输入（<strong>高级定时器特有</strong>）</li>
+<li>支持定位用增量（正交）编码器和霍尔传感器电路（<strong>高级定时器和TIM2~TIM5特有</strong>）。</li>
+<li>外部时钟触发输入或逐周期电流管理（<strong>高级定时器和TIM2~TIM5特有</strong>）。</li>
+</ul>
+</li>
+</ul>
+<h3 id="1-2-2-基本定时器"><a href="#1-2-2-基本定时器" class="headerlink" title="1.2.2 基本定时器"></a>1.2.2 基本定时器</h3><p>基本定时器  (TIM6、TIM7）的功能比较单一，所具有的功能如下：</p>
+<ul>
+<li>16 位自动重载递<strong>增计</strong>数器</li>
+<li><strong>只能定时，没有外部 IO</strong></li>
+<li>16 位可编程预分频器，用于对计数器时钟频率进行分频（即运行时修改），分频系数<br>介于 1 和 65536 之间</li>
+<li>用于<strong>触发 DAC 的同步电路</strong></li>
+<li>发生如下更新事件时会生成中断/DMA 请求：计数器上溢</li>
+</ul>
+<h2 id="1-3-定时器使用配置"><a href="#1-3-定时器使用配置" class="headerlink" title="1.3 定时器使用配置"></a>1.3 定时器使用配置</h2><p>使用定时器，一般需要配置如下：</p>
+<ul>
+<li>时基：也就是计数器的计数时钟</li>
+<li>自动重装载值：每次计数的最大值</li>
+<li>输出通道：当需要使用定时器输出某种波形时（如PWM）</li>
+<li>输入通道：当需要使用定时器接收某种波形时（如电机编码器信号）</li>
+</ul>
+<p>先来看一下<strong>定时器的原理框图</strong>，对定时器的内部原理有一个整体直观的感受：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-3.png" alt></p>
+<h3 id="1-3-1-时钟源"><a href="#1-3-1-时钟源" class="headerlink" title="1.3.1 时钟源"></a>1.3.1 时钟源</h3><p>从上图可以看出，计数器的时钟源可以为：</p>
+<ul>
+<li>由RCC的内部时钟分频得到</li>
+<li>由定时器的<code>TIMx_ETR</code>引脚得到</li>
+<li>由其他定时器通过TRGO输出得到</li>
+</ul>
+<p>一般使用RCC的内部时钟<code>CK_INT</code>，也即定时器时钟<code>TIMxCLK</code>，经APB1或APB2预分频器后分频提供。</p>
+<p>关于定时器时钟源的具体细节，可以来看一下<strong>STM32F4的时钟树</strong>：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-4.png" alt></p>
+<p>从STM32F4的内部时钟树可知：</p>
+<ul>
+<li>高级定时器timer1, timer8以及通用定时器timer9, timer10, timer11的时钟来源是<strong>APB2总线(84MHZ)</strong></li>
+<li>通用定时器timer2<del>timer5，通用定时器timer12</del>timer14以及基本定时器timer6,timer7的时钟来源是<strong>APB1总线(42MHZ)</strong></li>
+</ul>
+<p>另外：</p>
+<ul>
+<li><p>当APB1和APB2<strong>分频数为1</strong>的时候，各定时器的时钟就是对应的APB1或APB2的时钟；</p>
+</li>
+<li><p>如果APB1和APB2<strong>分频数不为1</strong>，那么各定时器的时钟就是对应的APB1或APB2的时钟的<strong>2倍</strong>；</p>
+<p>由于库函数中 APB1 预分频的系数默认是 2，所以，所以TIM1、TIM8<del>TIM11的时钟为APB2时钟的两倍即<strong>168MHz</strong>，TIM2</del>TIM7、TIM12~TIM14的时钟为APB1的时钟的两倍即<strong>84MHz</strong>。</p>
+</li>
+</ul>
+<h3 id="1-3-2-计数器时钟"><a href="#1-3-2-计数器时钟" class="headerlink" title="1.3.2 计数器时钟"></a>1.3.2 计数器时钟</h3><p>由于定时器时钟的提供的可以频率较高，计数器不需要这么高的频率来计数，所以会进行降频，使用一个合适的低频时钟来计数。</p>
+<p>定时器时钟经过<strong>PSC 预分频器</strong>之后，即 <code>CK_CNT</code>，用来驱动计数器计数。PSC 是一个16 位的预分频器，可以对定时器时钟<code>TIMxCLK</code> 进行 1~65536 之间的任何一个数进行分频。</p>
+<p>具体计算方式为：<code>CK_CNT=TIMxCLK/（PSC+1）</code>。</p>
+<p>比如，使用STM32F4的通用定时器2（TIM2CLK为APB1的时钟的两倍即<strong>84MHz</strong>），PSC设置为83，则计数时钟为<code>84MHz/(83+1)=1MHz</code>，即1ms计一个数。</p>
+<h3 id="1-3-3-计数器"><a href="#1-3-3-计数器" class="headerlink" title="1.3.3 计数器"></a>1.3.3 计数器</h3><p>  计数器 CNT 是一个 16 位的计数器，只能往上计数，最大计数值为 65535。当计数达到<strong>自动重装载寄存器</strong>的时候产生更新事件，并清零从头开始计数。</p>
+<h3 id="1-3-4-自动重装载寄存器"><a href="#1-3-4-自动重装载寄存器" class="headerlink" title="1.3.4 自动重装载寄存器"></a>1.3.4 自动重装载寄存器</h3><p>  自动重装载寄存器 ARR 是一个 16 位的寄存器，这里面装着计数器能计数的最大数值。当计数到这个值的时候，如果使能了中断的，定时器就产生溢出中断。</p>
+<h1 id="2-定时器输出PWM原理"><a href="#2-定时器输出PWM原理" class="headerlink" title="2 定时器输出PWM原理"></a>2 定时器输出PWM原理</h1><p>如下图是PWM输出的原理示意图：</p>
+<p>假设定时器工作模式设置为向上计数 PWM模式，且当 CNT&lt;CCRx 时，输出 1，当 CNT&gt;=CCRx 时输出 0，则：</p>
+<ul>
+<li><p>当 CNT 值小于 CCRx 的时候， IO 输出高电平 (1)</p>
+</li>
+<li><p>当 CNT 值大于等于 CCRx 的时候，IO 输出低电平 (0)</p>
+</li>
+<li><p>当 CNT 达到 ARR 值的时候，重新归零，然后重新向上计数，依次循环。</p>
+</li>
+</ul>
+<blockquote>
+<p> 因此，改变 CCRx 的值，就可以改变 PWM 输出的<strong>占空比</strong>，改变 ARR 的值，就可以改变 PWM 输出的<strong>周期（频率）</strong>，这就是利用定时器输出PWM 的基本原理。</p>
+</blockquote>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm1.png" alt></p>
+<h1 id="3-定时器常用的寄存器"><a href="#3-定时器常用的寄存器" class="headerlink" title="3 定时器常用的寄存器"></a>3 定时器常用的寄存器</h1><p>使用定时器来输出PWM时，需要对其寄存器进行相应的设置。定时器的寄存器有好多个，这里先介绍几个与输出PWM相关的几个寄存器，其它是寄存器以后用到时再介绍。</p>
+<h2 id="3-1-控制寄存器CR1"><a href="#3-1-控制寄存器CR1" class="headerlink" title="3.1 控制寄存器CR1"></a>3.1 控制寄存器CR1</h2><p>控制寄存器，就是来设置定时的工作模式：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-cr1.png" alt></p>
+<ul>
+<li><p>位 15:10 保留，必须保持复位值。</p>
+</li>
+<li><p>位 9:8 <strong>CKD</strong>：时钟分频 (Clock division)<br>此位域指示定时器时钟 (CK_INT) 频率与数字滤波器所使用的采样时钟（ETR、TIx）之间的分频比，</p>
+</li>
+<li><p>位 7 <strong>ARPE</strong>：自动重载预装载使能 (Auto-reload preload enable)</p>
+<ul>
+<li>0：TIMx_ARR 寄存器不进行缓冲</li>
+<li>1：TIMx_ARR 寄存器进行缓冲</li>
+</ul>
+</li>
+<li><p>位 6:5 <strong>CMS</strong>：中心对齐模式选择 (Center-aligned mode selection)，包括1种边沿对齐模式与3种中心对齐模式</p>
+</li>
+<li><p>位 4 <strong>DIR</strong>：计数器方向 (Direction)，0为<strong>递增计数</strong>，1为<strong>递减计数</strong>。</p>
+<p>注： 当定时器配置为<strong>中心对齐</strong>模式或<strong>编码器</strong>模式时，该位为只读状态。</p>
+</li>
+<li><p>位 3 <strong>OPM</strong>：单脉冲模式 (One-pulse mode)</p>
+</li>
+</ul>
+<ul>
+<li><p>位 2 URS：更新请求源 (Update request source)</p>
+<p>此位由软件置 1 和清零，用以选择 UEV 事件源。</p>
+</li>
+<li><p>位 1 UDIS：更新禁止 (Update disable)<br>此位由软件置 1 和清零，用以使能/禁止 UEV 事件生成。</p>
+</li>
+<li><p>位 0 CEN：计数器使能 (Counter enable)，0为禁止计数器，1为使能计数器</p>
+<p>只有事先通过软件将 CEN 位置 1，才可以使用外部时钟、门控模式和编码器模式。而触发模式可通过硬件自动将 CEN 位置 1。在单脉冲模式下，当发生更新事件时会自动将 CEN 位清零。</p>
+</li>
+</ul>
+<h2 id="3-2-捕获-比较模式寄存器CCMR1"><a href="#3-2-捕获-比较模式寄存器CCMR1" class="headerlink" title="3.2 捕获/比较模式寄存器CCMR1"></a>3.2 捕获/比较模式寄存器CCMR1</h2><p>这些通道可用于<strong>输入（捕获模式）</strong>或<strong>输出（比较模式）模式</strong>。通道方向通过配置相应的 CCxS 位进行定义。此寄存器的所有其它位在输入模式和输出模式下的功能均不同。对于任一给定位</p>
+<ul>
+<li><p>OCxx 用于说明通道配置为输出时该位对应的功能</p>
+</li>
+<li><p>ICxx 则用于说明通道配置为输入时 该位对应的功能</p>
+</li>
+</ul>
+<p>因此，必须注意同一个位在输入阶段和输出阶段具有不同的含义。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-ccmr1.png" alt></p>
+<p>这里仅先介绍<strong>输出模式</strong>下的功能：</p>
+<ul>
+<li><p>位 15 <strong>OC2CE</strong>：输出比较 2 清零使能 (Output compare 3 clear enable)</p>
+</li>
+<li><p>位 14:12 <strong>OC2M[2:0]</strong>：输出比较 2 模式 (Output compare 2 mode)</p>
+</li>
+<li><p>位 11 <strong>OC2PE</strong>：输出比较 2 预装载使能 (Output compare 2 preload enable)</p>
+</li>
+<li><p>位 10 <strong>OC2FE</strong>：输出比较 2 快速使能 (Output compare 2 fast enable)</p>
+</li>
+<li><p>位 9:8 <strong>CC2S[1:0]</strong>：捕获/比较 2 选择 (Capture/Compare 2 selection)<br>参考下面的CC1S通道1</p>
+</li>
+<li><p>位 7 <strong>OC1CE</strong>：输出比较 1 清零使能 (Output compare 3 clear enable)</p>
+<p>OC1CE：输出比较 1 清零使能 (Output Compare 1 Clear Enable)</p>
+<ul>
+<li>0：OC1Ref 不受 ETRF 输入影响</li>
+<li>1：ETRF 输入上检测到高电平时， OC1Ref 立即清零。</li>
+</ul>
+</li>
+<li><p>位 6:4 <strong>OC1M</strong>：输出比较 1 模式 (Output compare 1 mode)<br>一共可配置位7种模式，这里仅介绍2种：</p>
+<ul>
+<li>110：<strong>PWM 模式 1</strong>––在递增计数模式下，只要 TIMx_CNT&lt;TIMx_CCR1，通道 1 便为有效状态，否则为无效状态。在递减计数模式下，只要 TIMx_CNT&gt;TIMx_CCR1，通道 1 便为无效状态 (OC1REF=0)，否则为有效状态 (OC1REF=1)。</li>
+<li>111：<strong>PPWM 模式 2</strong>––在递增计数模式下，只要 TIMx_CNT&lt;TIMx_CCR1，通道 1 便为无效状态，否则为有效状态。在递减计数模式下，只要 TIMx_CNT&gt;TIMx_CCR1，通道 1 便为有效状态，否则为无效状态。</li>
+</ul>
+</li>
+<li><p>位 3 <strong>OC1PE</strong>：输出比较 1 预装载使能 (Output compare 1 preload enable)</p>
+<ul>
+<li>0：禁止与 TIMx_CCR1 相关的预装载寄存器。可随时向 TIMx_CCR1 写入数据，写入后将立即使用新值。</li>
+<li>1：使能与 TIMx_CCR1 相关的预装载寄存器。可读/写访问预装载寄存器。TIMx_CCR1 预装载值在每次生成更新事件时都会装载到活动寄存器中。</li>
+</ul>
+</li>
+<li><p>位 2 <strong>OC1FE</strong>：输出比较 1 快速使能 (Output compare 1 fast enable)</p>
+<p>此位用于加快触发输入事件对 CC 输出的影响（仅当通道配置为 PWM1 或 PWM2 模式时，OCFE 才会起作用）。</p>
+<ul>
+<li>0：即使触发开启，CC1 也将根据计数器和 CCR1 值正常工作。触发输入出现边沿时，激活CC1 输出的最短延迟时间为 5 个时钟周期。</li>
+<li>1：触发输入上出现有效边沿相当于 CC1 输出上的比较匹配。随后，无论比较结果如何，OC 都设置为比较电平。采样触发输入和激活 CC1 输出的延迟时间缩短为 3 个时钟周期。</li>
+</ul>
+</li>
+<li><p>位 1:0 <strong>CC1S[1:0]</strong>：捕获/比较 1 选择 (Capture/Compare 1 selection)</p>
+</li>
+<li><p>此位域定义通道方向（输入/输出）以及所使用的输入。</p>
+<ul>
+<li><p>00：CC1 通道配置为输出。</p>
+</li>
+<li><p>01：CC1 通道配置为输入，IC1 映射到 TI1 上。</p>
+</li>
+<li><p>10：CC1 通道配置为输入，IC1 映射到 TI2 上。</p>
+</li>
+<li><p>11：CC1 通道配置为输入，IC1 映射到 TRC 上。此模式仅在通过 TS 位（TIMx_SMCR 寄存器）选择内部触发输入时有效</p>
+<p>注： 仅当通道关闭时（TIMx_CCER 中的 CC1E = 0），才可向 CC1S 位写入数据。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-3-计数器CNT"><a href="#3-3-计数器CNT" class="headerlink" title="3.3 计数器CNT"></a>3.3 计数器CNT</h2><p>计数器的功能很单一，就是计数：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-cnt.png" alt></p>
+<ul>
+<li>位 15:0 <strong>CNT[15:0]</strong>：计数器值 (Counter value)</li>
+</ul>
+<h2 id="3-4-预分频器PSC"><a href="#3-4-预分频器PSC" class="headerlink" title="3.4 预分频器PSC"></a>3.4 预分频器PSC</h2><p>预分频器的功能也很单一，就是分频：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-psc.png" alt></p>
+<ul>
+<li><p>位 15:0 <strong>PSC[15:0]</strong>：预分频器值 (Prescaler value)</p>
+<p>计数器时钟频率 <code>CK_CNT</code> 等于 <code>fCK_PSC / (PSC[15:0] + 1)</code>。</p>
+<p>PSC 包含在每次发生更新事件时要装载到实际预分频器寄存器的值。</p>
+</li>
+</ul>
+<h2 id="3-5-自动重装载寄存器ARR"><a href="#3-5-自动重装载寄存器ARR" class="headerlink" title="3.5 自动重装载寄存器ARR"></a>3.5 自动重装载寄存器ARR</h2><p>自动重装载寄存器的功能也很单一，就是保存一个数，在计数满的时候，重新开始计数</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-arr.png" alt></p>
+<ul>
+<li><p>位 15:0 <strong>ARR[15:0]</strong>：自动重载值 (Auto-reload value)</p>
+<p>ARR 为要装载到实际自动重载寄存器的值。</p>
+<p>当自动重载值为空时，计数器不工作。</p>
+</li>
+</ul>
+<h2 id="3-6-捕获-比较寄存器CCR"><a href="#3-6-捕获-比较寄存器CCR" class="headerlink" title="3.6 捕获/比较寄存器CCR"></a>3.6 捕获/比较寄存器CCR</h2><p>自动重装载寄存器的功能也很单一，也是保存一个数，用于与当前的CNT进行比较，注意 TIM2 和 TIM5是32位计数。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-ccr1.png" alt></p>
+<p>以CCR1寄存器（一共有CCR1~CCR4这4个通道）为例：</p>
+<ul>
+<li>位31:16 <strong>CCR1[31:16]</strong>：捕获/比较 1 的高 16 位（对于 TIM2 和 TIM5）。</li>
+<li>位15:0 <strong>CCR1[15:0]</strong>：捕获/比较 1 的低 16 位 (Low Capture/Compare 1 value)<ul>
+<li>如果通道 CC1 配置为<strong>输出</strong>：
+CCR1 是捕获/比较寄存器 1 的预装载值。<br>如果没有通过 <code>TIMx_CCMR</code>寄存器中的<code>OC1PE</code> 位来使能预装载功能，写入的数值会被直接传输至当前寄存器中。否则只在发生更新事件时生效（拷贝到实际起作用的捕获/ 比较寄存器1）。<br>实际捕获/比较寄存器中包含要与计数器 <code>TIMx_CNT</code>进行比较并在 OC1 输出上发出信号的值。</li>
+<li>如果通道 CC1 配置为<strong>输入</strong>：
+CCR1 为上一个输入捕获 1 事件 (IC1) 发生时的计数器值。</li>
+</ul>
+</li>
+</ul>
+<h1 id="4-代码实现与分析"><a href="#4-代码实现与分析" class="headerlink" title="4 代码实现与分析"></a>4 代码实现与分析</h1><p>上面介绍了定时器的基础知识与PWM的输出原理，下面就来实际看一下，如何编写对应的代码（以STM32F407为例）。</p>
+<h2 id="4-1-定时器初始化"><a href="#4-1-定时器初始化" class="headerlink" title="4.1 定时器初始化"></a>4.1 定时器初始化</h2><p>定时器的初始化，因为需要用到对应的引脚输出PWM，因此要先初始化<strong>GPIO引脚</strong>，然后，还要初始化定时器的<strong>时基</strong>（计数的时钟）以及<strong>输出通道</strong>（用于配置PWM的输出模式）。</p>
+<h3 id="4-1-1-复用引脚初始化"><a href="#4-1-1-复用引脚初始化" class="headerlink" title="4.1.1 复用引脚初始化"></a>4.1.1 复用引脚初始化</h3><p>这里用到的是定时器3，根据STM32F407的数据手册“3 Pinouts and pin description”中的“Table 9. Alternate function mapping”复用引脚说明表，可以看到定时器3通道1对应的引脚位A6:</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-2.png" alt></p>
+<p>因此程序中对A6引脚可以这样配置，注意一定要<strong>配置引脚的复用功能</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">GPIO_InitTypeDef GPIO_InitStructure; <span class="comment">/*引脚配置 结构体*/</span></span><br><span class="line"></span><br><span class="line">RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); 	<span class="comment">//使能PORTA时钟	</span></span><br><span class="line">GPIO_PinAFConfig(GPIOA,GPIO_PinSource6,GPIO_AF_TIM3);  <span class="comment">/*GPIOA6复用为定时器3*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*复用引脚配置*/</span></span><br><span class="line">GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;           <span class="comment">//GPIOA6</span></span><br><span class="line">GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;        <span class="comment">/*复用功能*/</span></span><br><span class="line">GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	<span class="comment">//速度100MHz</span></span><br><span class="line">GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;      <span class="comment">//推挽复用输出</span></span><br><span class="line">GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        <span class="comment">//上拉</span></span><br><span class="line">GPIO_Init(GPIOA,&amp;GPIO_InitStructure);               <span class="comment">//初始化PA6</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-2-时基初始化"><a href="#4-1-2-时基初始化" class="headerlink" title="4.1.2 时基初始化"></a>4.1.2 时基初始化</h3><p>时基初始化，主要是配置定时器的<strong>计数频率</strong>（<strong>psc</strong>）和自动重装置值（每次计数的周期，<strong>arr</strong>），比如<code>TIM3_PWM_Init(500-1,84-1);</code></p>
+<p>（关于psc与arr的知识点，可以再回顾一下上面1.3节的知识）</p>
+<p>这里将<strong>arr</strong>的值设置为500，即计数器每计够500个数就会重新从0开始计数，这个500再乘以计数器计数的周期，就是PWM真正的周期，<strong>那计数器计数的频率是多少呢</strong>（频率的倒数为周期）？</p>
+<p>这里将<strong>psc</strong>的值设置为84-1，即TIM3的输入频率为84MHz再将频率降低1/84，即使用1MHz的频率计数（1s能计1,000,000个数，也即1us计1个数），那么PWM的真正周期就是<code>500*1us=500us(0.5ms)</code>，通过改变占空比的值（<strong>ccr</strong>）,就可以调节PWM的输出占空比。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm2.png" alt></p>
+<p>时基初始化配置如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure; <span class="comment">/*时基 结构体*/</span></span><br><span class="line"></span><br><span class="line">RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);  	<span class="comment">//TIM3时钟使能   </span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*时基初始化*/</span></span><br><span class="line">TIM_TimeBaseStructure.TIM_Period=arr;                     <span class="comment">/*ARR 自动重装载值(周期)，例如500*/</span></span><br><span class="line">TIM_TimeBaseStructure.TIM_Prescaler=psc;                  <span class="comment">/*PSC 定时器分频，例如84*/</span></span><br><span class="line">TIM_TimeBaseStructure.TIM_ClockDivision=TIM_CKD_DIV1;     <span class="comment">/*时钟分割*/</span></span><br><span class="line">TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up; <span class="comment">/*向上计数模式*/</span></span><br><span class="line">TIM_TimeBaseInit(TIM3,&amp;TIM_TimeBaseStructure);            <span class="comment">/*初始化定时器3*/</span></span><br></pre></td></tr></table></figure>
+
+<p>最后一句的时基初始化，起始就是对定时的寄存器进行配置，该函数的内部实现如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">TIM_TimeBaseInit</span><span class="params">(TIM_TypeDef* TIMx, TIM_TimeBaseInitTypeDef* TIM_TimeBaseInitStruct)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">uint16_t</span> tmpcr1 = <span class="number">0</span>;</span><br><span class="line">  tmpcr1 = TIMx-&gt;CR1;  </span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span>((TIMx == TIM1) || (TIMx == TIM8)|| <span class="comment">/*高级定时器TIM和TIM8*/</span></span><br><span class="line">     (TIMx == TIM2) || (TIMx == TIM3)||(TIMx == TIM4) || (TIMx == TIM5)) <span class="comment">/*通用定时器中的TIM2~TIM5*/</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">/* 设置为计数器模式 */</span></span><br><span class="line">    tmpcr1 &amp;= (<span class="keyword">uint16_t</span>)(~(TIM_CR1_DIR | TIM_CR1_CMS));</span><br><span class="line">    tmpcr1 |= (<span class="keyword">uint32_t</span>)TIM_TimeBaseInitStruct-&gt;TIM_CounterMode;</span><br><span class="line">  &#125;</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span>((TIMx != TIM6) &amp;&amp; (TIMx != TIM7)) <span class="comment">/*基本定时器TIM6和TIM7无此功能*/</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">/* 设置时钟分频 */</span></span><br><span class="line">    tmpcr1 &amp;=  (<span class="keyword">uint16_t</span>)(~TIM_CR1_CKD);</span><br><span class="line">    tmpcr1 |= (<span class="keyword">uint32_t</span>)TIM_TimeBaseInitStruct-&gt;TIM_ClockDivision;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 配置CR1寄存器 */</span></span><br><span class="line">  TIMx-&gt;CR1 = tmpcr1;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 配置ARR寄存器，设置自动重转载值 */</span></span><br><span class="line">  TIMx-&gt;ARR = TIM_TimeBaseInitStruct-&gt;TIM_Period ;</span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* 配置PSC寄存器，设置预分频值 */</span></span><br><span class="line">  TIMx-&gt;PSC = TIM_TimeBaseInitStruct-&gt;TIM_Prescaler;</span><br><span class="line">    </span><br><span class="line">  <span class="keyword">if</span> ((TIMx == TIM1) || (TIMx == TIM8))  <span class="comment">/*高级定时器TIM和TIM8*/</span></span><br><span class="line">  &#123;    <span class="comment">/*  配置RCR寄存器，设置重复计数值 */</span></span><br><span class="line">      TIMx-&gt;RCR = TIM_TimeBaseInitStruct-&gt;TIM_RepetitionCounter;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* 生成一个更新事件来立即重新加载预分频器和重复计数器(仅针对高级定时器TIM1和TIM8)值 */</span></span><br><span class="line">  TIMx-&gt;EGR = TIM_PSCReloadMode_Immediate;          </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-3-输出通道初始化"><a href="#4-1-3-输出通道初始化" class="headerlink" title="4.1.3 输出通道初始化"></a>4.1.3 输出通道初始化</h3><p>输出通道初始化，主要是配置输出的一些参数，这里主要关注<strong>TIM_OCMode</strong>（模式）与<strong>TIM_OCPolarity</strong>（极性），这两个参数是配合使用的：</p>
+<ul>
+<li><p>PWM模式1</p>
+<ul>
+<li><strong>向上计数</strong>时，一旦<code>TIMx_CNT&lt;TIMx_CCR1</code>时通道1为<strong>有效电平</strong>，否则为无效电平；</li>
+<li>向下计数时，一旦<code>TIMx_CNT&gt;TIMx_CCR1</code>时通道1为无效电平，否则为有效电平。</li>
+</ul>
+</li>
+<li><p>PWM模式2</p>
+<ul>
+<li><strong>向上计数</strong>时，一旦<code>TIMx_CNT&lt;TIMx_CCR1</code>时通道1为<strong>无效电平</strong>，否则为有效电平；</li>
+<li>向下计数时，一旦<code>TIMx_CNT&gt;TIMx_CCR1</code>时通道1为有效电平，否则为无效电平。</li>
+</ul>
+</li>
+</ul>
+<p>这里的<strong>有效电平</strong>又是什么意思呢？怎么算有效电平？它就是通过极性来配置的：</p>
+<ul>
+<li>输出High模式：有效电平为高电平</li>
+<li>输出Low模式：有效电平为低电平</li>
+</ul>
+<p>对比着再来看这张图：</p>
+<p>当CNT的计数值小于CCR时，即t1这个时间段，输出有效电平（<strong>TIM_OCMode_PWM1</strong>模式），而有效电平是高电平（极性为<strong>TIM_OCPolarity_High</strong>），所以PWM的IO逻辑在t1这个时间段输出了高电平。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm1.png" alt></p>
+<p>输出通道的配置如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">TIM_OCInitTypeDef  TIM_OCInitStructure; <span class="comment">/*输出通道 结构体*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*输出通道初始化，初始化TIM3 Channel1 PWM模式*/</span>	 </span><br><span class="line">TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;              <span class="comment">/*选择定时器模式:TIM脉冲宽度调制模式1*/</span></span><br><span class="line">TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;  <span class="comment">//比较输出使能</span></span><br><span class="line">TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;      <span class="comment">/*输出极性:TIM输出比较极性高*/</span></span><br><span class="line">TIM_OC1Init(TIM3, &amp;TIM_OCInitStructure);                       <span class="comment">//根据指定的参数初始化外设TIM3 OC1</span></span><br><span class="line"></span><br><span class="line">TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Enable);  <span class="comment">/*使能TIM3在CCR1上的预装载寄存器*/</span></span><br><span class="line">TIM_ARRPreloadConfig(TIM3,ENABLE);<span class="comment">/*ARPE使能：使能控制寄存器CR的第8位：ARPR, Auto-reload preload enable*/</span></span><br><span class="line">TIM_Cmd(TIM3, ENABLE);  <span class="comment">/*使能TIM3：使能控制寄存器CR的第0位：CEN, counter enable*/</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>关于配置CCMR1、CCER寄存器</li>
+</ul>
+<p>CCMR1:</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-ccmr1.png" alt></p>
+<p>CCER:<br><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-ccer.png" alt></p>
+<p><code>TIM_OC1Init</code>函数对应于输入通道的初始化，其实就是操作<code>CCMR1</code>、<code>CCER</code>等寄存器：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">TIM_OC1Init</span><span class="params">(TIM_TypeDef* TIMx, TIM_OCInitTypeDef* TIM_OCInitStruct)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">uint16_t</span> tmpccmrx = <span class="number">0</span>, tmpccer = <span class="number">0</span>, tmpcr2 = <span class="number">0</span>;</span><br><span class="line">  TIMx-&gt;CCER &amp;= (<span class="keyword">uint16_t</span>)~TIM_CCER_CC1E;<span class="comment">/* 关闭通道1: 复位CC1E位 */</span></span><br><span class="line">  </span><br><span class="line">  tmpccer = TIMx-&gt;CCER;<span class="comment">/* 获取 TIMx CCER 寄存器的值 */</span></span><br><span class="line">  tmpcr2 =  TIMx-&gt;CR2; <span class="comment">/* 获取 TIMx CR2 寄存器的值 */</span></span><br><span class="line"></span><br><span class="line">  tmpccmrx = TIMx-&gt;CCMR1;<span class="comment">/* 获取TIMx CCMR1 寄存器的值 */</span></span><br><span class="line">  tmpccmrx &amp;= (<span class="keyword">uint16_t</span>)~TIM_CCMR1_OC1M;   <span class="comment">/* 复位输出比较模式OC1M位 */</span></span><br><span class="line">  tmpccmrx &amp;= (<span class="keyword">uint16_t</span>)~TIM_CCMR1_CC1S;</span><br><span class="line">  tmpccmrx |= TIM_OCInitStruct-&gt;TIM_OCMode;<span class="comment">/* 设置为输出比较模式 */</span></span><br><span class="line">  </span><br><span class="line">  tmpccer &amp;= (<span class="keyword">uint16_t</span>)~TIM_CCER_CC1P;          <span class="comment">/* 复位输出极性CC1P */</span></span><br><span class="line">  tmpccer |= TIM_OCInitStruct-&gt;TIM_OCPolarity;  <span class="comment">/* 设置输出极性 */</span></span><br><span class="line">  tmpccer |= TIM_OCInitStruct-&gt;TIM_OutputState; <span class="comment">/* 设置输出状态 */</span></span><br><span class="line">    </span><br><span class="line">  <span class="keyword">if</span>((TIMx == TIM1) || (TIMx == TIM8)) <span class="comment">/*高级定时器的特殊配置*/</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">//省略。。。</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  TIMx-&gt;CR2 = tmpcr2;     <span class="comment">/* 写数据到TIMx的CR2寄存器 */</span></span><br><span class="line">  TIMx-&gt;CCMR1 = tmpccmrx; <span class="comment">/* 写数据到TIMx的CCMR1寄存器 */</span></span><br><span class="line">  TIMx-&gt;CCR1 = TIM_OCInitStruct-&gt;TIM_Pulse;<span class="comment">/* 设置CCR1寄存器 */</span></span><br><span class="line">  TIMx-&gt;CCER = tmpccer;  <span class="comment">/* 写数据到TIMx的CCER寄存器 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-2-动态改变占空比"><a href="#4-2-动态改变占空比" class="headerlink" title="4.2 动态改变占空比"></a>4.2 动态改变占空比</h2><p>占空比是通过修改CCR寄存器的值进行修改的，如果定时器初始化时只设置了1次CCR的值，那么会输出恒定占空比的PWM波；如果在定时器运行的时候，动态修改CCR的值，则可以实现PWM占空比的动态调整。</p>
+<p>如下程序，实现了每隔10ms对占空比进行一次修改，每次将高电平计数值增加5，当增大道500（占空比100%）时，再逐渐减小到0（占空比0%），不断循环。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">u16 led0pwmval=<span class="number">0</span>;    </span><br><span class="line">u8 dir=<span class="number">1</span>;</span><br><span class="line">TIM3_PWM_Init(<span class="number">500</span><span class="number">-1</span>,<span class="number">84</span><span class="number">-1</span>);	<span class="comment">//84M/84=1Mhz的计数频率,重装载值500，所以PWM频率为 1M/500=2Khz.  </span></span><br><span class="line"><span class="keyword">while</span>(<span class="number">1</span>) <span class="comment">//实现比较值从0-500递增，到500后从500-0递减，循环</span></span><br><span class="line">&#123;</span><br><span class="line">    delay_ms(<span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(dir)</span><br><span class="line">    &#123;</span><br><span class="line">        led0pwmval+=<span class="number">5</span>;  <span class="comment">//dir==1 led0pwmval递增</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">    &#123;</span><br><span class="line">        led0pwmval-=<span class="number">5</span>;	<span class="comment">//dir==0 led0pwmval递减 </span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(led0pwmval&gt;<span class="number">500</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        dir=<span class="number">0</span>;          <span class="comment">//led0pwmval到达500后，方向为递减</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(led0pwmval==<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        dir=<span class="number">1</span>;	        <span class="comment">//led0pwmval递减到0后，方向改为递增</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    TIM_SetCompare1(TIM3,led0pwmval);	<span class="comment">/*CCR 修改比较值（占空比）*/</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="5-测试效果"><a href="#5-测试效果" class="headerlink" title="5 测试效果"></a>5 测试效果</h1><p>将程序下载到板子，我用的一块STM32F407的板，A6引脚上接了一个LED灯，实际效果的LED逐渐变凉，在逐渐变暗，依次循环。</p>
+<p>再通过逻辑分析仪来查看实际的输出波形，如下图，测得的pwm周期0.5ms（频率2kHz），与软件中设定的一致。</p>
+<p>在某一时刻，脉宽55us。<br><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm3.png" alt></p>
+<p>在另一时刻，脉宽0.365ms，即实现了PWM脉宽的动态调整。<br><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/Timer/timer-pwm4.png" alt></p>
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb(码农爱学习) wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎关注我的微信公众号『码农爱学习』，一起学习进步(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2021/05/03/电机控制基础-定时器基础知识与PWM输出原理/">电机控制基础--定时器基础知识与PWM输出原理</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb(码农爱学习) 的个人博客">xxpcb(码农爱学习)</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2021/05/03/电机控制基础-定时器基础知识与PWM输出原理/" title="电机控制基础--定时器基础知识与PWM输出原理">https://xxpcb.github.io/2021/05/03/电机控制基础-定时器基础知识与PWM输出原理/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2021/05/03/电机控制基础-定时器基础知识与PWM输出原理/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/电机/" rel="tag"># 电机</a>
+            
+              <a href="/tags/定时器/" rel="tag"># 定时器</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2021/05/03/编码器计数原理与电机测速原理-多图解析/" rel="next" title="编码器计数原理与电机测速原理--多图解析">
+                  <i class="fa fa-chevron-left"></i> 编码器计数原理与电机测速原理--多图解析
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2021/05/03/电机控制基础-定时器捕获单输入脉冲原理/" rel="prev" title="电机控制基础--定时器捕获单输入脉冲原理">
+                  电机控制基础--定时器捕获单输入脉冲原理 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb(码农爱学习)">
+  <p class="site-author-name" itemprop="name">xxpcb(码农爱学习)</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">88</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-定时器基础知识"><span class="nav-number">1.</span> <span class="nav-text">1 定时器基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-定时器种类"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 定时器种类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-各种定时器的特性"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 各种定时器的特性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-高级定时器与通用定时器"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.2.1 高级定时器与通用定时器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-基本定时器"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2.2 基本定时器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-定时器使用配置"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 定时器使用配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1-时钟源"><span class="nav-number">1.3.1.</span> <span class="nav-text">1.3.1 时钟源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2-计数器时钟"><span class="nav-number">1.3.2.</span> <span class="nav-text">1.3.2 计数器时钟</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3-计数器"><span class="nav-number">1.3.3.</span> <span class="nav-text">1.3.3 计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-4-自动重装载寄存器"><span class="nav-number">1.3.4.</span> <span class="nav-text">1.3.4 自动重装载寄存器</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-定时器输出PWM原理"><span class="nav-number">2.</span> <span class="nav-text">2 定时器输出PWM原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-定时器常用的寄存器"><span class="nav-number">3.</span> <span class="nav-text">3 定时器常用的寄存器</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-控制寄存器CR1"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 控制寄存器CR1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-捕获-比较模式寄存器CCMR1"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 捕获/比较模式寄存器CCMR1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-计数器CNT"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 计数器CNT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-预分频器PSC"><span class="nav-number">3.4.</span> <span class="nav-text">3.4 预分频器PSC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-5-自动重装载寄存器ARR"><span class="nav-number">3.5.</span> <span class="nav-text">3.5 自动重装载寄存器ARR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-捕获-比较寄存器CCR"><span class="nav-number">3.6.</span> <span class="nav-text">3.6 捕获/比较寄存器CCR</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-代码实现与分析"><span class="nav-number">4.</span> <span class="nav-text">4 代码实现与分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-定时器初始化"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 定时器初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-1-复用引脚初始化"><span class="nav-number">4.1.1.</span> <span class="nav-text">4.1.1 复用引脚初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-2-时基初始化"><span class="nav-number">4.1.2.</span> <span class="nav-text">4.1.2 时基初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-3-输出通道初始化"><span class="nav-number">4.1.3.</span> <span class="nav-text">4.1.3 输出通道初始化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-动态改变占空比"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 动态改变占空比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-测试效果"><span class="nav-number">5.</span> <span class="nav-text">5 测试效果</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMP/">DMP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IIC/">IIC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MPU6050/">MPU6050</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TFTP/">TFTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webots/">Webots</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cJson/">cJson</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/excel/">excel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/函数指针/">函数指针</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/单片机/">单片机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/姿态解算/">姿态解算</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/字符串切分/">字符串切分</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/存储/">存储</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/定时器/">定时器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件传输/">文件传输</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件操作/">文件操作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/旋转矩阵/">旋转矩阵</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/机器人/">机器人</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/欧拉角/">欧拉角</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/滤波/">滤波</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/电机/">电机</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序烧录/">程序烧录</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码器/">编码器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链表/">链表</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2019~<span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb(码农爱学习)</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>

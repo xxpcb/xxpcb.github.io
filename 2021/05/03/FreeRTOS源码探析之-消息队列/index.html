@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="消息队列">
+<meta name="keywords" content="FreeRTOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="FreeRTOS源码探析之--消息队列">
+<meta property="og:url" content="https://xxpcb.github.io/2021/05/03/FreeRTOS源码探析之-消息队列/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="消息队列">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/3.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/5.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/4.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/6.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/7.png">
+<meta property="og:updated_time" content="2021-05-03T04:33:22.419Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="FreeRTOS源码探析之--消息队列">
+<meta name="twitter:description" content="消息队列">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/1.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2021/05/03/FreeRTOS源码探析之-消息队列/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>FreeRTOS源码探析之--消息队列 | xxpcb's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2021/05/03/FreeRTOS源码探析之-消息队列/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb(码农爱学习)">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">FreeRTOS源码探析之--消息队列
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2021-05-03 12:32:27 / 修改时间：12:33:22" itemprop="dateCreated datePublished" datetime="2021-05-03T12:32:27+08:00">2021-05-03</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/FreeRTOS/" itemprop="url" rel="index"><span itemprop="name">FreeRTOS</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>消息队列</p>
+<a id="more"></a>
+
+<h1 id="1-消息队列基础"><a href="#1-消息队列基础" class="headerlink" title="1 消息队列基础"></a>1 消息队列基础</h1><h2 id="1-1-消息队列的运作机制"><a href="#1-1-消息队列的运作机制" class="headerlink" title="1.1 消息队列的运作机制"></a>1.1 消息队列的运作机制</h2><p>创建消息队列时FreeRTOS会先给消息队列分配一块内存空间，这块内存的大小等于<strong>消息队列控制块</strong>大小加上（<strong>单个消息空间</strong>大小与消息<strong>队列长度</strong>的乘积），接着再初始化消息队列，此时消息队列为空。</p>
+<p><strong>任务</strong>或者<strong>中断服务程序</strong>都可以给消息队列发送消息，当发送消息时:</p>
+<ul>
+<li>如果队列未满或者允许覆盖入队，FreeRTOS会将消息拷贝到消息队列队尾</li>
+<li>否则（队列已满），会根据用户指定的阻塞超时时间进行阻塞，在这段时间中，如果队列一直不允许入队，该任务将保持阻塞状态以等待队列允许入队。<ul>
+<li>当其它任务从其等待的队列中读取入了数据（队列未满），该任务将自动由阻塞态转换为就绪态。</li>
+<li>当等待的时间超过了指定的阻塞时间，即使队列中还不允许入队，任务也会自动从阻塞态转移为就绪态，此时发送消息的任务或者中断程序会收到一个错误码<code>errQUEUE_FULL</code>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>发送紧急消息</strong>的过程与发送消息几乎一样，唯一的不同是，当发送紧急消息时，发送的位置是消息队列队头而非队尾，这样，接收者就能够优先接收到紧急消息，从而及时进行消息处理。</p>
+<h2 id="1-2-消息队列的阻塞机制"><a href="#1-2-消息队列的阻塞机制" class="headerlink" title="1.2 消息队列的阻塞机制"></a>1.2 消息队列的阻塞机制</h2><p>我们使用的消息队列一般不是属于某个任务的队列，在很多时候，我们创建的队列，是每个任务都可以去对他进行读写操作的，但是为了保护每个任务对它进行读写操作的过程，我们必须要有阻塞机制，<strong>在某个任务对它读写操作的时候，必须保证该任务能正常完成读写操作</strong>，而不受后来的任务干扰。那么，如何实现这个机制呢，其实FreeRTOS已经为我们做好了，每个对消息队列读写的函数，都有这种机制，我称之为阻塞机制。</p>
+<h3 id="1-2-1-接收消息"><a href="#1-2-1-接收消息" class="headerlink" title="1.2.1 接收消息"></a>1.2.1 接收消息</h3><p>假设有一个<strong>任务A对某个队列进行读操作</strong>的时候（也就是我们所说的出队），发现它没有消息，那么此时任务A有3个选择：</p>
+<ul>
+<li>任务A扭头就走，既然队列没有消息，那我也不等了，干其它事情去，这样子任务A不会进入阻塞态。</li>
+<li>任务A还是在这里等等吧，可能过一会队列就有消息，此时任务A会进入阻塞状态，在等待着消息的道来，而任务A的等待时间就由我们自己定义，比如设置1000个系统时钟节拍tick的等待，在这1000个tick到来之前任务A都是处于阻塞态，当阻塞的这段时间任务A等到了队列的消息，那么任务A就会从阻塞态变成就绪态，如果此时任务A比当前运行的任务优先级还高，那么，任务A就会得到消息并且运行；假如1000个tick都过去了，队列还没消息，那任务A就不等了，从阻塞态中唤醒，返回一个没等到消息的错误代码，然后继续执行任务A的其他代码。</li>
+<li>任务A死等，不等到消息就不走了，这样子任务A就会进入阻塞态，直到完成读取队列的消息。</li>
+</ul>
+<h3 id="1-2-2-发送消息"><a href="#1-2-2-发送消息" class="headerlink" title="1.2.2 发送消息"></a>1.2.2 发送消息</h3><p>在<strong>发送消息</strong>操作的时候，为了保护数据，当且仅当队列允许入队的时候，发送者才能成功发送消息</p>
+<ul>
+<li>队列中无可用消息空间时，说明消息队列已满，此时，系统会根据用户指定的阻塞超时时间将任务阻塞，在指定的超时时间内如果还不能完成入队操作，发送消息的任务或者中断服务程序会收到一个错误码errQUEUE_FULL，然后解除阻塞状态；</li>
+<li>当然，只有在任务中发送消息才允许进行阻塞状态，而在中断中发送消息不允许带有阻塞机制的，需要调用在中断中发送消息的API函数接口，因为发送消息的上下文环境是在中断中，不允许有阻塞的情况。</li>
+</ul>
+<p>假如有多个任务阻塞在一个消息队列中，那么这些阻塞的任务将按照任务优先级进行排序，优先级高的任务将优先获得队列的访问权。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/1.png" alt></p>
+<h1 id="2-消息队列创建"><a href="#2-消息队列创建" class="headerlink" title="2 消息队列创建"></a>2 消息队列创建</h1><h2 id="2-1-消息队列控制块"><a href="#2-1-消息队列控制块" class="headerlink" title="2.1 消息队列控制块"></a>2.1 消息队列控制块</h2><p>来看一下消息队列控制块（结构体）的结构组成：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/2.png" alt></p>
+<p>FreeRTOS的<strong>消息队列控制块</strong>由多个元素组成，当消息队列被创建时，系统会为控制块分配对应的内存空间，用于保存消息队列的一些信息如消息的存储位置，头指针<code>pcHead</code>、尾指针<code>pcTail</code>、消息大小<code>uxItemSize</code>以及队列长度<code>uxLength</code>等。</p>
+<p>每个消息队列都与消息空间在同一段连续的内存空间中，在创建成功的时候，这些内存就被占用了，只有删除了消息队列的时候，这段内存才会被释放掉，创建成功的时候就已经分配好每个消息空间与消息队列的容量，无法更改，每个消息空间可以存放不大于消息大小<code>uxItemSize</code>的任意类型的数据，所有消息队列中的消息空间总数即是消息队列的长度，这个长度可在消息队列创建时指定。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">QueueDefinition</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="keyword">int8_t</span> *pcHead;	<span class="comment">/* 指向队列消息存储区起始位置，即第一个消息空间 */</span></span><br><span class="line">	<span class="keyword">int8_t</span> *pcTail;	<span class="comment">/* 指向队列消息存储区结束位置地址。一旦分配的字节超过了存储队列项的需要，就将其用作一个标记 */</span></span><br><span class="line">	<span class="keyword">int8_t</span> *pcWriteTo;	<span class="comment">/* 指向队列消息存储区下一个可以写入消息的位置*/</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">union</span>	<span class="comment">/* 使用联合体用来确保两个互斥的结构体成员不会同时出现 */</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">int8_t</span> *pcReadFrom;	<span class="comment">/* 当结构体用于队列时，pcReadFrom指向出队消息空间的最后一个 */</span></span><br><span class="line">		UBaseType_t uxRecursiveCallCount;<span class="comment">/* 当结构体用于互斥量时，uxRecursiveCallCount用于计数，记录递归互斥量被“调用”的次数 */</span></span><br><span class="line">	&#125; u;</span><br><span class="line"></span><br><span class="line">	List_t xTasksWaitingToSend;	<span class="comment">/* 一个发送消息的阻塞列表，用于保存阻塞在此队列的任务，任务按照优先级进行排序，由于队列已满，想要发送消息的任务无法发送消息 */</span></span><br><span class="line">	List_t xTasksWaitingToReceive;	<span class="comment">/* 一个获取消息的阻塞列表，用于保存阻塞在此队列的任务，任务按照优先级进行排序，由于队列是空的，想要获取消息的任务无法获取到消息 */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">volatile</span> UBaseType_t uxMessagesWaiting;<span class="comment">/* 记录当前消息队列的消息个数，如果消息队列被用于信号量的时候，这个值就表示有效信号量个数*/</span></span><br><span class="line">	UBaseType_t uxLength;			<span class="comment">/* 队列的长度，也就是能存放多少消息 */</span></span><br><span class="line">	UBaseType_t uxItemSize;			<span class="comment">/* 单个消息的大小 */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">volatile</span> <span class="keyword">int8_t</span> cRxLock;		<span class="comment">/* 队列上锁后，储存从队列收到的列表项数目，也就是出队的数量，如果队列没有上锁，设置为queueUNLOCKED */</span></span><br><span class="line">	<span class="keyword">volatile</span> <span class="keyword">int8_t</span> cTxLock;		<span class="comment">/* 队列上锁后，储存发送到队列的列表项数目，也就是入队的数量，如果队列没有上锁，设置为queueUNLOCKED */</span></span><br><span class="line"></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">if</span>( ( configSUPPORT_STATIC_ALLOCATION == 1 ) &amp;&amp; ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )</span></span><br><span class="line">		<span class="keyword">uint8_t</span> ucStaticallyAllocated;	<span class="comment">/* 如果队列使用的内存是静态分配的，以确保不会尝试释放内存，则设置为pdTRUE */</span></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">if</span> ( configUSE_QUEUE_SETS == 1 )</span></span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">QueueDefinition</span> *<span class="title">pxQueueSetContainer</span>;</span> <span class="comment">/* 队列集 */</span></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">if</span> ( configUSE_TRACE_FACILITY == 1 )</span></span><br><span class="line">		UBaseType_t uxQueueNumber;</span><br><span class="line">		<span class="keyword">uint8_t</span> ucQueueType;     <span class="comment">/* 队列的类型（用途） */</span></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">&#125; xQUEUE;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 旧版本的FreeRTOS使用xQUEUE，新版本使用Queue_t代替*/</span></span><br><span class="line"><span class="keyword">typedef</span> xQUEUE Queue_t;</span><br></pre></td></tr></table></figure>
+
+<p>队列的类型定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> queueQUEUE_TYPE_BASE				( ( uint8_t ) 0U ) <span class="comment">/* 基础的队列 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> queueQUEUE_TYPE_SET					( ( uint8_t ) 0U )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> queueQUEUE_TYPE_MUTEX 				( ( uint8_t ) 1U ) <span class="comment">/* 互斥信号量 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> queueQUEUE_TYPE_COUNTING_SEMAPHORE	( ( uint8_t ) 2U ) <span class="comment">/* 计数信号量 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> queueQUEUE_TYPE_BINARY_SEMAPHORE	( ( uint8_t ) 3U ) <span class="comment">/* 二值信号量 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> queueQUEUE_TYPE_RECURSIVE_MUTEX		( ( uint8_t ) 4U ) <span class="comment">/* 递归互斥信号量 */</span></span></span><br></pre></td></tr></table></figure>
+
+<p>queueQUEUE_TYPE_BASE即基本的消息队列，另外，信号量机制也是通过队列实现的，因此当用于互斥信号量，二值信号量等时，会标记对于的队列类型。</p>
+<h2 id="2-2-创建消息队列函数"><a href="#2-2-创建消息队列函数" class="headerlink" title="2.2 创建消息队列函数"></a>2.2 创建消息队列函数</h2><p>创建消息队列的函数实际为xQueueGenericCreate()这个函数，该函数首先进行队列的内存分配，然后调用prvInitialiseNewQueue()进行队列的初始化：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/3.png" alt></p>
+<p>输入参数：</p>
+<ul>
+<li>uxQueueLength：队列的长度</li>
+<li>uxItemSize：单个消息的大小</li>
+<li>ucQueueType：队列的类型（用途）</li>
+</ul>
+<p>返回值：</p>
+<ul>
+<li>pxNewQueue：消息队列控制块，一个结构体指针（QueueHandle_t句柄，实际是void*），也即消息队列在内存中的地址</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> xQueueCreate( uxQueueLength, uxItemSize ) xQueueGenericCreate( ( uxQueueLength ), ( uxItemSize ), ( queueQUEUE_TYPE_BASE ) )</span></span><br><span class="line"></span><br><span class="line"><span class="function">QueueHandle_t <span class="title">xQueueGenericCreate</span><span class="params">( <span class="keyword">const</span> UBaseType_t uxQueueLength, <span class="keyword">const</span> UBaseType_t uxItemSize, <span class="keyword">const</span> <span class="keyword">uint8_t</span> ucQueueType )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Queue_t *pxNewQueue; <span class="comment">/* 消息队列控制块，一个结构体指针*/</span></span><br><span class="line">    <span class="keyword">size_t</span> xQueueSizeInBytes; <span class="comment">/* 需要分配的内存大小，Bytes为单位 */</span></span><br><span class="line">    <span class="keyword">uint8_t</span> *pucQueueStorage; <span class="comment">/* 实际存放消息的地址，即消息队列控制块的后面 */</span></span><br><span class="line"></span><br><span class="line">    configASSERT( uxQueueLength &gt; ( UBaseType_t ) <span class="number">0</span> ); <span class="comment">/*判断要创建的消息队列的长度是否大于0*/</span></span><br><span class="line">    <span class="keyword">if</span>( uxItemSize == ( UBaseType_t ) <span class="number">0</span> )</span><br><span class="line">    &#123;   <span class="comment">/* 若消息队列单个项的大小为0，则不会分配队列存储区域 */</span></span><br><span class="line">        xQueueSizeInBytes = ( <span class="keyword">size_t</span> ) <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;   <span class="comment">/* 计算需要分配的内存大小：队列的长度*单个消息的大小 */</span></span><br><span class="line">        xQueueSizeInBytes = ( <span class="keyword">size_t</span> ) ( uxQueueLength * uxItemSize );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 调用pvPortMalloc分配内存：其大小为消息队列控制块的大小+实际的消息占用的大小 */</span></span><br><span class="line">    pxNewQueue = ( Queue_t * ) pvPortMalloc( <span class="keyword">sizeof</span>( Queue_t ) + xQueueSizeInBytes );</span><br><span class="line">    <span class="comment">/* 若成功分配了内存，则pxNewQueue这个结构体指针(消息队列控制块)不为NULL */</span></span><br><span class="line">    <span class="keyword">if</span>( pxNewQueue != <span class="literal">NULL</span> )</span><br><span class="line">    &#123;    <span class="comment">/* 跳过消息队列控制块以获取实际的队列存储区域的指针 */</span> </span><br><span class="line">        pucQueueStorage = ( ( <span class="keyword">uint8_t</span> * ) pxNewQueue ) + <span class="keyword">sizeof</span>( Queue_t );</span><br><span class="line">        <span class="meta">#<span class="meta-keyword">if</span>( configSUPPORT_STATIC_ALLOCATION == 1 )</span></span><br><span class="line">        &#123;   <span class="comment">/* 队列可以静态创建，也可以动态创建，因此请注意，此任务是动态创建的，以防以后删除 */</span></span><br><span class="line">            pxNewQueue-&gt;ucStaticallyAllocated = pdFALSE;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">/* configSUPPORT_STATIC_ALLOCATION */</span></span></span><br><span class="line"></span><br><span class="line">        <span class="comment">/*初始化一个队列*/</span></span><br><span class="line">        prvInitialiseNewQueue( uxQueueLength, uxItemSize, pucQueueStorage, ucQueueType, pxNewQueue );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> pxNewQueue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-初始化队列准备"><a href="#2-3-初始化队列准备" class="headerlink" title="2.3 初始化队列准备"></a>2.3 初始化队列准备</h3><p>prvInitialiseNewQueue()函数首先初始化队列的长度和消息大小等参数，然后调用xQueueGenericReset()函数进行队列复位(初始化)：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/5.png" alt></p>
+<p>输入参数：</p>
+<ul>
+<li>uxQueueLength：队列的长度</li>
+<li>uxItemSize：单个消息的大小</li>
+<li>pucQueueStorage：实际存放消息的地址</li>
+<li>ucQueueType：队列的类型（用途）</li>
+<li>pxNewQueue：消息队列控制块</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">prvInitialiseNewQueue</span><span class="params">( <span class="keyword">const</span> UBaseType_t uxQueueLength, <span class="keyword">const</span> UBaseType_t uxItemSize, <span class="keyword">uint8_t</span> *pucQueueStorage, <span class="keyword">const</span> <span class="keyword">uint8_t</span> ucQueueType, Queue_t *pxNewQueue )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	( <span class="keyword">void</span> ) ucQueueType;</span><br><span class="line">    <span class="comment">/* 判断单个消息的大小是否为0*/</span></span><br><span class="line">	<span class="keyword">if</span>( uxItemSize == ( UBaseType_t ) <span class="number">0</span> )</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">/* 没有为队列存储区域分配RAM，但是pcHead不能设置为NULL，因为NULL被用作一个键来表示队列被用作互斥锁。</span></span><br><span class="line"><span class="comment">		因此，只需将pcHead设置为消息队列控制块的地址 */</span></span><br><span class="line">		pxNewQueue-&gt;pcHead = ( <span class="keyword">int8_t</span> * ) pxNewQueue;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	&#123;   <span class="comment">/* 将pcHead设置为实际存放消息的地址 */</span></span><br><span class="line">		pxNewQueue-&gt;pcHead = ( <span class="keyword">int8_t</span> * ) pucQueueStorage;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 按照定义队列类型的位置初始化队列成员 */</span></span><br><span class="line">	pxNewQueue-&gt;uxLength = uxQueueLength;</span><br><span class="line">	pxNewQueue-&gt;uxItemSize = uxItemSize;</span><br><span class="line">	( <span class="keyword">void</span> ) xQueueGenericReset( pxNewQueue, pdTRUE ); <span class="comment">/*队列复位(初始化)*/</span></span><br><span class="line"></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">if</span> ( configUSE_TRACE_FACILITY == 1 )</span></span><br><span class="line">	&#123;</span><br><span class="line">		pxNewQueue-&gt;ucQueueType = ucQueueType;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">/* configUSE_TRACE_FACILITY */</span></span></span><br><span class="line"></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">if</span>( configUSE_QUEUE_SETS == 1 )</span></span><br><span class="line">	&#123;</span><br><span class="line">		pxNewQueue-&gt;pxQueueSetContainer = <span class="literal">NULL</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">/* configUSE_QUEUE_SETS */</span></span></span><br><span class="line"></span><br><span class="line">	traceQUEUE_CREATE( pxNewQueue );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-队列复位-初始化"><a href="#2-4-队列复位-初始化" class="headerlink" title="2.4 队列复位(初始化)"></a>2.4 队列复位(初始化)</h3><p>xQueueGenericReset()函数中会调用vListInitialise()函数构建列表结构：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/4.png" alt></p>
+<p>输入参数：</p>
+<ul>
+<li>xQueue：消息队列控制块（内存中分配的消息队列的地址）</li>
+<li>xNewQueue：是否为新的队列</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">BaseType_t <span class="title">xQueueGenericReset</span><span class="params">( QueueHandle_t xQueue, BaseType_t xNewQueue )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">Queue_t * <span class="keyword">const</span> pxQueue = ( Queue_t * ) xQueue; <span class="comment">/* 将内存地址转为消息队列控制块结构体类型，并赋值给局部变量pxQueue */</span></span><br><span class="line"></span><br><span class="line">	configASSERT( pxQueue );</span><br><span class="line">	taskENTER_CRITICAL(); <span class="comment">/* 进入临界区 */</span></span><br><span class="line">	&#123;</span><br><span class="line">        <span class="comment">/* 队列尾地址 = 头地址 + 队列长度*单个消息的大小 */</span></span><br><span class="line">		pxQueue-&gt;pcTail = pxQueue-&gt;pcHead + ( pxQueue-&gt;uxLength * pxQueue-&gt;uxItemSize );</span><br><span class="line">        <span class="comment">/* 当前消息队列的消息个数初始化为0 */</span></span><br><span class="line">		pxQueue-&gt;uxMessagesWaiting = ( UBaseType_t ) <span class="number">0U</span>;</span><br><span class="line">        <span class="comment">/* 可写入消息的位置，初始为pcHead这个位置 */</span></span><br><span class="line">		pxQueue-&gt;pcWriteTo = pxQueue-&gt;pcHead;</span><br><span class="line">        <span class="comment">/* 可读取消息的位置，初始为消息队列的队尾位置? */</span></span><br><span class="line">		pxQueue-&gt;u.pcReadFrom = pxQueue-&gt;pcHead + ( ( pxQueue-&gt;uxLength - ( UBaseType_t ) <span class="number">1U</span> ) * pxQueue-&gt;uxItemSize );</span><br><span class="line">		pxQueue-&gt;cRxLock = queueUNLOCKED;</span><br><span class="line">		pxQueue-&gt;cTxLock = queueUNLOCKED;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span>( xNewQueue == pdFALSE )  <span class="comment">/* 不是新的队列 */</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="comment">/* 如果有阻塞的任务等待从队列读取，那么这些任务将保持阻塞状态，因为在此函数退出后，队列仍然是空的。</span></span><br><span class="line"><span class="comment">			   如果有被阻塞的任务等待写入队列，那么应该解除阻塞，因为在这个函数退出后，将可能写入它*/</span></span><br><span class="line">			<span class="keyword">if</span>( listLIST_IS_EMPTY( &amp;( pxQueue-&gt;xTasksWaitingToSend ) ) == pdFALSE )</span><br><span class="line">			&#123;</span><br><span class="line">				<span class="keyword">if</span>( xTaskRemoveFromEventList( &amp;( pxQueue-&gt;xTasksWaitingToSend ) ) != pdFALSE )</span><br><span class="line">				&#123;</span><br><span class="line">					queueYIELD_IF_USING_PREEMPTION();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> <span class="comment">/* 是新的队列，则构建消息队列结构 */</span></span><br><span class="line">		&#123;</span><br><span class="line">			vListInitialise( &amp;( pxQueue-&gt;xTasksWaitingToSend ) );</span><br><span class="line">			vListInitialise( &amp;( pxQueue-&gt;xTasksWaitingToReceive ) );</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	taskEXIT_CRITICAL(); <span class="comment">/* 退出临界区 */</span></span><br><span class="line">	<span class="keyword">return</span> pdPASS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-构建列表结构"><a href="#2-5-构建列表结构" class="headerlink" title="2.5 构建列表结构"></a>2.5 构建列表结构</h3><p>这里先来看一下列表结构体的定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">xLIST</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	listFIRST_LIST_INTEGRITY_CHECK_VALUE	<span class="comment">/*configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES是否被设置为1 */</span></span><br><span class="line">	configLIST_VOLATILE UBaseType_t uxNumberOfItems; <span class="comment">/* 链表节点计数器 */</span></span><br><span class="line">	ListItem_t * configLIST_VOLATILE pxIndex;		 <span class="comment">/* 链表节点索引指针 */</span></span><br><span class="line">	MiniListItem_t xListEnd;						<span class="comment">/* 链表最后一个节点 */</span></span><br><span class="line">	listSECOND_LIST_INTEGRITY_CHECK_VALUE  <span class="comment">/*configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES是否被设置为1 */</span>	</span><br><span class="line">&#125; List_t;</span><br></pre></td></tr></table></figure>
+
+<p>再来看vListInitialise这个函数：</p>
+<p>输入参数：</p>
+<ul>
+<li>pxList：发送或接收消息的阻塞列表的结构体 </li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">vListInitialise</span><span class="params">( List_t * <span class="keyword">const</span> pxList )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/* 列表结构包含一个用于标记列表结束的列表项。要初始化列表，将列表末尾作为唯一的列表条目插入。 */</span></span><br><span class="line">	pxList-&gt;pxIndex = ( ListItem_t * ) &amp;( pxList-&gt;xListEnd );			</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 列表结束值是列表中可能的最高值，以确保它保持在列表的末尾. */</span></span><br><span class="line">	pxList-&gt;xListEnd.xItemValue = portMAX_DELAY;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 链表的下一个和前一个指针都指向它自己，所以我们知道链表什么时候是空的 */</span></span><br><span class="line">	pxList-&gt;xListEnd.pxNext = ( ListItem_t * ) &amp;( pxList-&gt;xListEnd );	</span><br><span class="line">	pxList-&gt;xListEnd.pxPrevious = ( ListItem_t * ) &amp;( pxList-&gt;xListEnd );</span><br><span class="line"></span><br><span class="line">	pxList-&gt;uxNumberOfItems = ( UBaseType_t ) <span class="number">0U</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*如果configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES=1，将已知值写入列表 */</span></span><br><span class="line">	listSET_LIST_INTEGRITY_CHECK_1_VALUE( pxList );</span><br><span class="line">	listSET_LIST_INTEGRITY_CHECK_2_VALUE( pxList );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="3-消息队列发送与接收"><a href="#3-消息队列发送与接收" class="headerlink" title="3 消息队列发送与接收"></a>3 消息队列发送与接收</h1><p>在消息队列的发送和接收过程中，可能会进行阻塞延时（发送消息但队列已满，结束消息但队列中没有消息），此时会进行任务切换，关于任务切换的内容可参考：</p>
+<h2 id="3-1-发送消息队列函数"><a href="#3-1-发送消息队列函数" class="headerlink" title="3.1 发送消息队列函数"></a>3.1 发送消息队列函数</h2><p>xQueueSend()函数实际是使用xQueueGenericSend()这个函数：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/6.png" alt></p>
+<p>输入参数：</p>
+<ul>
+<li>xQueue：消息队列控制块</li>
+<li>pvItemToQueue：要发送的消息数据</li>
+<li>xTicksToWait：发送允许的阻塞时间</li>
+<li>xCopyPosition：发送到消息队列的位置</li>
+</ul>
+<p>先来看一下发送允许的位置，包括发送到队尾，发送到队头，覆盖写入3种。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span>	queueSEND_TO_BACK		( ( BaseType_t ) 0 )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>	queueSEND_TO_FRONT		( ( BaseType_t ) 1 )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> queueOVERWRITE			( ( BaseType_t ) 2 )</span></span><br></pre></td></tr></table></figure>
+
+<p>再来看一下xQueueGenericSend这个函数，xQueueSend默认是发送到队尾：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> xQueueSend( xQueue, pvItemToQueue, xTicksToWait ) xQueueGenericSend( ( xQueue ), ( pvItemToQueue ), ( xTicksToWait ), queueSEND_TO_BACK )</span></span><br><span class="line"></span><br><span class="line"><span class="function">BaseType_t <span class="title">xQueueGenericSend</span><span class="params">( QueueHandle_t xQueue, <span class="keyword">const</span> <span class="keyword">void</span> * <span class="keyword">const</span> pvItemToQueue, TickType_t xTicksToWait, <span class="keyword">const</span> BaseType_t xCopyPosition )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">BaseType_t xEntryTimeSet = pdFALSE, xYieldRequired; <span class="comment">/* 超时时间是否已设置 */</span></span><br><span class="line">TimeOut_t xTimeOut; <span class="comment">/* 阻塞等待的超时时间结构体*/</span></span><br><span class="line">Queue_t * <span class="keyword">const</span> pxQueue = ( Queue_t * ) xQueue; <span class="comment">/* 消息队列控制块*/</span></span><br><span class="line"></span><br><span class="line">	configASSERT( pxQueue );</span><br><span class="line">	configASSERT( !( ( pvItemToQueue == <span class="literal">NULL</span> ) &amp;&amp; ( pxQueue-&gt;uxItemSize != ( UBaseType_t ) <span class="number">0U</span> ) ) );</span><br><span class="line">	configASSERT( !( ( xCopyPosition == queueOVERWRITE ) &amp;&amp; ( pxQueue-&gt;uxLength != <span class="number">1</span> ) ) );</span><br><span class="line">	<span class="meta">#<span class="meta-keyword">if</span> ( ( INCLUDE_xTaskGetSchedulerState == 1 ) || ( configUSE_TIMERS == 1 ) )</span></span><br><span class="line">	&#123;</span><br><span class="line">		configASSERT( !( ( xTaskGetSchedulerState() == taskSCHEDULER_SUSPENDED ) &amp;&amp; ( xTicksToWait != <span class="number">0</span> ) ) );</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 这个函数放松了编码标准，允许在函数本身中使用返回语句。这样做是为了提高执行时间效率 */</span></span><br><span class="line">	<span class="keyword">for</span>( ;; )</span><br><span class="line">	&#123;</span><br><span class="line">		taskENTER_CRITICAL();</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="comment">/*当前消息队列的个数未满或设置了可以覆盖写入 */</span></span><br><span class="line">			<span class="keyword">if</span>( ( pxQueue-&gt;uxMessagesWaiting &lt; pxQueue-&gt;uxLength ) || ( xCopyPosition == queueOVERWRITE ) )</span><br><span class="line">			&#123;</span><br><span class="line">				traceQUEUE_SEND( pxQueue );</span><br><span class="line">                <span class="comment">/* 复制数据到队列中 */</span></span><br><span class="line">				xYieldRequired = prvCopyDataToQueue( pxQueue, pvItemToQueue, xCopyPosition );</span><br><span class="line"></span><br><span class="line">				<span class="meta">#<span class="meta-keyword">if</span> ( configUSE_QUEUE_SETS == 1 )</span></span><br><span class="line">				&#123;</span><br><span class="line">                    <span class="comment">/* 队列所属队列集不为空 */</span></span><br><span class="line">					<span class="keyword">if</span>( pxQueue-&gt;pxQueueSetContainer != <span class="literal">NULL</span> )</span><br><span class="line">					&#123;</span><br><span class="line">                        <span class="comment">/* 向队列集发送通知消息 */</span></span><br><span class="line">						<span class="keyword">if</span>( prvNotifyQueueSetContainer( pxQueue, xCopyPosition ) != pdFALSE )</span><br><span class="line">						&#123;</span><br><span class="line">							<span class="comment">/* 该队列是队列集的成员，向队列集发送消息会导致一个优先级更高的任务解除阻塞，需要上下文切换 */</span></span><br><span class="line">							queueYIELD_IF_USING_PREEMPTION();</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">                    <span class="comment">/* 队列所属队列集为空 */</span></span><br><span class="line">					<span class="keyword">else</span></span><br><span class="line">					&#123;</span><br><span class="line">						<span class="comment">/* 如果有任务等待数据到达队列，那么现在解除阻塞 */</span></span><br><span class="line">						<span class="keyword">if</span>( listLIST_IS_EMPTY( &amp;( pxQueue-&gt;xTasksWaitingToReceive ) ) == pdFALSE )</span><br><span class="line">						&#123;</span><br><span class="line">							<span class="keyword">if</span>( xTaskRemoveFromEventList( &amp;( pxQueue-&gt;xTasksWaitingToReceive ) ) != pdFALSE )</span><br><span class="line">							&#123;</span><br><span class="line">								<span class="comment">/* 未阻塞的任务的优先级比我们自己的要高，所以要立即执行。</span></span><br><span class="line"><span class="comment">								是的，在临界区内这样做是没问题的——内核会负责这一点。 */</span></span><br><span class="line">								queueYIELD_IF_USING_PREEMPTION();</span><br><span class="line">							&#125;</span><br><span class="line">						&#125;</span><br><span class="line">						<span class="keyword">else</span> <span class="keyword">if</span>( xYieldRequired != pdFALSE )</span><br><span class="line">						&#123;</span><br><span class="line">							<span class="comment">/* 此路径是一种特殊情况，只有在任务持有多个互斥锁并且这些互斥锁返回的顺序与获取它们的顺序不同时才会执行 */</span></span><br><span class="line">							queueYIELD_IF_USING_PREEMPTION();</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="meta">#<span class="meta-keyword">else</span> <span class="comment">/* configUSE_QUEUE_SETS */</span></span></span><br><span class="line">	            <span class="comment">//...省略部分</span></span><br><span class="line">				<span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">/* configUSE_QUEUE_SETS */</span></span></span><br><span class="line"></span><br><span class="line">				taskEXIT_CRITICAL();</span><br><span class="line">				<span class="keyword">return</span> pdPASS;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> <span class="comment">/* 队列已满，无法写入时 */</span></span><br><span class="line">			&#123;</span><br><span class="line">				<span class="keyword">if</span>( xTicksToWait == ( TickType_t ) <span class="number">0</span> ) <span class="comment">/* 若设置的阻塞等待时间为0 */</span></span><br><span class="line">				&#123;   <span class="comment">/* 那就不写了，直接退出临界区 */</span></span><br><span class="line">					taskEXIT_CRITICAL();</span><br><span class="line">					<span class="comment">/* 退出函数之前返回原始权限级别 */</span></span><br><span class="line">					traceQUEUE_SEND_FAILED( pxQueue );</span><br><span class="line">                    <span class="comment">/* 返回“队列满”的提示 */</span></span><br><span class="line">					<span class="keyword">return</span> errQUEUE_FULL;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">else</span> <span class="keyword">if</span>( xEntryTimeSet == pdFALSE )  <span class="comment">/* 若设置的阻塞等待时间不为0，且进入时间还未设置 */</span></span><br><span class="line">				&#123;   <span class="comment">/* 队列已满，并且指定了一个块时间，因此配置超时结构体 */</span></span><br><span class="line">					vTaskSetTimeOutState( &amp;xTimeOut );</span><br><span class="line">					xEntryTimeSet = pdTRUE;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		taskEXIT_CRITICAL();</span><br><span class="line">        </span><br><span class="line">		<span class="comment">/* 现在临界区已经退出，中断和其他任务可以向队列发送和从队列接收 */</span></span><br><span class="line">		vTaskSuspendAll();</span><br><span class="line">		prvLockQueue( pxQueue );</span><br><span class="line">		<span class="comment">/* 更新超时状态，看看它是否已经过期 */</span></span><br><span class="line">		<span class="keyword">if</span>( xTaskCheckForTimeOut( &amp;xTimeOut, &amp;xTicksToWait ) == pdFALSE ) <span class="comment">/*未超时*/</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span>( prvIsQueueFull( pxQueue ) != pdFALSE )</span><br><span class="line">			&#123;</span><br><span class="line">				traceBLOCKING_ON_QUEUE_SEND( pxQueue );</span><br><span class="line">				vTaskPlaceOnEventList( &amp;( pxQueue-&gt;xTasksWaitingToSend ), xTicksToWait );</span><br><span class="line"></span><br><span class="line">				<span class="comment">/* 解除队列锁定意味着队列事件可以影响事件列表。现在发生的中断可能会再次将该任务从事件列表中删除</span></span><br><span class="line"><span class="comment">				——但由于调度器被挂起，该任务将进入挂起的最后一个准备列表，而不是实际的准备列表。 */</span></span><br><span class="line">				prvUnlockQueue( pxQueue );</span><br><span class="line"></span><br><span class="line">				<span class="comment">/*恢复任务调度器将从等待就绪列表进入就绪列表,所以它是可行的,这个任务已经就绪列表之前产量</span></span><br><span class="line"><span class="comment">				——在这种情况下,不会导致上下文切换,除非也在等待一个更高优先级的任务就绪列表 */</span></span><br><span class="line">				<span class="keyword">if</span>( xTaskResumeAll() == pdFALSE )</span><br><span class="line">				&#123;</span><br><span class="line">					portYIELD_WITHIN_API();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">			&#123;   <span class="comment">/* 再试一次 */</span></span><br><span class="line">				prvUnlockQueue( pxQueue );</span><br><span class="line">				( <span class="keyword">void</span> ) xTaskResumeAll();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> <span class="comment">/* 已经超时 */</span></span><br><span class="line">		&#123;</span><br><span class="line">			prvUnlockQueue( pxQueue );</span><br><span class="line">			( <span class="keyword">void</span> ) xTaskResumeAll();</span><br><span class="line"></span><br><span class="line">			traceQUEUE_SEND_FAILED( pxQueue );</span><br><span class="line">			<span class="keyword">return</span> errQUEUE_FULL;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-接收消息队列"><a href="#3-2-接收消息队列" class="headerlink" title="3.2 接收消息队列"></a>3.2 接收消息队列</h2><p>xQueueReceive()函数实际是使用xQueueGenericReceive()这个函数：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/FreeRTOS/queue/7.png" alt></p>
+<p>输入参数：</p>
+<ul>
+<li>xQueue：消息队列控制块</li>
+<li>pvBuffer：要接收的消息数据</li>
+<li>xTicksToWait：接收允许的阻塞时间</li>
+<li>xJustPeeking：是否是Peek(只获取不删除)模式</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> xQueueReceive( xQueue, pvBuffer, xTicksToWait ) xQueueGenericReceive( ( xQueue ), ( pvBuffer ), ( xTicksToWait ), pdFALSE )</span></span><br><span class="line"></span><br><span class="line"><span class="function">BaseType_t <span class="title">xQueueGenericReceive</span><span class="params">( QueueHandle_t xQueue, <span class="keyword">void</span> * <span class="keyword">const</span> pvBuffer, TickType_t xTicksToWait, <span class="keyword">const</span> BaseType_t xJustPeeking )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">BaseType_t xEntryTimeSet = pdFALSE;</span><br><span class="line">TimeOut_t xTimeOut;</span><br><span class="line"><span class="keyword">int8_t</span> *pcOriginalReadPosition;</span><br><span class="line">Queue_t * <span class="keyword">const</span> pxQueue = ( Queue_t * ) xQueue;</span><br><span class="line"></span><br><span class="line">	configASSERT( pxQueue );</span><br><span class="line">	configASSERT( !( ( pvBuffer == <span class="literal">NULL</span> ) &amp;&amp; ( pxQueue-&gt;uxItemSize != ( UBaseType_t ) <span class="number">0U</span> ) ) );</span><br><span class="line">	<span class="meta">#<span class="meta-keyword">if</span> ( ( INCLUDE_xTaskGetSchedulerState == 1 ) || ( configUSE_TIMERS == 1 ) )</span></span><br><span class="line">	&#123;</span><br><span class="line">		configASSERT( !( ( xTaskGetSchedulerState() == taskSCHEDULER_SUSPENDED ) &amp;&amp; ( xTicksToWait != <span class="number">0</span> ) ) );</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 这个函数放松了编码标准，允许在函数本身中使用返回语句。这样做是为了提高执行时间效率 */</span></span><br><span class="line">	<span class="keyword">for</span>( ;; )</span><br><span class="line">	&#123;</span><br><span class="line">		taskENTER_CRITICAL();</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">const</span> UBaseType_t uxMessagesWaiting = pxQueue-&gt;uxMessagesWaiting;</span><br><span class="line">			<span class="comment">/* 现在队列中是否有数据?要运行调用任务，必须是希望访问队列的优先级最高的任务 */</span></span><br><span class="line">			<span class="keyword">if</span>( uxMessagesWaiting &gt; ( UBaseType_t ) <span class="number">0</span> ) <span class="comment">/*消息队列中有数据*/</span></span><br><span class="line">			&#123;</span><br><span class="line">				pcOriginalReadPosition = pxQueue-&gt;u.pcReadFrom;<span class="comment">/* 记住读取位置，以防队列被读取 */</span></span><br><span class="line">				prvCopyDataFromQueue( pxQueue, pvBuffer );<span class="comment">/* 从队列中复制数据 */</span></span><br><span class="line">				<span class="keyword">if</span>( xJustPeeking == pdFALSE ) <span class="comment">/*不是Peeking模式读取消息*/</span></span><br><span class="line">				&#123;</span><br><span class="line">					traceQUEUE_RECEIVE( pxQueue );</span><br><span class="line">					pxQueue-&gt;uxMessagesWaiting = uxMessagesWaiting - <span class="number">1</span>;<span class="comment">/* 实际上删除数据，而不仅仅是读取 */</span></span><br><span class="line">					<span class="meta">#<span class="meta-keyword">if</span> ( configUSE_MUTEXES == 1 )</span></span><br><span class="line">					&#123;</span><br><span class="line">						<span class="keyword">if</span>( pxQueue-&gt;uxQueueType == queueQUEUE_IS_MUTEX )</span><br><span class="line">						&#123;   <span class="comment">/* 如果有必要，记录实现优先级继承所需的信息 */</span></span><br><span class="line">							pxQueue-&gt;pxMutexHolder = ( <span class="keyword">int8_t</span> * ) pvTaskIncrementMutexHeldCount();</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">/* configUSE_MUTEXES */</span></span></span><br><span class="line">					<span class="keyword">if</span>( listLIST_IS_EMPTY( &amp;( pxQueue-&gt;xTasksWaitingToSend ) ) == pdFALSE )</span><br><span class="line">					&#123;</span><br><span class="line">						<span class="keyword">if</span>( xTaskRemoveFromEventList( &amp;( pxQueue-&gt;xTasksWaitingToSend ) ) != pdFALSE )</span><br><span class="line">						&#123; queueYIELD_IF_USING_PREEMPTION(); &#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">else</span>  <span class="comment">/*是Peeking模式读取消息（只读取，不删除）*/</span></span><br><span class="line">				&#123;</span><br><span class="line">					traceQUEUE_PEEK( pxQueue ); <span class="comment">/*执行PEEK*/</span></span><br><span class="line">					pxQueue-&gt;u.pcReadFrom = pcOriginalReadPosition;<span class="comment">/* 数据没有被移除，所以重置读指针 */</span></span><br><span class="line">					<span class="comment">/* 数据被留在队列中，因此请查看是否有其他任务在等待该数据 */</span></span><br><span class="line">					<span class="keyword">if</span>( listLIST_IS_EMPTY( &amp;( pxQueue-&gt;xTasksWaitingToReceive ) ) == pdFALSE )</span><br><span class="line">					&#123;</span><br><span class="line">						<span class="keyword">if</span>( xTaskRemoveFromEventList( &amp;( pxQueue-&gt;xTasksWaitingToReceive ) ) != pdFALSE )</span><br><span class="line">						&#123;  <span class="comment">/* 等待的任务具有比该任务更高的优先级 */</span></span><br><span class="line">							queueYIELD_IF_USING_PREEMPTION(); <span class="comment">/*进行任务切换*/</span></span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				taskEXIT_CRITICAL();</span><br><span class="line">				<span class="keyword">return</span> pdPASS;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> <span class="comment">/*消息队列中没有数据*/</span></span><br><span class="line">			&#123;</span><br><span class="line">				<span class="keyword">if</span>( xTicksToWait == ( TickType_t ) <span class="number">0</span> )</span><br><span class="line">				&#123;   <span class="comment">/* 队列是空的，没有指定块时间(或者块时间已经过期)，所以现在离开 */</span></span><br><span class="line">					taskEXIT_CRITICAL();</span><br><span class="line">					traceQUEUE_RECEIVE_FAILED( pxQueue ); </span><br><span class="line">					<span class="keyword">return</span> errQUEUE_EMPTY;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">else</span> <span class="keyword">if</span>( xEntryTimeSet == pdFALSE )</span><br><span class="line">				&#123;   <span class="comment">/* 对列是空的，并且指定了块时间，因此配置超时结构 */</span></span><br><span class="line">					vTaskSetTimeOutState( &amp;xTimeOut );</span><br><span class="line">					xEntryTimeSet = pdTRUE;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		taskEXIT_CRITICAL();</span><br><span class="line">        </span><br><span class="line">		<span class="comment">/* 临界区已经退出，中断和其他任务可以向队列发送或从队列接收消息 */</span></span><br><span class="line">		vTaskSuspendAll();</span><br><span class="line">		prvLockQueue( pxQueue );</span><br><span class="line">		<span class="comment">/* 更新超时状态，查看它是否已经过期 */</span></span><br><span class="line">		<span class="keyword">if</span>( xTaskCheckForTimeOut( &amp;xTimeOut, &amp;xTicksToWait ) == pdFALSE )<span class="comment">//阻塞等待未超时</span></span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span>( prvIsQueueEmpty( pxQueue ) != pdFALSE )<span class="comment">//消息队列为空</span></span><br><span class="line">			&#123;</span><br><span class="line">				<span class="meta">#<span class="meta-keyword">if</span> ( configUSE_MUTEXES == 1 )</span></span><br><span class="line">				&#123;</span><br><span class="line">					<span class="keyword">if</span>( pxQueue-&gt;uxQueueType == queueQUEUE_IS_MUTEX )</span><br><span class="line">					&#123;</span><br><span class="line">						taskENTER_CRITICAL();</span><br><span class="line">						&#123; vTaskPriorityInherit( ( <span class="keyword">void</span> * ) pxQueue-&gt;pxMutexHolder ); &#125;</span><br><span class="line">						taskEXIT_CRITICAL();</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">				vTaskPlaceOnEventList( &amp;( pxQueue-&gt;xTasksWaitingToReceive ), xTicksToWait );<span class="comment">/*添加任务到阻塞列表*/</span></span><br><span class="line">				prvUnlockQueue( pxQueue );</span><br><span class="line">				<span class="keyword">if</span>( xTaskResumeAll() == pdFALSE )</span><br><span class="line">				&#123; portYIELD_WITHIN_API(); &#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span> <span class="comment">//消息队列为空</span></span><br><span class="line">			&#123;   <span class="comment">/* 再试一次 */</span></span><br><span class="line">				prvUnlockQueue( pxQueue );</span><br><span class="line">				( <span class="keyword">void</span> ) xTaskResumeAll();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span><span class="comment">//阻塞等待已超时</span></span><br><span class="line">		&#123;</span><br><span class="line">			prvUnlockQueue( pxQueue );</span><br><span class="line">			( <span class="keyword">void</span> ) xTaskResumeAll();</span><br><span class="line">			<span class="keyword">if</span>( prvIsQueueEmpty( pxQueue ) != pdFALSE )<span class="comment">//消息队列为空</span></span><br><span class="line">			&#123;</span><br><span class="line">				traceQUEUE_RECEIVE_FAILED( pxQueue );</span><br><span class="line">				<span class="keyword">return</span> errQUEUE_EMPTY;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb(码农爱学习) wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎关注我的微信公众号『码农爱学习』，一起学习进步(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2021/05/03/FreeRTOS源码探析之-消息队列/">FreeRTOS源码探析之--消息队列</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb(码农爱学习) 的个人博客">xxpcb(码农爱学习)</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2021/05/03/FreeRTOS源码探析之-消息队列/" title="FreeRTOS源码探析之--消息队列">https://xxpcb.github.io/2021/05/03/FreeRTOS源码探析之-消息队列/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2021/05/03/FreeRTOS源码探析之-消息队列/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/FreeRTOS/" rel="tag"># FreeRTOS</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2021/05/03/FreeRTOS源码探析之-任务调度相关/" rel="next" title="FreeRTOS源码探析之--任务调度相关">
+                  <i class="fa fa-chevron-left"></i> FreeRTOS源码探析之--任务调度相关
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2021/05/03/FreeRTOS设计模式借鉴-设计一个滑动平均滤波器/" rel="prev" title="FreeRTOS设计模式借鉴--设计一个滑动平均滤波器">
+                  FreeRTOS设计模式借鉴--设计一个滑动平均滤波器 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb(码农爱学习)">
+  <p class="site-author-name" itemprop="name">xxpcb(码农爱学习)</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">88</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-消息队列基础"><span class="nav-number">1.</span> <span class="nav-text">1 消息队列基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-消息队列的运作机制"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 消息队列的运作机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-消息队列的阻塞机制"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 消息队列的阻塞机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-接收消息"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.2.1 接收消息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-发送消息"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2.2 发送消息</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-消息队列创建"><span class="nav-number">2.</span> <span class="nav-text">2 消息队列创建</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-消息队列控制块"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 消息队列控制块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-创建消息队列函数"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 创建消息队列函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-初始化队列准备"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.3 初始化队列准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-队列复位-初始化"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.4 队列复位(初始化)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-构建列表结构"><span class="nav-number">2.2.3.</span> <span class="nav-text">2.5 构建列表结构</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-消息队列发送与接收"><span class="nav-number">3.</span> <span class="nav-text">3 消息队列发送与接收</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-发送消息队列函数"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 发送消息队列函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-接收消息队列"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 接收消息队列</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMP/">DMP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IIC/">IIC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MPU6050/">MPU6050</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TFTP/">TFTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webots/">Webots</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cJson/">cJson</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/excel/">excel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/函数指针/">函数指针</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/单片机/">单片机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/姿态解算/">姿态解算</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/字符串切分/">字符串切分</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/存储/">存储</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/定时器/">定时器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件传输/">文件传输</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件操作/">文件操作</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/旋转矩阵/">旋转矩阵</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/机器人/">机器人</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/欧拉角/">欧拉角</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/滤波/">滤波</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/电机/">电机</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序烧录/">程序烧录</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码器/">编码器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链表/">链表</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2019~<span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb(码农爱学习)</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
