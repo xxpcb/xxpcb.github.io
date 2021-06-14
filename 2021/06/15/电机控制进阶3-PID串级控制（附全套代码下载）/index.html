@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="前两篇文章，分别介绍了PID速度控制和PID位置控制，分别用来控制电机以期望的速度持续转动以及以期望的位置（圈数）转动，这里的期望值都只有一个，但是，如果想要以期望的速度转动到期望的位置（启动与停止的加减速过程不考虑），该怎么控制呢？那就要将两者结合起来了，即PID的串级控制来控制电机。">
+<meta name="keywords" content="电机,PID">
+<meta property="og:type" content="article">
+<meta property="og:title" content="电机控制进阶3--PID串级控制（附全套代码下载）">
+<meta property="og:url" content="https://xxpcb.github.io/2021/06/15/电机控制进阶3-PID串级控制（附全套代码下载）/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="前两篇文章，分别介绍了PID速度控制和PID位置控制，分别用来控制电机以期望的速度持续转动以及以期望的位置（圈数）转动，这里的期望值都只有一个，但是，如果想要以期望的速度转动到期望的位置（启动与停止的加减速过程不考虑），该怎么控制呢？那就要将两者结合起来了，即PID的串级控制来控制电机。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-pvi.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-pv.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-vi.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-pv.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-i-desert.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/%E5%B0%81%E9%9D%A2/%E5%B0%81%E9%9D%A2-%E4%B8%B2%E7%BA%A7%E6%8E%A7%E5%88%B6.png">
+<meta property="og:updated_time" content="2021-06-14T16:20:05.055Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="电机控制进阶3--PID串级控制（附全套代码下载）">
+<meta name="twitter:description" content="前两篇文章，分别介绍了PID速度控制和PID位置控制，分别用来控制电机以期望的速度持续转动以及以期望的位置（圈数）转动，这里的期望值都只有一个，但是，如果想要以期望的速度转动到期望的位置（启动与停止的加减速过程不考虑），该怎么控制呢？那就要将两者结合起来了，即PID的串级控制来控制电机。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-pvi.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2021/06/15/电机控制进阶3-PID串级控制（附全套代码下载）/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>电机控制进阶3--PID串级控制（附全套代码下载） | xxpcb's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2021/06/15/电机控制进阶3-PID串级控制（附全套代码下载）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb(码农爱学习)">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">电机控制进阶3--PID串级控制（附全套代码下载）
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2021-06-15 00:07:35 / 修改时间：00:20:05" itemprop="dateCreated datePublished" datetime="2021-06-15T00:07:35+08:00">2021-06-15</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/电机/" itemprop="url" rel="index"><span itemprop="name">电机</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>前两篇文章，分别介绍了PID速度控制和PID位置控制，分别用来控制电机以<strong>期望的速度</strong>持续转动以及以<strong>期望的位置</strong>（圈数）转动，这里的期望值都只有一个，但是，如果想要<strong>以期望的速度转动到期望的位置</strong>（启动与停止的加减速过程不考虑），该怎么控制呢？那就要将两者结合起来了，即PID的串级控制来控制电机。</p>
+<a id="more"></a>
+
+<h1 id="串级PID结构图"><a href="#串级PID结构图" class="headerlink" title="串级PID结构图"></a>串级PID结构图</h1><p>PID串级控制的典型结构为位置环+速度环+电流环，如下图。</p>
+<p>PID串级控制中，最外环是输入是整个控制系统的期望值，外环PID的输出值是内环PID的期望值。</p>
+<p>能够使用三环控制的前提是要硬件支持，比如位置环和速度环需要实时的电机转动位置和转动速度作为反馈，这就需要电机需要配有编码器用于测速与测量转动的位置；电流环需要有电流采样电路来实时获取电机的电流作为反馈。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-pvi.png" alt></p>
+<p>如果没有电流采样电路，可以将电流环去掉，只使用位置环+速度环，系统的期望仍是转动的位置，内环可以调节转动的速度。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-pv.png" alt></p>
+<p>另外，如果只是想控制电机转速实现电机调速，可以使用速度环+电流环，系统的期望仍是转动的位置，内环可以调节电机的电流，增强系统转动调节的抗干扰能力。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-vi.png" alt></p>
+<h1 id="位置环-速度环实践"><a href="#位置环-速度环实践" class="headerlink" title="位置环+速度环实践"></a>位置环+速度环实践</h1><p>由于我的电机没有电流测量电路，所以，本文以位置环+速度环来学习PID串级控制。就是按照下面这个图：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-pv.png" alt></p>
+<h2 id="PID参数定义"><a href="#PID参数定义" class="headerlink" title="PID参数定义"></a>PID参数定义</h2><p>由于是串级PID控制，每一级的PID都要有自己的参数，本次实验使用位置PID+速度PID，参数定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*定义位置PID与速度PID结构体型的全局变量*/</span></span><br><span class="line">PID pid_location;</span><br><span class="line">PID pid_speed;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * @brief  PID参数初始化</span></span><br><span class="line"><span class="comment">  *	@note 	无</span></span><br><span class="line"><span class="comment">  * @retval 无</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">PID_param_init</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/* 位置相关初始化参数 */</span></span><br><span class="line">	pid_location.target_val = TOTAL_RESOLUTION*<span class="number">10</span>;				</span><br><span class="line">	pid_location.output_val = <span class="number">0.0</span>;</span><br><span class="line">	pid_location.err = <span class="number">0.0</span>;</span><br><span class="line">	pid_location.err_last = <span class="number">0.0</span>;</span><br><span class="line">	pid_location.integral = <span class="number">0.0</span>;</span><br><span class="line"></span><br><span class="line">	pid_location.Kp = <span class="number">0.05</span>;</span><br><span class="line">	pid_location.Ki = <span class="number">0</span>;</span><br><span class="line">	pid_location.Kd = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 速度相关初始化参数 */</span></span><br><span class="line">	pid_speed.target_val=<span class="number">10.0</span>;				</span><br><span class="line">	pid_speed.output_val=<span class="number">0.0</span>;</span><br><span class="line">	pid_speed.err=<span class="number">0.0</span>;</span><br><span class="line">	pid_speed.err_last=<span class="number">0.0</span>;</span><br><span class="line">	pid_speed.integral=<span class="number">0.0</span>;</span><br><span class="line"></span><br><span class="line">	pid_speed.Kp = <span class="number">80.0</span>;</span><br><span class="line">	pid_speed.Ki = <span class="number">2.0</span>;</span><br><span class="line">	pid_speed.Kd = <span class="number">100.0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="位置PID的实现"><a href="#位置PID的实现" class="headerlink" title="位置PID的实现"></a>位置PID的实现</h2><p>这里有两点需要注意：</p>
+<h3 id="闭环死区的设定"><a href="#闭环死区的设定" class="headerlink" title="闭环死区的设定"></a>闭环死区的设定</h3><p><strong>闭环死区</strong>是指执行机构的最小控制量，无法再通过调节来满足控制精度，如果仍然持续调节，系统则会在目标值前后频繁动作，不能稳定下来。</p>
+<p>比如某个系统的控制精度是1，但目标值需要是1.5，则无论怎么调节，最终的结果只能控制在 1或 2，始终无法达到预设值。这 1.5L小数点后的范围，就是闭环死区，系统是无法控制的，误差会一直存在，容易发生震荡现象。</p>
+<p>对应精度要求不高的系统，可以设定闭环死区，比如将允许的误差范围设为0.5，则最终结果在 1或 2都认为是没有误差，这时将目标值 与实际值之差强制设为 0，认为没有误差，即限定了闭环死区。</p>
+<h3 id="积分分离的设定"><a href="#积分分离的设定" class="headerlink" title="积分分离的设定"></a>积分分离的设定</h3><p>通过<strong>积分分离</strong>的方式来实现抗积分饱和，<strong>积分饱和</strong>是指<strong>执行机构达到极限输出能力了</strong>，仍无法到达目标值，在很长一段时间内无法消除静差造成的。</p>
+<p>例如，PWM输出到了100%，仍达不到期望位置，此时若一直进行误差累加，在一段时间后， PID 的积分项累计了很大的数值，<strong>如果这时候到达了目标值或者重新设定了目标值</strong>，由于积分由于累计的误差很大，系统并不能立即调整到目标值，可能造成超调或失调的现象。</p>
+<p>解决积分饱和的一种方法是使用积分分离，该方法是在累计误差小于某个阈值才使用积分项，累计误差过大则不再继续累计误差，相当于只使用了PD控制器。</p>
+<h3 id="控制流程图"><a href="#控制流程图" class="headerlink" title="控制流程图"></a>控制流程图</h3><p>带有<strong>闭环死区</strong>与<strong>积分分离</strong>的PID控制流程如下图：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/PV/pid-i-desert.png" alt></p>
+<p>完整的位置PID代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * @brief  位置PID算法实现</span></span><br><span class="line"><span class="comment">  * @param  actual_val:实际值</span></span><br><span class="line"><span class="comment">  *	@note 	无</span></span><br><span class="line"><span class="comment">  * @retval 通过PID计算后的输出</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LOC_DEAD_ZONE 60 <span class="comment">/*位置环死区*/</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LOC_INTEGRAL_START_ERR 200 <span class="comment">/*积分分离时对应的误差范围*/</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LOC_INTEGRAL_MAX_VAL 800   <span class="comment">/*积分范围限定，防止积分饱和*/</span></span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">location_pid_realize</span><span class="params">(PID *pid, <span class="keyword">float</span> actual_val)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/*计算目标值与实际值的误差*/</span></span><br><span class="line">	pid-&gt;err = pid-&gt;target_val - actual_val;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 设定闭环死区 */</span></span><br><span class="line">	<span class="keyword">if</span>((pid-&gt;err &gt;= -LOC_DEAD_ZONE) &amp;&amp; (pid-&gt;err &lt;= LOC_DEAD_ZONE))</span><br><span class="line">	&#123;</span><br><span class="line">		pid-&gt;err = <span class="number">0</span>;</span><br><span class="line">		pid-&gt;integral = <span class="number">0</span>;</span><br><span class="line">		pid-&gt;err_last = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*积分项，积分分离，偏差较大时去掉积分作用*/</span></span><br><span class="line">	<span class="keyword">if</span>(pid-&gt;err &gt; -LOC_INTEGRAL_START_ERR &amp;&amp; pid-&gt;err &lt; LOC_INTEGRAL_START_ERR)</span><br><span class="line">	&#123;</span><br><span class="line">		pid-&gt;integral += pid-&gt;err;  </span><br><span class="line">        <span class="comment">/*积分范围限定，防止积分饱和*/</span></span><br><span class="line">		<span class="keyword">if</span>(pid-&gt;integral &gt; LOC_INTEGRAL_MAX_VAL)</span><br><span class="line">		&#123;</span><br><span class="line">			pid-&gt;integral = LOC_INTEGRAL_MAX_VAL;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span>(pid-&gt;integral &lt; -LOC_INTEGRAL_MAX_VAL)</span><br><span class="line">		&#123;</span><br><span class="line">			pid-&gt;integral = -LOC_INTEGRAL_MAX_VAL;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;	</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*PID算法实现*/</span></span><br><span class="line">	pid-&gt;output_val = pid-&gt;Kp * pid-&gt;err +</span><br><span class="line">	                  pid-&gt;Ki * pid-&gt;integral +</span><br><span class="line">	                  pid-&gt;Kd * (pid-&gt;err - pid-&gt;err_last);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*误差传递*/</span></span><br><span class="line">	pid-&gt;err_last = pid-&gt;err;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*返回当前实际值*/</span></span><br><span class="line">	<span class="keyword">return</span> pid-&gt;output_val;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="速度PID实现"><a href="#速度PID实现" class="headerlink" title="速度PID实现"></a>速度PID实现</h2><p>速度PID的实现代码与位置PID的类似：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * @brief  速度PID算法实现</span></span><br><span class="line"><span class="comment">  * @param  actual_val:实际值</span></span><br><span class="line"><span class="comment">  *	@note 	无</span></span><br><span class="line"><span class="comment">  * @retval 通过PID计算后的输出</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPE_DEAD_ZONE 5.0f <span class="comment">/*速度环死区*/</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPE_INTEGRAL_START_ERR 100 <span class="comment">/*积分分离时对应的误差范围*/</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SPE_INTEGRAL_MAX_VAL 260   <span class="comment">/*积分范围限定，防止积分饱和*/</span></span></span><br><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">speed_pid_realize</span><span class="params">(PID *pid, <span class="keyword">float</span> actual_val)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/*计算目标值与实际值的误差*/</span></span><br><span class="line">	pid-&gt;err = pid-&gt;target_val - actual_val;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* 设定闭环死区 */</span></span><br><span class="line">	<span class="keyword">if</span>( (pid-&gt;err&gt;-SPE_DEAD_ZONE) &amp;&amp; (pid-&gt;err&lt;SPE_DEAD_ZONE ) )</span><br><span class="line">	&#123;</span><br><span class="line">		pid-&gt;err = <span class="number">0</span>;</span><br><span class="line">		pid-&gt;integral = <span class="number">0</span>;</span><br><span class="line">		pid-&gt;err_last = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*积分项，积分分离，偏差较大时去掉积分作用*/</span></span><br><span class="line">	<span class="keyword">if</span>(pid-&gt;err &gt; -SPE_INTEGRAL_START_ERR &amp;&amp; pid-&gt;err &lt; SPE_INTEGRAL_START_ERR)</span><br><span class="line">	&#123;</span><br><span class="line">		pid-&gt;integral += pid-&gt;err;  </span><br><span class="line">        <span class="comment">/*积分范围限定，防止积分饱和*/</span></span><br><span class="line">		<span class="keyword">if</span>(pid-&gt;integral &gt; SPE_INTEGRAL_MAX_VAL)</span><br><span class="line">		&#123;</span><br><span class="line">			pid-&gt;integral = SPE_INTEGRAL_MAX_VAL;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span>(pid-&gt;integral &lt; -SPE_INTEGRAL_MAX_VAL)</span><br><span class="line">		&#123;</span><br><span class="line">			pid-&gt;integral = -SPE_INTEGRAL_MAX_VAL;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;	</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*PID算法实现*/</span></span><br><span class="line">	pid-&gt;output_val = pid-&gt;Kp * pid-&gt;err +</span><br><span class="line">	                  pid-&gt;Ki * pid-&gt;integral +</span><br><span class="line">	                  pid-&gt;Kd *(pid-&gt;err - pid-&gt;err_last);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*误差传递*/</span></span><br><span class="line">	pid-&gt;err_last = pid-&gt;err;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*返回当前实际值*/</span></span><br><span class="line">	<span class="keyword">return</span> pid-&gt;output_val;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="串级控制代码"><a href="#串级控制代码" class="headerlink" title="串级控制代码"></a>串级控制代码</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//周期定时器的回调函数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AutoReloadCallback</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">uint32_t</span> location_timer = <span class="number">0</span>;    <span class="comment">// 位置环周期</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">static</span> __IO <span class="keyword">int</span> encoderNow = <span class="number">0</span>;    <span class="comment">/*当前时刻总计数值*/</span></span><br><span class="line">    <span class="keyword">static</span> __IO <span class="keyword">int</span> encoderLast = <span class="number">0</span>;   <span class="comment">/*上一时刻总计数值*/</span></span><br><span class="line">	<span class="keyword">int</span> encoderDelta = <span class="number">0</span>; <span class="comment">/*当前时刻与上一时刻编码器的变化量*/</span></span><br><span class="line">	<span class="keyword">float</span> actual_speed = <span class="number">0</span>;  <span class="comment">/*实际测得速度*/</span></span><br><span class="line">	<span class="keyword">int</span> actual_speed_int = <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">int</span> res_pwm = <span class="number">0</span>;<span class="comment">/*PID计算得到的PWM值*/</span></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*【1】读取编码器的值*/</span></span><br><span class="line">	encoderNow = read_encoder() + EncoderOverflowCnt*ENCODER_TIM_PERIOD;<span class="comment">/*获取当前的累计值*/</span></span><br><span class="line">	encoderDelta = encoderNow - encoderLast; <span class="comment">/*得到变化值*/</span></span><br><span class="line">	encoderLast = encoderNow;<span class="comment">/*更新上次的累计值*/</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*【2】位置PID运算，得到PWM控制值*/</span></span><br><span class="line">	<span class="keyword">if</span> ((location_timer++ % <span class="number">2</span>) == <span class="number">0</span>)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">float</span> control_val = <span class="number">0</span>;   <span class="comment">/*当前控制值*/</span></span><br><span class="line">		</span><br><span class="line">		<span class="comment">/*位置PID计算*/</span></span><br><span class="line">		control_val = location_pid_realize(&amp;pid_location, encoderNow);  </span><br><span class="line">		</span><br><span class="line">        <span class="comment">/*目标速度值限制*/</span></span><br><span class="line">		speed_val_protect(&amp;control_val);</span><br><span class="line"></span><br><span class="line">		<span class="comment">/*设定速度PID的目标值*/</span></span><br><span class="line">		set_pid_target(&amp;pid_speed, control_val);    </span><br><span class="line">	&#125;</span><br><span class="line">	  </span><br><span class="line">	<span class="comment">/* 转速(1秒钟转多少圈)=单位时间内的计数值/总分辨率*时间系数, 再乘60变为1分钟转多少圈 */</span></span><br><span class="line">    actual_speed = (<span class="keyword">float</span>)encoderDelta / TOTAL_RESOLUTION * <span class="number">10</span> * <span class="number">60</span>;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*【3】速度PID运算，得到PWM控制值*/</span></span><br><span class="line">	actual_speed_int = actual_speed;</span><br><span class="line">	res_pwm = pwm_val_protect((<span class="keyword">int</span>)speed_pid_realize(&amp;pid_speed, actual_speed));</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*【4】PWM控制电机*/</span></span><br><span class="line">	set_motor_rotate(res_pwm);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*【5】数据上传到上位机显示*/</span></span><br><span class="line">	set_computer_value(SEND_FACT_CMD, CURVES_CH1, &amp;encoderNow, <span class="number">1</span>);   <span class="comment">/*给通道1发送实际的电机【位置】值*/</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>PID的计算是通过定时器调用，每10ms一次，从代码中可以看到，内环（速度PID）控制的周期要比外环（位置PID）的周期短，位置PID是每两次循环计算一次，因为内环控制着最终的输出，这个输出对应的就是实际场景中的控制量 (本实验最终控制的是位置)，位置是无法突变，是需要时间积累的，所以内环输出尽可能快些。</p>
+<h1 id="视频演示"><a href="#视频演示" class="headerlink" title="视频演示"></a>视频演示</h1><p>视频中，测试以不同的目标速度到达目标位置，视频后半段测试引入干扰情况下的控制效果：</p>
+<p>视频：<a href="https://www.bilibili.com/video/BV1QK4y1g7yg" target="_blank" rel="noopener">https://www.bilibili.com/video/BV1QK4y1g7yg</a></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/%E5%B0%81%E9%9D%A2/%E5%B0%81%E9%9D%A2-%E4%B8%B2%E7%BA%A7%E6%8E%A7%E5%88%B6.png" alt></p>
+<h1 id="开源代码"><a href="#开源代码" class="headerlink" title="开源代码"></a>开源代码</h1><p>本篇以及前面几篇电机与PID的完整程序代码，公众号回复“<strong>电机PID</strong>”获取，或到我的gitee仓库获取：<a href="https://gitee.com/xxpcb/stm32-motor-pid" target="_blank" rel="noopener">https://gitee.com/xxpcb/stm32-motor-pid</a>。</p>
+<p>文章对你有帮助，欢迎<strong>转发</strong>支持哦~</p>
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb(码农爱学习) wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎关注我的微信公众号『码农爱学习』，一起学习进步(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2021/06/15/电机控制进阶3-PID串级控制（附全套代码下载）/">电机控制进阶3--PID串级控制（附全套代码下载）</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb(码农爱学习) 的个人博客">xxpcb(码农爱学习)</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2021/06/15/电机控制进阶3-PID串级控制（附全套代码下载）/" title="电机控制进阶3--PID串级控制（附全套代码下载）">https://xxpcb.github.io/2021/06/15/电机控制进阶3-PID串级控制（附全套代码下载）/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2021/06/15/电机控制进阶3-PID串级控制（附全套代码下载）/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/电机/" rel="tag"># 电机</a>
+            
+              <a href="/tags/PID/" rel="tag"># PID</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2021/06/15/电机控制进阶2-PID位置控制/" rel="next" title="电机控制进阶2--PID位置控制">
+                  <i class="fa fa-chevron-left"></i> 电机控制进阶2--PID位置控制
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb(码农爱学习)">
+  <p class="site-author-name" itemprop="name">xxpcb(码农爱学习)</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://gitee.com/xxpcb" title="gitee &rarr; https://gitee.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-gitee"></i>gitee</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#串级PID结构图"><span class="nav-number">1.</span> <span class="nav-text">串级PID结构图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#位置环-速度环实践"><span class="nav-number">2.</span> <span class="nav-text">位置环+速度环实践</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#PID参数定义"><span class="nav-number">2.1.</span> <span class="nav-text">PID参数定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#位置PID的实现"><span class="nav-number">2.2.</span> <span class="nav-text">位置PID的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#闭环死区的设定"><span class="nav-number">2.2.1.</span> <span class="nav-text">闭环死区的设定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#积分分离的设定"><span class="nav-number">2.2.2.</span> <span class="nav-text">积分分离的设定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#控制流程图"><span class="nav-number">2.2.3.</span> <span class="nav-text">控制流程图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#速度PID实现"><span class="nav-number">2.3.</span> <span class="nav-text">速度PID实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#串级控制代码"><span class="nav-number">2.4.</span> <span class="nav-text">串级控制代码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#视频演示"><span class="nav-number">3.</span> <span class="nav-text">视频演示</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#开源代码"><span class="nav-number">4.</span> <span class="nav-text">开源代码</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMP/">DMP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IIC/">IIC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MPU6050/">MPU6050</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PID/">PID</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TFTP/">TFTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webots/">Webots</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cJson/">cJson</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/excel/">excel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/函数指针/">函数指针</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/单片机/">单片机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/姿态解算/">姿态解算</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/字符串切分/">字符串切分</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/存储/">存储</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/定时器/">定时器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件传输/">文件传输</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件操作/">文件操作</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/旋转矩阵/">旋转矩阵</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/机器人/">机器人</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/欧拉角/">欧拉角</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/滤波/">滤波</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/电机/">电机</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序烧录/">程序烧录</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码器/">编码器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链表/">链表</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2019~<span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb(码农爱学习)</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>

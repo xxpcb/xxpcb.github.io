@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="generator" content="Hexo 3.9.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    save_scroll: false,
+    copycode: {"enable":false,"show_result":false,"style":null},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    }
+  };
+</script>
+
+  <meta name="description" content="之前的几篇文章（电机控制基础篇），介绍的电机编码器原理、定时器输出PWM、定时器编码器模式测速等。 本篇在前几篇的基础上，继续来学习电机控制，通过PID算法，来进行电机的速度控制，并进行实验测试。">
+<meta name="keywords" content="电机,PID">
+<meta property="og:type" content="article">
+<meta property="og:title" content="电机控制进阶1--PID速度控制">
+<meta property="og:url" content="https://xxpcb.github.io/2021/06/15/电机控制进阶1-PID速度控制/index.html">
+<meta property="og:site_name" content="xxpcb&#39;s Blog">
+<meta property="og:description" content="之前的几篇文章（电机控制基础篇），介绍的电机编码器原理、定时器输出PWM、定时器编码器模式测速等。 本篇在前几篇的基础上，继续来学习电机控制，通过PID算法，来进行电机的速度控制，并进行实验测试。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/PID_struct.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/tanhuang.gif">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-3.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-1.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-2.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-3.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-4.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-6.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-7.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-8.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-9.png">
+<meta property="og:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/%E5%B0%81%E9%9D%A2/%E5%B0%81%E9%9D%A2-%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6.png">
+<meta property="og:updated_time" content="2021-06-14T16:16:54.337Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="电机控制进阶1--PID速度控制">
+<meta name="twitter:description" content="之前的几篇文章（电机控制基础篇），介绍的电机编码器原理、定时器输出PWM、定时器编码器模式测速等。 本篇在前几篇的基础上，继续来学习电机控制，通过PID算法，来进行电机的速度控制，并进行实验测试。">
+<meta name="twitter:image" content="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/PID_struct.png">
+  <link rel="canonical" href="https://xxpcb.github.io/2021/06/15/电机控制进阶1-PID速度控制/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>电机控制进阶1--PID速度控制 | xxpcb's Blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  <div class="container sidebar-position-left">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xxpcb's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a href="javascript:;" class="popup-trigger">
+        
+          <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+      </li>
+    
+  </ul>
+
+</nav>
+  <div class="site-search">
+    
+  <div class="popup search-popup">
+  <div class="search-header">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <div class="search-input-wrapper">
+      <input autocomplete="off" autocorrect="off" autocapitalize="none"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="search-input">
+    </div>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+  <div id="search-result"></div>
+</div>
+
+
+  </div>
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content page-post-detail">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  <article class="post" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://xxpcb.github.io/2021/06/15/电机控制进阶1-PID速度控制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="xxpcb(码农爱学习)">
+      <meta itemprop="description" content="The early bird catches the worm">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xxpcb's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">电机控制进阶1--PID速度控制
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2021-06-15 00:06:50 / 修改时间：00:16:54" itemprop="dateCreated datePublished" datetime="2021-06-15T00:06:50+08:00">2021-06-15</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/电机/" itemprop="url" rel="index"><span itemprop="name">电机</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>之前的几篇文章（电机控制基础篇），介绍的电机编码器原理、定时器输出PWM、定时器编码器模式测速等。</p>
+<p>本篇在前几篇的基础上，继续来学习电机控制，通过PID算法，来进行电机的速度控制，并进行实验测试。</p>
+<a id="more"></a>
+
+<h1 id="PID基础"><a href="#PID基础" class="headerlink" title="PID基础"></a>PID基础</h1><p>PID即：Proportional（比例）、Integral（积分）、Differential（微分）的缩写。</p>
+<p>PID是经典的闭环控制算法，具有原理简单，易于实现，适用面广，控制参数相互独立，参数的选定比较简单等优点。</p>
+<p>凡是需要将某一个物理量“保持稳定”的场合（比如维持平衡，稳定温度、转速等），PID都会派上大用场。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/PID_struct.png" alt></p>
+<h2 id="PID算法分类"><a href="#PID算法分类" class="headerlink" title="PID算法分类"></a>PID算法分类</h2><p>PID算法可分为位置式PID与增量式PID两大类。</p>
+<p>在实际的编程应用中，需要使用离散化的PID算法，以适用计算机的使用环境，下面以电机转速控制为例，来看一下两种PID算法的基本原理。</p>
+<h3 id="位置式PID"><a href="#位置式PID" class="headerlink" title="位置式PID"></a>位置式PID</h3><p>位置式PID是当前系统的实际位置，与想要达到的预期位置的偏差，进行PID控制</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-1.png" alt></p>
+<ul>
+<li>比例P：e(k) 此次误差</li>
+<li>积分I：∑e(i)  误差的累加</li>
+<li>微分D：e(k) - e(k-1) 此次误差-上次误差</li>
+</ul>
+<p>因为有误差积分 ∑e(i)，一直累加，也就是当前的输出u(k)与过去的所有状态都有关系。</p>
+<p><strong>位置式PID算法的伪代码如下</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//位置式PID（伪代码）</span></span><br><span class="line">previous_err = <span class="number">0</span>;</span><br><span class="line">integral = <span class="number">0</span>;</span><br><span class="line">loop: <span class="comment">//根据目标值与测量值(如电机的设定速度与读到的编码器转后后的速度)，循环计算更新输出值（如PWM）</span></span><br><span class="line">	error = setpoint - measured_value;          <span class="comment">/*误差项：目标值-测量值*/</span></span><br><span class="line">	integral += error * dt;                     <span class="comment">/*积分项：误差项的累计*/</span></span><br><span class="line">    derivative = (error - previous_error) / dt; <span class="comment">/*微分项：误差的变化率*/</span></span><br><span class="line">	output = Kp*error + Ki*integral + Kd*derivative; <span class="comment">/*三项分别乘以PID系数即为输出*/</span></span><br><span class="line">	previous_err = err; <span class="comment">//更新误差</span></span><br><span class="line">	wait(dt); <span class="comment">//等待固定的计算周期</span></span><br><span class="line">	<span class="keyword">goto</span> loop;</span><br></pre></td></tr></table></figure>
+
+<h3 id="增量式PID"><a href="#增量式PID" class="headerlink" title="增量式PID"></a>增量式PID</h3><p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-2.png" alt></p>
+<ul>
+<li><p>比例P：e(k) - e(k-1) 此次误差-上次误差</p>
+</li>
+<li><p>积分I：e(k) 此次误差d</p>
+</li>
+<li><p>微分D：e(k) - 2e(k-1)+e(k-2)  这次误差-2×上次误差+上上次误差</p>
+</li>
+</ul>
+<p>注意增量式PID首先计算的是Δu(k)，然后与上次的输出相加，才是此次的输出结果。增量式PID没有误差累加，控制增量Δu(k)的确定仅与最近3次的采样值有关。 </p>
+<p><strong>增量式PID算法的伪代码如下</strong>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//增量式PID（伪代码）</span></span><br><span class="line">previous02_error = <span class="number">0</span>; <span class="comment">//上上次偏差</span></span><br><span class="line">previous01_error = <span class="number">0</span>; <span class="comment">//上次偏差</span></span><br><span class="line">integral = <span class="number">0</span>; <span class="comment">//积分和</span></span><br><span class="line">pid_out = <span class="number">0</span>; <span class="comment">//pid增量累加和</span></span><br><span class="line">loop:</span><br><span class="line">    error = setpoint − measured_value;  <span class="comment">/*误差项：目标值-测量值*/</span></span><br><span class="line">    proportion = error - previous01_error;                            <span class="comment">/*比例项：误差项-上次偏差*/</span></span><br><span class="line">    integral = error * dt;                                            <span class="comment">/*积分项：误差项的累计*/</span></span><br><span class="line">    derivative = (error − <span class="number">2</span>*previous01_error + previous02_error) / dt;<span class="comment">/*微分项：上次误差与上上次误差的变化率*/</span></span><br><span class="line">    <span class="comment">/*或写成：derivative = ( (error − previous01_error)/dt - (previous01_error - previous02_error)/dt )*/</span></span><br><span class="line">    pid_delta = Kp × error + Ki × integral + Kd × derivative; <span class="comment">//计算得到PID增量</span></span><br><span class="line">    pid_out = pid_out + pid_delta; <span class="comment">//计算最终的PID输出</span></span><br><span class="line"></span><br><span class="line">    previous02_error = previous01_error; <span class="comment">//更新上上次偏差</span></span><br><span class="line">    previous01_error = error; <span class="comment">//更新上次偏差</span></span><br><span class="line">    wait(dt); <span class="comment">//等待固定的计算周期</span></span><br><span class="line">    <span class="keyword">goto</span> loop;</span><br></pre></td></tr></table></figure>
+
+<h2 id="PID各项的作用"><a href="#PID各项的作用" class="headerlink" title="PID各项的作用"></a>PID各项的作用</h2><p>以这个弹簧为例（假设没有重力，只有空气阻力），先是在<strong>平衡位置上(目标位置)</strong>，拉它一下，然后松手，这时它会震荡起来。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/tanhuang.gif" alt></p>
+<h3 id="P-比例"><a href="#P-比例" class="headerlink" title="P 比例"></a>P 比例</h3><p><strong>P就是比例</strong>的意思。这里就类比弹簧的弹力（回复力）：<code>F=k*Δx</code></p>
+<ul>
+<li>当物块距离平衡位置越远时，弹力越大，反之，离平衡位置越近，力越小。</li>
+<li>当物块位于平衡位置上方时，弹性向下，当物块位于平衡位置下方时，弹性向上，即弹力总是使物块朝平衡位置施力。</li>
+</ul>
+<h3 id="D-微分-求导-变化率"><a href="#D-微分-求导-变化率" class="headerlink" title="D 微分/求导/变化率"></a>D 微分/求导/变化率</h3><p>只有P控制，物块一直在上下震荡，整个系统不是特别稳定。</p>
+<p>这是因为空气阻力太小，想象一下整个把它放到水里，物块应该很快会静止下来。这时因为<strong>阻力</strong>的作用。</p>
+<p><strong>D的作用就相当于阻力</strong>：</p>
+<ul>
+<li><p>它与变化速度（单位时间内的变化量）有关，变化的越大，它施加的阻力也就越大</p>
+</li>
+<li><p>它的方向与目标值无关，比如，<em>当物块从下到上经过平衡位置时</em>，它的方向一直是朝下，</p>
+<p>即先是阻止物块靠近平衡位置，再是阻止物块远离平衡位置（对比P的作用，始终阻止物块远离平衡位置）</p>
+</li>
+<li><p>它的作用就是减小系统的超调量了（减少系统在平衡位置震荡）</p>
+</li>
+</ul>
+<h3 id="I-积分-误差累积"><a href="#I-积分-误差累积" class="headerlink" title="I 积分/误差累积"></a>I 积分/误差累积</h3><p>有了P的动力和D的阻力，这个物块就可以较快的稳定下来了，那I的作用是什么呢？</p>
+<p>想象一下，如果有其它外力的影响，在某一时刻，物块将要到达平衡位置时，恰好P的动力与外力(与P的作用方向相反的恒定力)抵消，则之后物块将停在此处附近（因为此时D的力也趋近0，并很快变为0），一直到达不了平衡位置。</p>
+<p>这时，<strong>I的误差积分</strong>作用就很有必要了：</p>
+<ul>
+<li>它计算的误差的累计，只要有误差，它就一直增加，开始可能很小，但只要没要到达平衡位置，该值就会越来越大</li>
+<li>它的作用就是消除系统的静态误差了</li>
+</ul>
+<h2 id="PID参数整定"><a href="#PID参数整定" class="headerlink" title="PID参数整定"></a>PID参数整定</h2><p>实际应用，进行PID参数调节时，一般使用试凑法，PID参数整定口诀如下：</p>
+<blockquote>
+<p>参数整定找最佳，从小到大顺序查，</p>
+<p><strong>先是比例后积分，最后再把微分加</strong>，</p>
+<p>曲线振荡很频繁，<strong>比例</strong>度盘要放大，</p>
+<p>曲线漂浮绕大湾，<strong>比例</strong>度盘往小扳，</p>
+<p>曲线偏离回复慢，<strong>积分</strong>时间往下降，</p>
+<p>曲线波动周期长，<strong>积分</strong>时间再加长，</p>
+<p>曲线振荡频率快，先把<strong>微分</strong>降下来，</p>
+<p>动差大来波动慢，<strong>微分</strong>时间应加长，</p>
+<p>理想曲线两个波，前高后低4比1，</p>
+<p>一看二调多分析，调节质量不会低。</p>
+</blockquote>
+<h1 id="电机PID速度控制"><a href="#电机PID速度控制" class="headerlink" title="电机PID速度控制"></a>电机PID速度控制</h1><p>上面介绍了PID的基础知识，接下来就使用位置式PID来实现对直流电机转速的控制。</p>
+<h2 id="程序"><a href="#程序" class="headerlink" title="程序"></a>程序</h2><h3 id="自定义PID结构体"><a href="#自定义PID结构体" class="headerlink" title="自定义PID结构体"></a>自定义PID结构体</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="keyword">float</span> target_val;   <span class="comment">//目标值</span></span><br><span class="line">	<span class="keyword">float</span> err;          <span class="comment">//偏差值</span></span><br><span class="line">	<span class="keyword">float</span> err_last;     <span class="comment">//上一个偏差值</span></span><br><span class="line">	<span class="keyword">float</span> Kp,Ki,Kd;     <span class="comment">//比例、积分、微分系数</span></span><br><span class="line">	<span class="keyword">float</span> integral;     <span class="comment">//积分值</span></span><br><span class="line">	<span class="keyword">float</span> output_val;   <span class="comment">//输出值</span></span><br><span class="line">&#125;PID;</span><br></pre></td></tr></table></figure>
+
+<h3 id="PID算法实现-位置式PID"><a href="#PID算法实现-位置式PID" class="headerlink" title="PID算法实现(位置式PID)"></a>PID算法实现(位置式PID)</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">float</span> <span class="title">PID_realize</span><span class="params">(<span class="keyword">float</span> actual_val)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="comment">/*计算目标值与实际值的误差*/</span></span><br><span class="line">	pid.err = pid.target_val - actual_val;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*积分项*/</span></span><br><span class="line">	pid.integral += pid.err;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*PID算法实现*/</span></span><br><span class="line">	pid.output_val = pid.Kp * pid.err + </span><br><span class="line">				     pid.Ki * pid.integral + </span><br><span class="line">				     pid.Kd * (pid.err - pid.err_last);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*误差传递*/</span></span><br><span class="line">	pid.err_last = pid.err;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*返回当前实际值*/</span></span><br><span class="line">	<span class="keyword">return</span> pid.output_val;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="周期调用PID计算"><a href="#周期调用PID计算" class="headerlink" title="周期调用PID计算"></a>周期调用PID计算</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//周期定时器的回调函数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">AutoReloadCallback</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> sum = <span class="number">0</span>;<span class="comment">/*编码器值（PID输入）*/</span></span><br><span class="line">	<span class="keyword">int</span> res_pwm = <span class="number">0</span>;<span class="comment">/*PWM值（PID输出）*/</span></span><br><span class="line">	</span><br><span class="line">    <span class="comment">/*读取编码器测量的速度值*/</span></span><br><span class="line">	sum = read_encoder();</span><br><span class="line">    <span class="comment">/*进行PID运算，得到PWM输出值*/</span></span><br><span class="line">    res_pwm = PID_realize(sum);</span><br><span class="line">	<span class="comment">/*根据PWM值控制电机转动*/</span></span><br><span class="line">	set_motor_rotate(res_pwm);</span><br><span class="line">	</span><br><span class="line">    <span class="comment">/*给上位机通道1发送实际值*/</span></span><br><span class="line">	set_computer_value(SEND_FACT_CMD, CURVES_CH1, &amp;sum, <span class="number">1</span>); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="上位机"><a href="#上位机" class="headerlink" title="上位机"></a>上位机</h2><p>这里使用<strong>野火多功能调试助手</strong>的”PID调试助手“来进行实验，用于显示PID调节时的电机转速曲线。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-3.png" alt></p>
+<h2 id="实验演示"><a href="#实验演示" class="headerlink" title="实验演示"></a>实验演示</h2><p>目标速度值设为50（这里的目标值50使用的是编码器10ms捕获的脉冲数），通过体调节PID的参数，来测试电机能否较快的达到目标速度。</p>
+<h3 id="先调节P"><a href="#先调节P" class="headerlink" title="先调节P"></a>先调节P</h3><p>P值先使用10看看效果，从速度曲线可以看出，达不到目标速度，且与目标速度相差较大。</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>I</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>10</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-1.png" alt></p>
+<p>P值加大到100，从速度曲线可以看出，还是达不到目标速度。</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>I</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-2.png" alt></p>
+<p>只使用P，会存在静差，始终达到不了目标值，这时就要使用积分项来消除静差了。</p>
+<h3 id="再调节I"><a href="#再调节I" class="headerlink" title="再调节I"></a>再调节I</h3><p>P保持100，I使用0.2，从速度曲线可以看出，可以达到目标速度，但跟随的速度较慢。</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>I</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>0.2</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-3.png" alt></p>
+<p>P保持100，加大I，使用1.0，从速度曲线可以看出，可以达到目标速度，跟随的速度加快了。</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>I</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>1.0</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-4.png" alt></p>
+<p>P保持100，继续加大I，使用3.0，从速度曲线可以看出，可以达到目标速度，跟随的速度进一步加快了。</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>I</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>3.0</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-6.png" alt></p>
+<p>P保持100，再继续加大I，使用6.0，从速度曲线可以看出，可以达到目标速度，跟随速度也很快，但有一点过冲。</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>I</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>6.0</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-7.png" alt></p>
+<p>对于过冲，可以再加入微分试试，微分D相当于阻力的效果</p>
+<h3 id="最后调节D"><a href="#最后调节D" class="headerlink" title="最后调节D"></a>最后调节D</h3><p>P保持100，I保持6.0，D使用3.0，从速度曲线上，好像看不出明显的变化。</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>I</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>0</td>
+<td>3.0</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-8.png" alt></p>
+<p>P保持100，I保持6.0，D加大到6.0，从速度曲线上看，过冲幅度减小了点。</p>
+<table>
+<thead>
+<tr>
+<th>P</th>
+<th>I</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>100</td>
+<td>3.0</td>
+<td>6.0</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/V/pid-test-v-9.png" alt></p>
+<h2 id="演示视频"><a href="#演示视频" class="headerlink" title="演示视频"></a>演示视频</h2><p>视频：<a href="https://www.bilibili.com/video/BV18Q4y1R7e8" target="_blank" rel="noopener">https://www.bilibili.com/video/BV18Q4y1R7e8</a></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/%E5%B0%81%E9%9D%A2/%E5%B0%81%E9%9D%A2-%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6.png" alt></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇简单介绍了PID的基础原理与参数整定，若想把PID参数调节好，还需要不断的实践与调试。</p>
+
+    </div>
+
+    
+    
+    
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center;">
+  <img id="wechat_subscriber_qcode" src="/uploads/wechat-qrcode0.jpg" alt="xxpcb(码农爱学习) wechat" style="width: 200px; max-width: 100%;">
+  <div>欢迎关注我的微信公众号『码农爱学习』，一起学习进步(●'◡'●)</div>
+</div>
+
+      
+        
+      
+        <div>
+            
+              
+<div class="my_post_copyright">
+
+ <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+ 
+ <p><span>本文标题:</span><a href="/2021/06/15/电机控制进阶1-PID速度控制/">电机控制进阶1--PID速度控制</a></p>
+ <p><span>文章作者:</span><a href="/" title="访问 xxpcb(码农爱学习) 的个人博客">xxpcb(码农爱学习)</a></p>
+ 
+ 
+ <p><span>原始链接:</span><a href="/2021/06/15/电机控制进阶1-PID速度控制/" title="电机控制进阶1--PID速度控制">https://xxpcb.github.io/2021/06/15/电机控制进阶1-PID速度控制/</a>
+    <span class="copy-path"  title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://xxpcb.github.io/2021/06/15/电机控制进阶1-PID速度控制/"  aria-label="复制成功！"></i></span>
+ </p>
+ <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+   var clipboard = new Clipboard('.fa-clipboard');
+   $(".fa-clipboard").click(function(){
+     clipboard.on('success', function(){
+       swal({   
+         title: "",   
+         text: '复制成功',
+         icon: "success", 
+         showConfirmButton: true
+         });
+ 	 });
+   });  
+</script>
+
+
+            
+        </div>
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/电机/" rel="tag"># 电机</a>
+            
+              <a href="/tags/PID/" rel="tag"># PID</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2021/06/15/C文件操作2：如何随机的进行文件读取？/" rel="next" title="C文件操作2：如何随机的进行文件读取？">
+                  <i class="fa fa-chevron-left"></i> C文件操作2：如何随机的进行文件读取？
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2021/06/15/电机控制进阶2-PID位置控制/" rel="prev" title="电机控制进阶2--PID位置控制">
+                  电机控制进阶2--PID位置控制 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/header.jpg"
+      alt="xxpcb(码农爱学习)">
+  <p class="site-author-name" itemprop="name">xxpcb(码农爱学习)</p>
+  <div class="site-description motion-element" itemprop="description">The early bird catches the worm</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">92</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/xxpcb" title="GitHub &rarr; https://github.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://gitee.com/xxpcb" title="gitee &rarr; https://gitee.com/xxpcb" rel="noopener" target="_blank"><i class="fa fa-fw fa-gitee"></i>gitee</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:xxpcb2018@126.com" title="E-Mail &rarr; mailto:xxpcb2018@126.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://space.bilibili.com/146899653" title="bilibili &rarr; https://space.bilibili.com/146899653" rel="noopener" target="_blank"><i class="fa fa-fw fa-globe"></i>bilibili</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element links-of-blogroll-block">
+    <div class="links-of-blogroll-title">
+      <i class="fa  fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.instructables.com/" title="https://www.instructables.com/" rel="noopener" target="_blank">instructables</a>
+        </li>
+      
+        <li class="links-of-blogroll-item">
+          <a href="https://www.mydigit.cn/forum.php" title="https://www.mydigit.cn/forum.php" rel="noopener" target="_blank">MyDigit.cn</a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+        </div>
+      </div>
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#PID基础"><span class="nav-number">1.</span> <span class="nav-text">PID基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#PID算法分类"><span class="nav-number">1.1.</span> <span class="nav-text">PID算法分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#位置式PID"><span class="nav-number">1.1.1.</span> <span class="nav-text">位置式PID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#增量式PID"><span class="nav-number">1.1.2.</span> <span class="nav-text">增量式PID</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PID各项的作用"><span class="nav-number">1.2.</span> <span class="nav-text">PID各项的作用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#P-比例"><span class="nav-number">1.2.1.</span> <span class="nav-text">P 比例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#D-微分-求导-变化率"><span class="nav-number">1.2.2.</span> <span class="nav-text">D 微分/求导/变化率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I-积分-误差累积"><span class="nav-number">1.2.3.</span> <span class="nav-text">I 积分/误差累积</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PID参数整定"><span class="nav-number">1.3.</span> <span class="nav-text">PID参数整定</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#电机PID速度控制"><span class="nav-number">2.</span> <span class="nav-text">电机PID速度控制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#程序"><span class="nav-number">2.1.</span> <span class="nav-text">程序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义PID结构体"><span class="nav-number">2.1.1.</span> <span class="nav-text">自定义PID结构体</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PID算法实现-位置式PID"><span class="nav-number">2.1.2.</span> <span class="nav-text">PID算法实现(位置式PID)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#周期调用PID计算"><span class="nav-number">2.1.3.</span> <span class="nav-text">周期调用PID计算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#上位机"><span class="nav-number">2.2.</span> <span class="nav-text">上位机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实验演示"><span class="nav-number">2.3.</span> <span class="nav-text">实验演示</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#先调节P"><span class="nav-number">2.3.1.</span> <span class="nav-text">先调节P</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再调节I"><span class="nav-number">2.3.2.</span> <span class="nav-text">再调节I</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#最后调节D"><span class="nav-number">2.3.3.</span> <span class="nav-text">最后调节D</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#演示视频"><span class="nav-number">2.4.</span> <span class="nav-text">演示视频</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">2.5.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+      
+      
+        <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+        <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+        <div class="widget-wrap">
+            <!--<h3 class="widget-title">Tag Cloud</h3>-->
+            <div id="myCanvasContainer" class="widget tagcloud">
+                <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                    <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/2进制格式输出/">2进制格式输出</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Bash/">Bash</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C++</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CNZZ/">CNZZ</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DMP/">DMP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/FreeRTOS/">FreeRTOS</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IIC/">IIC</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JAVA/">JAVA</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/LeetCode/">LeetCode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MNIST/">MNIST</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MPU6050/">MPU6050</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/">Markdown</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenCV/">OpenCV</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PID/">PID</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL/">SQL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TFTP/">TFTP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TensorFlow/">TensorFlow</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VGG/">VGG</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webots/">Webots</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cJson/">cJson</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/excel/">excel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/float转hex/">float转hex</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcc/">gcc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/makefile/">makefile</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/socket/">socket</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/swiftype/">swiftype</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号/">信号</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/信号量/">信号量</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/共享内存/">共享内存</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/函数指针/">函数指针</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/分类/">分类</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/匿名管道/">匿名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/单片机/">单片机</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命令/">命令</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/命名管道/">命名管道</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/填坑/">填坑</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/姿态解算/">姿态解算</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/字符串切分/">字符串切分</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/存储/">存储</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/定时器/">定时器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/嵌入式/">嵌入式</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/拟合/">拟合</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/排序/">排序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/搜索/">搜索</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数据库/">数据库</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件I-O/">文件I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件传输/">文件传输</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/文件操作/">文件操作</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/旋转矩阵/">旋转矩阵</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/机器人/">机器人</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/查找/">查找</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/欧拉角/">欧拉角</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/流I-O/">流I/O</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/消息队列/">消息队列</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/滤波/">滤波</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/电机/">电机</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/程序烧录/">程序烧录</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/答题卡/">答题卡</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/红黑树/">红黑树</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/编码器/">编码器</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/计算机网络/">计算机网络</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/识别/">识别</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/进程/">进程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/链表/">链表</a><span class="tag-list-count">1</span></li></ul>
+                </canvas>
+            </div>
+        </div>
+        
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2019~<span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xxpcb(码农爱学习)</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.3.0</div>
+-->
+
+        
+
+
+  <div style="display: none;">
+    <script src="//s95.cnzz.com/z_stat.php?id=1277776467&web_id=1277776467"></script>
+  </div>
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+
+    
+
+  </div>
+
+  
+  <script src="/lib/jquery/index.js?v=3.4.1"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+
+<script src="/js/schemes/pisces.js?v=7.3.0"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script src="/js/local-search.js?v=7.3.0"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+  
+  <script src="/js/scrollspy.js?v=7.3.0"></script><script src="/js/post-details.js?v=7.3.0"></script>
+
+
+</body>
+</html>
