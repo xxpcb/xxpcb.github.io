@@ -1,0 +1,578 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>电机PID控制补充篇-野火上位机串口协议介绍 | 码农爱学习的博客</title><meta name="keywords" content="电机,野火上位机"><meta name="author" content="xxpcb"><meta name="copyright" content="xxpcb"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="0 引言之前介绍的电机PID控制的系列文章： 电机控制进阶1–PID速度控制 电机控制进阶2–PID位置控制 电机控制进阶3–PID串级控制 得到不少电子爱好者的关注，不过也收到一些关于串口通信的疑问反馈。之前的一系列文章，确实没有着重介绍串口软件的使用细节以及通信协议的具体格式。本篇就来补充一下野火PID调试助手的串口协议。 下野火PID调试助手的使用界面如下，与串口通信协议相关的，主要分为三个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="电机PID控制补充篇-野火上位机串口协议介绍">
+<meta property="og:url" content="http://xxpcb.gitee.io/2022/04/05/%E7%94%B5%E6%9C%BAPID%E6%8E%A7%E5%88%B6%E8%A1%A5%E5%85%85%E7%AF%87-%E9%87%8E%E7%81%AB%E4%B8%8A%E4%BD%8D%E6%9C%BA%E4%B8%B2%E5%8F%A3%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D/index.html">
+<meta property="og:site_name" content="码农爱学习的博客">
+<meta property="og:description" content="0 引言之前介绍的电机PID控制的系列文章： 电机控制进阶1–PID速度控制 电机控制进阶2–PID位置控制 电机控制进阶3–PID串级控制 得到不少电子爱好者的关注，不过也收到一些关于串口通信的疑问反馈。之前的一系列文章，确实没有着重介绍串口软件的使用细节以及通信协议的具体格式。本篇就来补充一下野火PID调试助手的串口协议。 下野火PID调试助手的使用界面如下，与串口通信协议相关的，主要分为三个">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://xxpcb.gitee.io/img/mot-pid/uart.png">
+<meta property="article:published_time" content="2022-04-05T03:25:51.000Z">
+<meta property="article:modified_time" content="2022-04-05T03:32:14.874Z">
+<meta property="article:author" content="xxpcb">
+<meta property="article:tag" content="电机">
+<meta property="article:tag" content="野火上位机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://xxpcb.gitee.io/img/mot-pid/uart.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://xxpcb.gitee.io/2022/04/05/%E7%94%B5%E6%9C%BAPID%E6%8E%A7%E5%88%B6%E8%A1%A5%E5%85%85%E7%AF%87-%E9%87%8E%E7%81%AB%E4%B8%8A%E4%BD%8D%E6%9C%BA%E4%B8%B2%E5%8F%A3%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9"; //- "https://hm.baidu.com/hm.js?true";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script type="text/javascript">document.write(unescape("%3Cspan style='display:none;' id='cnzz_stat_icon_1277776467'%3E%3C/span%3E%3Cscript src='https://s23.cnzz.com/z_stat.php%3Fid%3D1277776467%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));</script><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '电机PID控制补充篇-野火上位机串口协议介绍',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-04-05 11:32:14'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/logo.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">132</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">91</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">28</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/../img/mot-pid/uart.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">码农爱学习的博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">电机PID控制补充篇-野火上位机串口协议介绍</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-04-05T03:25:51.000Z" title="发表于 2022-04-05 11:25:51">2022-04-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-04-05T03:32:14.874Z" title="更新于 2022-04-05 11:32:14">2022-04-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%94%B5%E6%9C%BA/">电机</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="0-引言"><a href="#0-引言" class="headerlink" title="0 引言"></a>0 引言</h1><p>之前介绍的电机PID控制的系列文章：</p>
+<p><a href="https://xxpcb.gitee.io/2021/06/15/%E7%94%B5%E6%9C%BA%E6%8E%A7%E5%88%B6%E8%BF%9B%E9%98%B61-PID%E9%80%9F%E5%BA%A6%E6%8E%A7%E5%88%B6/">电机控制进阶1–PID速度控制</a></p>
+<p><a href="https://xxpcb.gitee.io/2021/06/15/%E7%94%B5%E6%9C%BA%E6%8E%A7%E5%88%B6%E8%BF%9B%E9%98%B62-PID%E4%BD%8D%E7%BD%AE%E6%8E%A7%E5%88%B6/">电机控制进阶2–PID位置控制</a></p>
+<p><a href="https://xxpcb.gitee.io/2021/06/15/%E7%94%B5%E6%9C%BA%E6%8E%A7%E5%88%B6%E8%BF%9B%E9%98%B63-PID%E4%B8%B2%E7%BA%A7%E6%8E%A7%E5%88%B6%EF%BC%88%E9%99%84%E5%85%A8%E5%A5%97%E4%BB%A3%E7%A0%81%E4%B8%8B%E8%BD%BD%EF%BC%89/">电机控制进阶3–PID串级控制</a></p>
+<p>得到不少电子爱好者的关注，不过也收到一些关于串口通信的疑问反馈。之前的一系列文章，确实没有着重介绍串口软件的使用细节以及通信协议的具体格式。本篇就来补充一下野火PID调试助手的串口协议。</p>
+<p>下野火PID调试助手的使用界面如下，与串口通信协议相关的，主要分为三个部分：</p>
+<ul>
+<li>参数区：包括数据通道选择、PID参数设置与展示、目标值、周期值的设置与展示</li>
+<li>启/停区：控制电机的启动、停止以及程序的复位</li>
+<li>数据曲线区：接收板子发上来的数据，进行速度曲线或位置曲线等的绘制</li>
+</ul>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/com/1.png"></p>
+<p>在介绍串口协议之前，推荐安装一个<strong>虚拟串口驱动软件</strong>来在自己的电脑上虚拟出两个串口，方便分析串口数据。</p>
+<p>比如<strong>我们在电脑上产生两个虚拟串口，这两个串口可以看作是通过线连接了起来</strong>，比如我们<strong>使用野火PID助手和另一个串口助手软件分别连接这两个虚拟串口</strong>，当野火PID助手发送数据时（比如按下启动按钮），另一端的串口助手软件就可以收到并显示野火PID助手发来的数据，这样我们就能分析野火PID助手下发数据的数据格式了。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/com/2.png"></p>
+<h1 id="1-PID调试助手串口协议介绍"><a href="#1-PID调试助手串口协议介绍" class="headerlink" title="1 PID调试助手串口协议介绍"></a>1 PID调试助手串口协议介绍</h1><p>先来看一下野火PID调试助手的串口协议数据格式。</p>
+<p>串口协议的定义参考野火论坛的介绍：<a target="_blank" rel="noopener" href="https://www.firebbs.cn/forum.php?mod=viewthread&amp;tid=29923&amp;extra=page=1">https://www.firebbs.cn/forum.php?mod=viewthread&amp;tid=29923&amp;extra=page%3D1</a></p>
+<h2 id="1-1-指令包格式"><a href="#1-1-指令包格式" class="headerlink" title="1.1 指令包格式"></a>1.1 指令包格式</h2><p>串口数据是通过一包一包的数据发送的，每一包的数据格式如下：</p>
+<table>
+<thead>
+<tr>
+<th>字节数</th>
+<th>名称</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>4bytes</strong></td>
+<td>包头</td>
+<td><strong>0x59485A53</strong></td>
+</tr>
+<tr>
+<td>1bytes</td>
+<td>数据通道</td>
+<td>0xXX</td>
+</tr>
+<tr>
+<td><strong>4bytes</strong></td>
+<td>包长度</td>
+<td>0xXXXXXXXX</td>
+</tr>
+<tr>
+<td>1bytes</td>
+<td><strong>指令</strong></td>
+<td><strong>0xXX</strong></td>
+</tr>
+<tr>
+<td>1bytes</td>
+<td>参数1</td>
+<td>0xXX</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>1bytes</td>
+<td>参数n</td>
+<td>0xXX</td>
+</tr>
+<tr>
+<td>1bytes</td>
+<td>校验和</td>
+<td>0xXX</td>
+</tr>
+</tbody></table>
+<p>说明：</p>
+<ol>
+<li>所有多字节的<strong>低字节</strong>在前（关于高低字节或数据大小端的介绍，可参考：<a href="https://xxpcb.gitee.io/2020/06/26/C%E8%AF%AD%E8%A8%80%E6%89%93%E5%8D%B0%E6%95%B0%E6%8D%AE%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%BC%E5%BC%8F-%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90%E4%B8%8E%E7%BC%96%E7%A8%8B%E5%AE%9E%E7%8E%B0/">C语言打印数据的二进制格式-原理解析与编程实现</a>）</li>
+<li>包头固定为四字节的<strong>0x59485A53</strong></li>
+<li>通道地址1到5对应软件上的CH1到CH5，<strong>CH1为0x01</strong>，CH2为0x02</li>
+<li>包长度为从包头到校验的<strong>所有数据长度</strong></li>
+<li>指令为相应的<strong>功能码</strong></li>
+<li>参数为指令<strong>需要参数时加入</strong></li>
+<li>校验为校验和方式——8位</li>
+</ol>
+<h2 id="1-2-指令分类"><a href="#1-2-指令分类" class="headerlink" title="1.2 指令分类"></a>1.2 指令分类</h2><p>上述数据格式中，需要重点关注的是“指令”这一字段，它表明了这一包数据的具体含义。</p>
+<p>另外，串口数据包括<strong>下发数据</strong>和<strong>上传数据</strong>，下发数据就是野火PID助手按照协议包格式向板子发送串口数据，上传数据就是板子按照协议包格式向野火PID助手送串口数据。</p>
+<h3 id="1-2-1-下发数据"><a href="#1-2-1-下发数据" class="headerlink" title="1.2.1 下发数据"></a>1.2.1 下发数据</h3><p>野火PID助手<strong>下发</strong>设定的数据或指令到板子中</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>指令</th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PID</td>
+<td><strong>0x10</strong></td>
+<td>3个float</td>
+</tr>
+<tr>
+<td>目标值</td>
+<td><strong>0x11</strong></td>
+<td>1个int</td>
+</tr>
+<tr>
+<td>启动</td>
+<td><strong>0x12</strong></td>
+<td>无</td>
+</tr>
+<tr>
+<td>停止</td>
+<td><strong>0x13</strong></td>
+<td>无</td>
+</tr>
+<tr>
+<td>复位</td>
+<td><strong>0x14</strong></td>
+<td>无</td>
+</tr>
+<tr>
+<td>周期</td>
+<td><strong>0x15</strong></td>
+<td>1个uint</td>
+</tr>
+</tbody></table>
+<h3 id="1-2-2-上传数据"><a href="#1-2-2-上传数据" class="headerlink" title="1.2.2 上传数据"></a>1.2.2 上传数据</h3><p>板子<strong>上传</strong>数据或指令到野火PID助手</p>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>指令</th>
+<th>参数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标值</td>
+<td><strong>0x01</strong></td>
+<td>1个int</td>
+</tr>
+<tr>
+<td>实际值</td>
+<td><strong>0x02</strong></td>
+<td>1个int</td>
+</tr>
+<tr>
+<td>PID</td>
+<td><strong>0x03</strong></td>
+<td>3个float</td>
+</tr>
+<tr>
+<td>启动</td>
+<td><strong>0x04</strong></td>
+<td>无</td>
+</tr>
+<tr>
+<td>停止</td>
+<td><strong>0x05</strong></td>
+<td>无</td>
+</tr>
+<tr>
+<td>周期</td>
+<td><strong>0x06</strong></td>
+<td>1个uint</td>
+</tr>
+</tbody></table>
+<h1 id="2-数据实测与分析"><a href="#2-数据实测与分析" class="headerlink" title="2 数据实测与分析"></a>2 数据实测与分析</h1><h2 id="2-1-实测下发的数据"><a href="#2-1-实测下发的数据" class="headerlink" title="2.1 实测下发的数据"></a>2.1 实测下发的数据</h2><p>测试数据的下发，可以只使用一个电脑进行测试，通过虚拟串口，分别连接野火PID助手和另一个串口助手软件，<strong>通过野火PID助手向另一个串口助手发送数据</strong>，以Hex方式显示接收的数据，并观察数据的格式。</p>
+<h3 id="2-1-1-下发启动-0x12-停止-0x13-复位-0x14"><a href="#2-1-1-下发启动-0x12-停止-0x13-复位-0x14" class="headerlink" title="2.1.1 下发启动(0x12) 停止(0x13) 复位(0x14)"></a>2.1.1 下发启动(0x12) 停止(0x13) 复位(0x14)</h3><p>这3个是指令，没有数据参数，数据长度为0x0B，也就是11个byte</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>包头</th>
+<th>通道</th>
+<th>包长度</th>
+<th>指令</th>
+<th>校验</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0B 00 00 00</td>
+<td><strong>12</strong></td>
+<td>6C</td>
+</tr>
+<tr>
+<td>停止</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0B 00 00 00</td>
+<td><strong>13</strong></td>
+<td>6D</td>
+</tr>
+<tr>
+<td>复位</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0B 00 00 00</td>
+<td><strong>14</strong></td>
+<td>6E</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/com/3.png"></p>
+<h3 id="2-1-2-下发目标值-0x11-周期-0x15"><a href="#2-1-2-下发目标值-0x11-周期-0x15" class="headerlink" title="2.1.2 下发目标值(0x11) 周期(0x15)"></a>2.1.2 下发目标值(0x11) 周期(0x15)</h3><p>这2个指令，带有1byte数据，数据长度为0x0F，也就是15个byte</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>包头</th>
+<th>通道</th>
+<th>包长度</th>
+<th>指令</th>
+<th>参数（数据）</th>
+<th>校验</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标值</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0F 00 00 00</td>
+<td><strong>11</strong></td>
+<td>C8 00 00 00</td>
+<td>37</td>
+</tr>
+<tr>
+<td>周期</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0F 00 00 00</td>
+<td><strong>15</strong></td>
+<td>64 00 00 00</td>
+<td>D7</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/com/4.png"></p>
+<h3 id="2-1-3-下发送PID-0x10"><a href="#2-1-3-下发送PID-0x10" class="headerlink" title="2.1.3 下发送PID(0x10)"></a>2.1.3 下发送PID(0x10)</h3><p>这个指令，带有12byte数据(3个float)，数据长度为0x17，也就是23个byte</p>
+<table>
+<thead>
+<tr>
+<th>包头</th>
+<th>通道</th>
+<th>包长度</th>
+<th>指令</th>
+<th>参数（数据）</th>
+<th>校验</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>17 00 00 00</td>
+<td><strong>10</strong></td>
+<td>9A 99 99 3F  00 00 20 40  9A 99 99 3E</td>
+<td>EB</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/com/5.png"></p>
+<p>注意：这里PID的数据是float型的，在发送时是需要拆分成4个字节的Hex格式发送的，关于float类型数据转为Hex格式的介绍，可参考：<a href="https://xxpcb.gitee.io/2020/06/27/C%E8%AF%AD%E8%A8%80%E5%B0%86float%E6%8B%86%E5%88%86%E4%B8%BA4%E4%B8%AAhex%E4%BC%A0%E8%BE%93%E4%B8%8E%E9%87%8D%E7%BB%84/">C语言将float拆分为4个hex传输与重组</a></p>
+<h2 id="2-2-实测上传数据"><a href="#2-2-实测上传数据" class="headerlink" title="2.2 实测上传数据"></a>2.2 实测上传数据</h2><p>测试数据的上传，需要<strong>将程序下载到板子中，板子通过软件连接电脑上的任意串口调试软件</strong>，以Hex方式显示接收的数据，分析数据的格式。</p>
+<h3 id="2-2-1-上传启动-0x04-停止-0x05-状态"><a href="#2-2-1-上传启动-0x04-停止-0x05-状态" class="headerlink" title="2.2.1 上传启动(0x04)/停止(0x05)状态"></a>2.2.1 上传启动(0x04)/停止(0x05)状态</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>包头</th>
+<th>通道</th>
+<th>包长度</th>
+<th>指令</th>
+<th>校验</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0B 00 00 00</td>
+<td><strong>04</strong></td>
+<td>5E</td>
+</tr>
+<tr>
+<td>停止</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0B 00 00 00</td>
+<td><strong>05</strong></td>
+<td>5F</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-2-上传目标值-0x01-周期值-0x06"><a href="#2-2-2-上传目标值-0x01-周期值-0x06" class="headerlink" title="2.2.2 上传目标值(0x01)/周期值(0x06)"></a>2.2.2 上传目标值(0x01)/周期值(0x06)</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>包头</th>
+<th>通道</th>
+<th>包长度</th>
+<th>指令</th>
+<th>参数（数据）</th>
+<th>校验</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标值</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0F 00 00 00</td>
+<td><strong>01</strong></td>
+<td>70 3A 00 00</td>
+<td>09</td>
+</tr>
+<tr>
+<td>周期</td>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0F 00 00 00</td>
+<td><strong>06</strong></td>
+<td>xx xx xx xx</td>
+<td>xx</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-3-上传PID参数-0x03"><a href="#2-2-3-上传PID参数-0x03" class="headerlink" title="2.2.3 上传PID参数(0x03)"></a>2.2.3 上传PID参数(0x03)</h3><table>
+<thead>
+<tr>
+<th>包头</th>
+<th>通道</th>
+<th>包长度</th>
+<th>指令</th>
+<th>参数（数据）</th>
+<th>校验</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>17 00 00 00</td>
+<td><strong>03</strong></td>
+<td>CD CC 4C 3D  00 00 00 00  00 00 00 00</td>
+<td>8B</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/com/6.png"></p>
+<h3 id="2-2-4-上传实际值-0x02"><a href="#2-2-4-上传实际值-0x02" class="headerlink" title="2.2.4 上传实际值(0x02)"></a>2.2.4 上传实际值(0x02)</h3><p>这里就是将电机的转速和位置值上传到野火PID助手中，用于显示位置曲线或速度曲线。</p>
+<table>
+<thead>
+<tr>
+<th>包头</th>
+<th>通道</th>
+<th>包长度</th>
+<th>指令</th>
+<th>参数（数据）</th>
+<th>校验</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>53 5A 48 59</td>
+<td>01</td>
+<td>0F 00 00 00</td>
+<td><strong>02</strong></td>
+<td>2D 00 00 00</td>
+<td>8D</td>
+</tr>
+</tbody></table>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/PID/com/7.png"></p>
+<h1 id="3-串口收发程序"><a href="#3-串口收发程序" class="headerlink" title="3 串口收发程序"></a>3 串口收发程序</h1><p>再来看一下与串口数据发送与接收相关的主要代码：</p>
+<h2 id="3-1-发送"><a href="#3-1-发送" class="headerlink" title="3.1 发送"></a>3.1 发送</h2><p>按格式组包数据：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * @brief 设置上位机的值</span></span><br><span class="line"><span class="comment">  * @param cmd：命令</span></span><br><span class="line"><span class="comment">  * @param ch: 曲线通道</span></span><br><span class="line"><span class="comment">  * @param data：参数指针</span></span><br><span class="line"><span class="comment">  * @param num：参数个数</span></span><br><span class="line"><span class="comment">  * @retval 无</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">set_computer_value</span><span class="params">(<span class="keyword">uint8_t</span> cmd, <span class="keyword">uint8_t</span> ch, <span class="keyword">void</span> *data, <span class="keyword">uint8_t</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">packet_head_t</span> set_packet;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">uint8_t</span> sum = <span class="number">0</span>;    <span class="comment">// 校验和</span></span><br><span class="line">	num *= <span class="number">4</span>;           <span class="comment">// 一个参数 4 个字节</span></span><br><span class="line"></span><br><span class="line">	set_packet.head = FRAME_HEADER;     <span class="comment">// 包头 0x59485A53</span></span><br><span class="line">	set_packet.ch   = ch;              <span class="comment">// 设置通道</span></span><br><span class="line">	set_packet.len  = <span class="number">0x0B</span> + num;      <span class="comment">// 包长</span></span><br><span class="line">	set_packet.cmd  = cmd;             <span class="comment">// 设置命令</span></span><br><span class="line"></span><br><span class="line">	sum = check_sum(<span class="number">0</span>, (<span class="keyword">uint8_t</span> *)&amp;set_packet, <span class="keyword">sizeof</span>(set_packet));       <span class="comment">// 计算包头校验和</span></span><br><span class="line">	sum = check_sum(sum, (<span class="keyword">uint8_t</span> *)data, num);                           <span class="comment">// 计算参数校验和</span></span><br><span class="line"></span><br><span class="line">	usart1_send((<span class="keyword">uint8_t</span> *)&amp;set_packet, <span class="keyword">sizeof</span>(set_packet));    <span class="comment">// 发送数据头</span></span><br><span class="line">	usart1_send((<span class="keyword">uint8_t</span> *)data, num);                          <span class="comment">// 发送参数</span></span><br><span class="line">	usart1_send((<span class="keyword">uint8_t</span> *)&amp;sum, <span class="keyword">sizeof</span>(sum));                  <span class="comment">// 发送校验和</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将一包数据一个个发送给上位机</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">usart1_send</span><span class="params">(u8*data, u8 len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	u8 i;</span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;len;i++)</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">while</span>(USART_GetFlagStatus(USART1,USART_FLAG_TC)==RESET); </span><br><span class="line">		USART_SendData(USART1,data[i]);   </span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-接收"><a href="#3-2-接收" class="headerlink" title="3.2 接收"></a>3.2 接收</h2><p>使用中断的方式进行串口数据的接收：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="comment">//串口1中断服务程序</span></span><br><span class="line"><span class="comment">//=======================================</span></span><br><span class="line"><span class="keyword">uint8_t</span> Recv1[<span class="number">128</span>]=&#123;<span class="number">0</span>&#125;;<span class="comment">//串口接收缓存</span></span><br><span class="line">u8 rx_cnt=<span class="number">0</span>;<span class="comment">//接收数据个数计数变量</span></span><br><span class="line"><span class="keyword">int</span> sizecopy=<span class="number">128</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">USART1_IRQHandler</span><span class="params">(<span class="keyword">void</span>)</span>                	</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">uint8_t</span> data;<span class="comment">//接收数据暂存变量</span></span><br><span class="line">	<span class="keyword">uint8_t</span> bufcopy[<span class="number">128</span>];<span class="comment">//最多只取前64个数据</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  <span class="comment">//接收中断</span></span><br><span class="line">	&#123;</span><br><span class="line">		data = USART_ReceiveData(USART1);   			</span><br><span class="line">		Recv1[rx_cnt++]=data;<span class="comment">//接收的数据存入接收数组 </span></span><br><span class="line">		USART_ClearITPendingBit(USART1,USART_IT_RXNE);</span><br><span class="line">	&#125; </span><br><span class="line">	</span><br><span class="line">	<span class="keyword">if</span>(USART_GetITStatus(USART1, USART_IT_IDLE) != RESET)<span class="comment">//空闲中断</span></span><br><span class="line">	&#123;</span><br><span class="line">		data = USART1-&gt;SR;<span class="comment">//串口空闲中断的中断标志只能通过先读SR寄存器，再读DR寄存器清除！</span></span><br><span class="line">		data = USART1-&gt;DR;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">//清空本地接收数组</span></span><br><span class="line">		<span class="built_in">memset</span>(bufcopy,<span class="number">0</span>,sizecopy);</span><br><span class="line">		<span class="built_in">memcpy</span>(bufcopy,Recv1,rx_cnt);<span class="comment">//有几个复制几个</span></span><br><span class="line">		protocol_data_recv(bufcopy, rx_cnt);</span><br><span class="line">		<span class="built_in">memset</span>(Recv1,<span class="number">0</span>,sizecopy);</span><br><span class="line">		rx_cnt=<span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>接收之后的数据保存在串口接收缓存Recv1数组中，然后再根据协议格式解析数据即可。</p>
+<h1 id="4-总结"><a href="#4-总结" class="headerlink" title="4 总结"></a>4 总结</h1><p>本篇介绍的野火PID助手的串口协议格式，包括下发的数据格式和上传的数据格式，并通过实际获取串口数据的Hex格式数据，与协议的定义进行对比分析，使得能够更加的理解串口数据的格式。</p>
+<p>如果遇到野火PID助手下发指令板子没反应，或板子上传数据PID数据无法显示曲线，这时就要先<strong>排查一下串口数据的格式是否正确</strong>，若不正确，就要看下自己程序中的串口收发函数编写的是否正确，只有串口数据符合了规定的协议格式，才能正确的进行数据通信。</p>
+<p>如果串口数据格式正常，电机还不转，就要<strong>排查硬件接线是否正常</strong>以及是否要<strong>根据自己的电机编码器参数来修改程序中的参数</strong>。</p>
+</article><div><div style="text-align:center;color: #ccc;font-size:14px;font-family: cursive;">-------------&#x7EB8;&#x77ED;&#x60C5;&#x957F; <i class="fa fa-umbrella"></i> &#x4E0B;&#x6B21;&#x518D;&#x89C1;-------------</div></div><div id="wechat_subscriber"><center><img id="wechat_subscriber_qcode" src="undefined" onerror="onerror=null;src='https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/hexo/wxgzh.png'" alt="码农爱学习"></center><div>关注微信公众号，获取更多精彩~</div></div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">xxpcb</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://xxpcb.gitee.io/2022/04/05/%E7%94%B5%E6%9C%BAPID%E6%8E%A7%E5%88%B6%E8%A1%A5%E5%85%85%E7%AF%87-%E9%87%8E%E7%81%AB%E4%B8%8A%E4%BD%8D%E6%9C%BA%E4%B8%B2%E5%8F%A3%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D/">http://xxpcb.gitee.io/2022/04/05/%E7%94%B5%E6%9C%BAPID%E6%8E%A7%E5%88%B6%E8%A1%A5%E5%85%85%E7%AF%87-%E9%87%8E%E7%81%AB%E4%B8%8A%E4%BD%8D%E6%9C%BA%E4%B8%B2%E5%8F%A3%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://xxpcb.gitee.io" target="_blank">码农爱学习的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%94%B5%E6%9C%BA/">电机</a><a class="post-meta__tags" href="/tags/%E9%87%8E%E7%81%AB%E4%B8%8A%E4%BD%8D%E6%9C%BA/">野火上位机</a></div><div class="post_share"><div class="social-share" data-image="/../img/mot-pid/uart.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/04/05/STM32%E7%A7%BB%E6%A4%8DU8g2%E5%9B%BE%E5%BD%A2%E5%BA%93-%E7%8E%A9%E8%BD%ACOLED%E6%98%BE%E7%A4%BA/"><img class="prev-cover" src="/../img/stm32/1-u8g2.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">STM32移植U8g2图形库--玩转OLED显示</div></div></a></div><div class="next-post pull-right"><a href="/2022/03/20/%E3%80%90%E5%AE%9E%E4%BE%8B%E6%BC%94%E7%A4%BA%E3%80%91ESP8266-U8g2%E5%BA%93%EF%BC%8C%E7%8E%A9%E8%BD%ACOLED%E6%98%BE%E7%A4%BA/"><img class="next-cover" src="/../img/esp8266/2.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">【实例演示】ESP8266+U8g2库，玩转OLED显示</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/06/15/电机控制进阶1-PID速度控制/" title="电机控制进阶1--PID速度控制"><img class="cover" src="/../img/mot-pid/pid1.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-15</div><div class="title">电机控制进阶1--PID速度控制</div></div></a></div><div><a href="/2021/06/15/电机控制进阶2-PID位置控制/" title="电机控制进阶2--PID位置控制"><img class="cover" src="/../img/mot-pid/pid2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-15</div><div class="title">电机控制进阶2--PID位置控制</div></div></a></div><div><a href="/2021/06/15/电机控制进阶3-PID串级控制（附全套代码下载）/" title="电机控制进阶3--PID串级控制（附全套代码下载）"><img class="cover" src="/../img/mot-pid/pid3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-06-15</div><div class="title">电机控制进阶3--PID串级控制（附全套代码下载）</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/logo.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">xxpcb</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">132</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">91</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">28</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/xxpcb"><i class="fab fa-github"></i><span>Follow Me (gitee)</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xxpcb" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">分享：单片机、嵌入式、ARM、Linux、C/C++、python等技术文章~ <img src="/img/wxgzh-card.png"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#0-%E5%BC%95%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">0 引言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#1-PID%E8%B0%83%E8%AF%95%E5%8A%A9%E6%89%8B%E4%B8%B2%E5%8F%A3%E5%8D%8F%E8%AE%AE%E4%BB%8B%E7%BB%8D"><span class="toc-number">2.</span> <span class="toc-text">1 PID调试助手串口协议介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E6%8C%87%E4%BB%A4%E5%8C%85%E6%A0%BC%E5%BC%8F"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 指令包格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E6%8C%87%E4%BB%A4%E5%88%86%E7%B1%BB"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 指令分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-%E4%B8%8B%E5%8F%91%E6%95%B0%E6%8D%AE"><span class="toc-number">2.2.1.</span> <span class="toc-text">1.2.1 下发数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-%E4%B8%8A%E4%BC%A0%E6%95%B0%E6%8D%AE"><span class="toc-number">2.2.2.</span> <span class="toc-text">1.2.2 上传数据</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E6%95%B0%E6%8D%AE%E5%AE%9E%E6%B5%8B%E4%B8%8E%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">2 数据实测与分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E5%AE%9E%E6%B5%8B%E4%B8%8B%E5%8F%91%E7%9A%84%E6%95%B0%E6%8D%AE"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 实测下发的数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-1-%E4%B8%8B%E5%8F%91%E5%90%AF%E5%8A%A8-0x12-%E5%81%9C%E6%AD%A2-0x13-%E5%A4%8D%E4%BD%8D-0x14"><span class="toc-number">3.1.1.</span> <span class="toc-text">2.1.1 下发启动(0x12) 停止(0x13) 复位(0x14)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-2-%E4%B8%8B%E5%8F%91%E7%9B%AE%E6%A0%87%E5%80%BC-0x11-%E5%91%A8%E6%9C%9F-0x15"><span class="toc-number">3.1.2.</span> <span class="toc-text">2.1.2 下发目标值(0x11) 周期(0x15)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-3-%E4%B8%8B%E5%8F%91%E9%80%81PID-0x10"><span class="toc-number">3.1.3.</span> <span class="toc-text">2.1.3 下发送PID(0x10)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E5%AE%9E%E6%B5%8B%E4%B8%8A%E4%BC%A0%E6%95%B0%E6%8D%AE"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 实测上传数据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-1-%E4%B8%8A%E4%BC%A0%E5%90%AF%E5%8A%A8-0x04-%E5%81%9C%E6%AD%A2-0x05-%E7%8A%B6%E6%80%81"><span class="toc-number">3.2.1.</span> <span class="toc-text">2.2.1 上传启动(0x04)&#x2F;停止(0x05)状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-2-%E4%B8%8A%E4%BC%A0%E7%9B%AE%E6%A0%87%E5%80%BC-0x01-%E5%91%A8%E6%9C%9F%E5%80%BC-0x06"><span class="toc-number">3.2.2.</span> <span class="toc-text">2.2.2 上传目标值(0x01)&#x2F;周期值(0x06)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-3-%E4%B8%8A%E4%BC%A0PID%E5%8F%82%E6%95%B0-0x03"><span class="toc-number">3.2.3.</span> <span class="toc-text">2.2.3 上传PID参数(0x03)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-4-%E4%B8%8A%E4%BC%A0%E5%AE%9E%E9%99%85%E5%80%BC-0x02"><span class="toc-number">3.2.4.</span> <span class="toc-text">2.2.4 上传实际值(0x02)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E4%B8%B2%E5%8F%A3%E6%94%B6%E5%8F%91%E7%A8%8B%E5%BA%8F"><span class="toc-number">4.</span> <span class="toc-text">3 串口收发程序</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E5%8F%91%E9%80%81"><span class="toc-number">4.1.</span> <span class="toc-text">3.1 发送</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E6%8E%A5%E6%94%B6"><span class="toc-number">4.2.</span> <span class="toc-text">3.2 接收</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E6%80%BB%E7%BB%93"><span class="toc-number">5.</span> <span class="toc-text">4 总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/ESP8266WIFI%E8%BF%9E%E7%BD%91%E6%92%AD%E6%94%BE%E8%A7%86%E9%A2%91/" title="ESP8266WIFI连网播放视频"><img src="/../img/esp8266/4.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ESP8266WIFI连网播放视频"/></a><div class="content"><a class="title" href="/2022/05/31/ESP8266WIFI%E8%BF%9E%E7%BD%91%E6%92%AD%E6%94%BE%E8%A7%86%E9%A2%91/" title="ESP8266WIFI连网播放视频">ESP8266WIFI连网播放视频</a><time datetime="2022-05-30T16:27:10.000Z" title="发表于 2022-05-31 00:27:10">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/ESP8266%E7%AE%80%E6%98%93WIFI%E5%A4%A9%E6%B0%94%E6%97%B6%E9%92%9F/" title="ESP8266简易WIFI天气时钟"><img src="/../img/esp8266/3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ESP8266简易WIFI天气时钟"/></a><div class="content"><a class="title" href="/2022/05/31/ESP8266%E7%AE%80%E6%98%93WIFI%E5%A4%A9%E6%B0%94%E6%97%B6%E9%92%9F/" title="ESP8266简易WIFI天气时钟">ESP8266简易WIFI天气时钟</a><time datetime="2022-05-30T16:26:53.000Z" title="发表于 2022-05-31 00:26:53">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/STM32%E7%AE%80%E6%98%93%E5%A4%9A%E7%BA%A7%E8%8F%9C%E5%8D%95-%E6%95%B0%E7%BB%84%E6%9F%A5%E8%A1%A8%E6%B3%95/" title="STM32简易多级菜单(数组查表法)"><img src="/../img/stm32/3-menu.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32简易多级菜单(数组查表法)"/></a><div class="content"><a class="title" href="/2022/05/31/STM32%E7%AE%80%E6%98%93%E5%A4%9A%E7%BA%A7%E8%8F%9C%E5%8D%95-%E6%95%B0%E7%BB%84%E6%9F%A5%E8%A1%A8%E6%B3%95/" title="STM32简易多级菜单(数组查表法)">STM32简易多级菜单(数组查表法)</a><time datetime="2022-05-30T16:17:50.000Z" title="发表于 2022-05-31 00:17:50">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/05/STM32%E5%A4%96%E6%8E%A5DHT11%E6%98%BE%E7%A4%BA%E6%B8%A9%E6%B9%BF%E5%BA%A6/" title="STM32外接DHT11显示温湿度"><img src="/../img/stm32/2-dht11.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32外接DHT11显示温湿度"/></a><div class="content"><a class="title" href="/2022/04/05/STM32%E5%A4%96%E6%8E%A5DHT11%E6%98%BE%E7%A4%BA%E6%B8%A9%E6%B9%BF%E5%BA%A6/" title="STM32外接DHT11显示温湿度">STM32外接DHT11显示温湿度</a><time datetime="2022-04-05T03:26:36.000Z" title="发表于 2022-04-05 11:26:36">2022-04-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/05/STM32%E7%A7%BB%E6%A4%8DU8g2%E5%9B%BE%E5%BD%A2%E5%BA%93-%E7%8E%A9%E8%BD%ACOLED%E6%98%BE%E7%A4%BA/" title="STM32移植U8g2图形库--玩转OLED显示"><img src="/../img/stm32/1-u8g2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32移植U8g2图形库--玩转OLED显示"/></a><div class="content"><a class="title" href="/2022/04/05/STM32%E7%A7%BB%E6%A4%8DU8g2%E5%9B%BE%E5%BD%A2%E5%BA%93-%E7%8E%A9%E8%BD%ACOLED%E6%98%BE%E7%A4%BA/" title="STM32移植U8g2图形库--玩转OLED显示">STM32移植U8g2图形库--玩转OLED显示</a><time datetime="2022-04-05T03:26:06.000Z" title="发表于 2022-04-05 11:26:06">2022-04-05</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/../img/mot-pid/uart.png')"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2022 By xxpcb</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'P6iS1Ip0yj2xKyDmnnT8mMrk-gzGzoHsz',
+      appKey: 'bHIkuKIeQSpeQgKoE3vtEYKs',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'en',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script></div></body></html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>makefile使用基础 | 码农爱学习的博客</title><meta name="keywords" content="Linux,makefile"><meta name="author" content="xxpcb"><meta name="copyright" content="xxpcb"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="makefile就像一个Bash脚本，其中也可以执行操作系统的命令。makefile带来的好处就是——“自动化编译”，一旦写好，只需要一个make命令，整个工程完全自动编译，极大的提高了软件开发的效率。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="makefile使用基础">
+<meta property="og:url" content="http://xxpcb.gitee.io/2019/11/12/makefile%E4%BD%BF%E7%94%A8%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="码农爱学习的博客">
+<meta property="og:description" content="makefile就像一个Bash脚本，其中也可以执行操作系统的命令。makefile带来的好处就是——“自动化编译”，一旦写好，只需要一个make命令，整个工程完全自动编译，极大的提高了软件开发的效率。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://xxpcb.gitee.io/img/default-cover.png">
+<meta property="article:published_time" content="2019-11-12T02:32:44.000Z">
+<meta property="article:modified_time" content="2019-11-12T02:35:15.723Z">
+<meta property="article:author" content="xxpcb">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="makefile">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://xxpcb.gitee.io/img/default-cover.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://xxpcb.gitee.io/2019/11/12/makefile%E4%BD%BF%E7%94%A8%E5%9F%BA%E7%A1%80/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9"; //- "https://hm.baidu.com/hm.js?true";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script type="text/javascript">document.write(unescape("%3Cspan style='display:none;' id='cnzz_stat_icon_1277776467'%3E%3C/span%3E%3Cscript src='https://s23.cnzz.com/z_stat.php%3Fid%3D1277776467%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));</script><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'makefile使用基础',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2019-11-12 10:35:15'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/logo.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">132</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">91</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">28</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/default-cover.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">码农爱学习的博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">makefile使用基础</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-11-12T02:32:44.000Z" title="发表于 2019-11-12 10:32:44">2019-11-12</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2019-11-12T02:35:15.723Z" title="更新于 2019-11-12 10:35:15">2019-11-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Linux/">Linux</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p><strong>makefile就像一个Bash脚本</strong>，其中也可以执行操作系统的命令。makefile带来的好处就是——“<strong>自动化编译</strong>”，一旦写好，只需要一个make命令，整个工程完全自动编译，极大的提高了软件开发的效率。</p>
+<span id="more"></span>
+
+<h1 id="例子源码"><a href="#例子源码" class="headerlink" title="例子源码"></a>例子源码</h1><p>sin_value.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> pi 3.14159</span></span><br><span class="line"><span class="keyword">float</span> angle;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sin_value</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">float</span> value;</span><br><span class="line">    value = <span class="built_in">sin</span> ( angle / <span class="number">180.</span> * pi );</span><br><span class="line">    <span class="built_in">printf</span> (<span class="string">&quot;\nThe Sin is: %5.2f\n&quot;</span>,value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>cos_value.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> pi 3.14159</span></span><br><span class="line"><span class="keyword">float</span> angle;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">cos_value</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">float</span> value;</span><br><span class="line">    value = <span class="built_in">cos</span> ( angle / <span class="number">180.</span> * pi );</span><br><span class="line">    <span class="built_in">printf</span> (<span class="string">&quot;The Cos is: %5.2f\n&quot;</span>,value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>haha.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">haha</span><span class="params">(<span class="keyword">char</span> name[<span class="number">15</span>])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span> (<span class="string">&quot;\n\nHi, Dear %s, nice to meet you.&quot;</span>, name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>main.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> pi 3.14159</span></span><br><span class="line"><span class="keyword">char</span> name[<span class="number">15</span>];</span><br><span class="line"><span class="keyword">float</span> angle;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        <span class="built_in">printf</span> (<span class="string">&quot;\n\nPlease input your name: &quot;</span>);</span><br><span class="line">        <span class="built_in">scanf</span>  (<span class="string">&quot;%s&quot;</span>, &amp;name );</span><br><span class="line">        <span class="built_in">printf</span> (<span class="string">&quot;\nPlease enter the degree angle (ex&gt; 90): &quot;</span> );</span><br><span class="line">        <span class="built_in">scanf</span>  (<span class="string">&quot;%f&quot;</span>, &amp;angle );</span><br><span class="line">        haha( name );</span><br><span class="line">        sin_value( angle );</span><br><span class="line">        cos_value( angle );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>分析4个源文件，main.c需要使用另外3个文件中的函数，并且函数文件又用到了math库。</p>
+<h1 id="手动逐一操作"><a href="#手动逐一操作" class="headerlink" title="手动逐一操作"></a>手动逐一操作</h1><p>下面先用gcc进行编译链接执行：</p>
+<ol>
+<li>编译4个.c源文件，生成对应的.o目标文件。</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -c main.c haha.c sin_value.c cos_value.c</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>再进行链接，注意添加库目录。</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -o main main.o haha.o sin_value.o cos_value.o -lm -L/usr/lib -L/lib</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>测试。</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./main</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Please input your name: xxpcb</span><br><span class="line">Please enter the degree angle (ex&gt; 90): 30</span><br><span class="line">Hi, Dear xxpcb, nice to meet you.</span><br><span class="line">The Sin is:  0.50</span><br><span class="line">The Cos is:  0.87</span><br></pre></td></tr></table></figure>
+
+<h1 id="使用makefile"><a href="#使用makefile" class="headerlink" title="使用makefile"></a>使用makefile</h1><h2 id="创建一个makefile"><a href="#创建一个makefile" class="headerlink" title="创建一个makefile"></a>创建一个makefile</h2><p><code>vim makefile</code>，文件并编辑如下：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">main: main.o haha.o sin_value.o cos_value.o</span></span><br><span class="line">		gcc -o main main.o haha.o sin_value.o cos_value.o -lm</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>注意：第2行的开头的空格是<Tab>键。</p>
+<h2 id="使用编解的makefile进行自动编译"><a href="#使用编解的makefile进行自动编译" class="headerlink" title="使用编解的makefile进行自动编译"></a>使用编解的makefile进行自动编译</h2><p>编译器前先清除之前生成的文件，再使用<strong>make</strong>命令编译：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">rm -f main *.o</span><br><span class="line">make</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>此时已经生成生成完毕了。</p>
+<h2 id="尝试再次使用make编译"><a href="#尝试再次使用make编译" class="headerlink" title="尝试再次使用make编译"></a>尝试再次使用<strong>make</strong>编译</h2><p>查看效果：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make: &#x27;main&#x27; is up to date.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到，由于程序没有修改过，因而没有重新编译，只是进行更新操作。</p>
+<h1 id="完善makefile"><a href="#完善makefile" class="headerlink" title="完善makefile"></a>完善makefile</h1><h2 id="添加clean功能"><a href="#添加clean功能" class="headerlink" title="添加clean功能"></a>添加clean功能</h2><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">main: main.o haha.o sin_value.o cos_value.o</span></span><br><span class="line">		gcc -o main main.o haha.o sin_value.o cos_value.o -lm</span><br><span class="line"><span class="section">clean: </span></span><br><span class="line">		rm -f main main.o haha.o sin_value.o cos_value.o</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>此时，makefile里有两个目标：<strong>main</strong>与<strong>clean</strong>，使用<code>make clean</code>命令即可自动清除之前生成的文件，使用<code>make main</code>或<code>make</code>命令即可重新编译，也可以连起来使用<code>make clean main</code>命令实现先清除再编译。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make clean main</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">rm -f main main.o haha.o sin_value.o cos_value.o</span><br><span class="line">cc    -c -o main.o main.c</span><br><span class="line">cc    -c -o haha.o haha.c</span><br><span class="line">cc    -c -o sin_value.o sin_value.c</span><br><span class="line">cc    -c -o cos_value.o cos_value.c</span><br><span class="line">gcc -o main main.o haha.o sin_value.o cos_value.o -lm</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="使用变量简化makefile"><a href="#使用变量简化makefile" class="headerlink" title="使用变量简化makefile"></a>使用变量简化makefile</h2><figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">LIBS = -lm</span><br><span class="line">OBJS = main.o haha.o sin_value.o cos_value.o</span><br><span class="line"><span class="section">main: $&#123;OBJS&#125;</span></span><br><span class="line">		gcc -o <span class="variable">$@</span> $&#123;OBJS&#125; $&#123;LIBS&#125;</span><br><span class="line"><span class="section">clean: </span></span><br><span class="line">		rm -f main $&#123;OBJS&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：makefile中的变量与bash中的变量，语法稍有不同，makefile变量的基本语法为：</p>
+<ul>
+<li>变量之间用 <code>=</code>  隔开，且 <code>=</code> 两侧<strong>可以</strong>有空格</li>
+<li>变量左边<strong>不可以</strong>有<Tab>键空格</li>
+<li>习惯上变量以<strong>大写字母</strong></li>
+<li>引用变量使用大括号或括号，如**${变量}<strong>或</strong>$(变量)**</li>
+<li>**$@**表示当前的目标</li>
+</ul>
+<h2 id="关于CFLAGS"><a href="#关于CFLAGS" class="headerlink" title="关于CFLAGS"></a>关于CFLAGS</h2><ul>
+<li>命令行时输入</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CFLAGS=<span class="string">&quot;-Wall&quot;</span> make clean main</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>makefile文件中添加’</li>
+</ul>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LIBS = -lm</span><br><span class="line">OBJS = main.o haha.o sin_value.o cos_value.o</span><br><span class="line">CFLAGS=<span class="string">&quot;-Wall&quot;</span></span><br><span class="line"><span class="section">main: $&#123;OBJS&#125;</span></span><br><span class="line">		gcc -o <span class="variable">$@</span> $&#123;OBJS&#125; $&#123;LIBS&#125;</span><br><span class="line"><span class="section">clean: </span></span><br><span class="line">		rm -f main $&#123;OBJS&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用shell默认的环境变量</li>
+</ul>
+<p>命令行中指定的CFLAGS优先级最高，然后是makefile文件中指明的CFLAGS，如果前两种都未指明CFLAGS，则使用shell默认的环境变量。</p>
+<p>参考：<a target="_blank" rel="noopener" href="https://item.jd.com/10064429.html">《鸟哥的Linux私房菜 （基础学习篇 第三版）》</a></p>
+</article><div><div style="text-align:center;color: #ccc;font-size:14px;font-family: cursive;">-------------&#x7EB8;&#x77ED;&#x60C5;&#x957F; <i class="fa fa-umbrella"></i> &#x4E0B;&#x6B21;&#x518D;&#x89C1;-------------</div></div><div id="wechat_subscriber"><center><img id="wechat_subscriber_qcode" src="undefined" onerror="onerror=null;src='https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/hexo/wxgzh.png'" alt="码农爱学习"></center><div>关注微信公众号，获取更多精彩~</div></div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">xxpcb</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://xxpcb.gitee.io/2019/11/12/makefile%E4%BD%BF%E7%94%A8%E5%9F%BA%E7%A1%80/">http://xxpcb.gitee.io/2019/11/12/makefile%E4%BD%BF%E7%94%A8%E5%9F%BA%E7%A1%80/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://xxpcb.gitee.io" target="_blank">码农爱学习的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a><a class="post-meta__tags" href="/tags/makefile/">makefile</a></div><div class="post_share"><div class="social-share" data-image="/img/default-cover.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2019/11/16/IP%E5%9C%B0%E5%9D%80%E4%B8%8E%E5%AD%90%E7%BD%91%E5%88%92%E5%88%86/"><img class="prev-cover" src="/img/default-cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">IP地址与子网划分</div></div></a></div><div class="next-post pull-right"><a href="/2019/11/12/gcc%E4%BD%BF%E7%94%A8%E5%9F%BA%E7%A1%80/"><img class="next-cover" src="/img/default-cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">gcc使用基础</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2019/11/10/Bash基础（一）/" title="Bash基础（一）"><img class="cover" src="/img/default-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-11-10</div><div class="title">Bash基础（一）</div></div></a></div><div><a href="/2019/11/11/Bash基础（二）/" title="Bash基础（二）"><img class="cover" src="/img/default-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-11-11</div><div class="title">Bash基础（二）</div></div></a></div><div><a href="/2019/12/03/LinuxGDB调试/" title="LinuxGDB调试"><img class="cover" src="/img/default-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-12-03</div><div class="title">LinuxGDB调试</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/logo.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">xxpcb</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">132</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">91</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">28</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/xxpcb"><i class="fab fa-github"></i><span>Follow Me (gitee)</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xxpcb" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">分享：单片机、嵌入式、ARM、Linux、C/C++、python等技术文章~ <img src="/img/wxgzh-card.png"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BE%8B%E5%AD%90%E6%BA%90%E7%A0%81"><span class="toc-number">1.</span> <span class="toc-text">例子源码</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%89%8B%E5%8A%A8%E9%80%90%E4%B8%80%E6%93%8D%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">手动逐一操作</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8makefile"><span class="toc-number">3.</span> <span class="toc-text">使用makefile</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AAmakefile"><span class="toc-number">3.1.</span> <span class="toc-text">创建一个makefile</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%BC%96%E8%A7%A3%E7%9A%84makefile%E8%BF%9B%E8%A1%8C%E8%87%AA%E5%8A%A8%E7%BC%96%E8%AF%91"><span class="toc-number">3.2.</span> <span class="toc-text">使用编解的makefile进行自动编译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%9D%E8%AF%95%E5%86%8D%E6%AC%A1%E4%BD%BF%E7%94%A8make%E7%BC%96%E8%AF%91"><span class="toc-number">3.3.</span> <span class="toc-text">尝试再次使用make编译</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%8C%E5%96%84makefile"><span class="toc-number">4.</span> <span class="toc-text">完善makefile</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0clean%E5%8A%9F%E8%83%BD"><span class="toc-number">4.1.</span> <span class="toc-text">添加clean功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%8F%98%E9%87%8F%E7%AE%80%E5%8C%96makefile"><span class="toc-number">4.2.</span> <span class="toc-text">使用变量简化makefile</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8ECFLAGS"><span class="toc-number">4.3.</span> <span class="toc-text">关于CFLAGS</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/ESP8266WIFI%E8%BF%9E%E7%BD%91%E6%92%AD%E6%94%BE%E8%A7%86%E9%A2%91/" title="ESP8266WIFI连网播放视频"><img src="/../img/esp8266/4.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ESP8266WIFI连网播放视频"/></a><div class="content"><a class="title" href="/2022/05/31/ESP8266WIFI%E8%BF%9E%E7%BD%91%E6%92%AD%E6%94%BE%E8%A7%86%E9%A2%91/" title="ESP8266WIFI连网播放视频">ESP8266WIFI连网播放视频</a><time datetime="2022-05-30T16:27:10.000Z" title="发表于 2022-05-31 00:27:10">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/ESP8266%E7%AE%80%E6%98%93WIFI%E5%A4%A9%E6%B0%94%E6%97%B6%E9%92%9F/" title="ESP8266简易WIFI天气时钟"><img src="/../img/esp8266/3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ESP8266简易WIFI天气时钟"/></a><div class="content"><a class="title" href="/2022/05/31/ESP8266%E7%AE%80%E6%98%93WIFI%E5%A4%A9%E6%B0%94%E6%97%B6%E9%92%9F/" title="ESP8266简易WIFI天气时钟">ESP8266简易WIFI天气时钟</a><time datetime="2022-05-30T16:26:53.000Z" title="发表于 2022-05-31 00:26:53">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/STM32%E7%AE%80%E6%98%93%E5%A4%9A%E7%BA%A7%E8%8F%9C%E5%8D%95-%E6%95%B0%E7%BB%84%E6%9F%A5%E8%A1%A8%E6%B3%95/" title="STM32简易多级菜单(数组查表法)"><img src="/../img/stm32/3-menu.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32简易多级菜单(数组查表法)"/></a><div class="content"><a class="title" href="/2022/05/31/STM32%E7%AE%80%E6%98%93%E5%A4%9A%E7%BA%A7%E8%8F%9C%E5%8D%95-%E6%95%B0%E7%BB%84%E6%9F%A5%E8%A1%A8%E6%B3%95/" title="STM32简易多级菜单(数组查表法)">STM32简易多级菜单(数组查表法)</a><time datetime="2022-05-30T16:17:50.000Z" title="发表于 2022-05-31 00:17:50">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/05/STM32%E5%A4%96%E6%8E%A5DHT11%E6%98%BE%E7%A4%BA%E6%B8%A9%E6%B9%BF%E5%BA%A6/" title="STM32外接DHT11显示温湿度"><img src="/../img/stm32/2-dht11.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32外接DHT11显示温湿度"/></a><div class="content"><a class="title" href="/2022/04/05/STM32%E5%A4%96%E6%8E%A5DHT11%E6%98%BE%E7%A4%BA%E6%B8%A9%E6%B9%BF%E5%BA%A6/" title="STM32外接DHT11显示温湿度">STM32外接DHT11显示温湿度</a><time datetime="2022-04-05T03:26:36.000Z" title="发表于 2022-04-05 11:26:36">2022-04-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/05/STM32%E7%A7%BB%E6%A4%8DU8g2%E5%9B%BE%E5%BD%A2%E5%BA%93-%E7%8E%A9%E8%BD%ACOLED%E6%98%BE%E7%A4%BA/" title="STM32移植U8g2图形库--玩转OLED显示"><img src="/../img/stm32/1-u8g2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32移植U8g2图形库--玩转OLED显示"/></a><div class="content"><a class="title" href="/2022/04/05/STM32%E7%A7%BB%E6%A4%8DU8g2%E5%9B%BE%E5%BD%A2%E5%BA%93-%E7%8E%A9%E8%BD%ACOLED%E6%98%BE%E7%A4%BA/" title="STM32移植U8g2图形库--玩转OLED显示">STM32移植U8g2图形库--玩转OLED显示</a><time datetime="2022-04-05T03:26:06.000Z" title="发表于 2022-04-05 11:26:06">2022-04-05</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/default-cover.png')"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2022 By xxpcb</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'P6iS1Ip0yj2xKyDmnnT8mMrk-gzGzoHsz',
+      appKey: 'bHIkuKIeQSpeQgKoE3vtEYKs',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'en',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script></div></body></html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>单片机程序烧录的3种方式ISP-ICP-IAP是什么 | 码农爱学习的博客</title><meta name="keywords" content="单片机,程序烧录"><meta name="author" content="xxpcb"><meta name="copyright" content="xxpcb"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="说起给单片机烧录程序，大家应该都不陌生吧，我最早接触单片机是从51单片机开始的，型号是STC89C52RC，当时烧录程序就是用的下面这种烧录软件——STC-ISP。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单片机程序烧录的3种方式ISP-ICP-IAP是什么">
+<meta property="og:url" content="http://xxpcb.gitee.io/2021/05/03/%E5%8D%95%E7%89%87%E6%9C%BA%E7%A8%8B%E5%BA%8F%E7%83%A7%E5%BD%95%E7%9A%843%E7%A7%8D%E6%96%B9%E5%BC%8FISP-ICP-IAP%E6%98%AF%E4%BB%80%E4%B9%88/index.html">
+<meta property="og:site_name" content="码农爱学习的博客">
+<meta property="og:description" content="说起给单片机烧录程序，大家应该都不陌生吧，我最早接触单片机是从51单片机开始的，型号是STC89C52RC，当时烧录程序就是用的下面这种烧录软件——STC-ISP。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://xxpcb.gitee.io/img/default-cover.png">
+<meta property="article:published_time" content="2021-05-03T04:50:16.000Z">
+<meta property="article:modified_time" content="2021-05-03T04:51:11.569Z">
+<meta property="article:author" content="xxpcb">
+<meta property="article:tag" content="单片机">
+<meta property="article:tag" content="程序烧录">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://xxpcb.gitee.io/img/default-cover.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://xxpcb.gitee.io/2021/05/03/%E5%8D%95%E7%89%87%E6%9C%BA%E7%A8%8B%E5%BA%8F%E7%83%A7%E5%BD%95%E7%9A%843%E7%A7%8D%E6%96%B9%E5%BC%8FISP-ICP-IAP%E6%98%AF%E4%BB%80%E4%B9%88/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9"; //- "https://hm.baidu.com/hm.js?true";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script type="text/javascript">document.write(unescape("%3Cspan style='display:none;' id='cnzz_stat_icon_1277776467'%3E%3C/span%3E%3Cscript src='https://s23.cnzz.com/z_stat.php%3Fid%3D1277776467%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));</script><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '单片机程序烧录的3种方式ISP-ICP-IAP是什么',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-05-03 12:51:11'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/logo.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">132</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">91</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">28</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/default-cover.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">码农爱学习的博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">单片机程序烧录的3种方式ISP-ICP-IAP是什么</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-05-03T04:50:16.000Z" title="发表于 2021-05-03 12:50:16">2021-05-03</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-05-03T04:51:11.569Z" title="更新于 2021-05-03 12:51:11">2021-05-03</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%8D%95%E7%89%87%E6%9C%BA/">单片机</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>说起给单片机烧录程序，大家应该都不陌生吧，我最早接触单片机是从51单片机开始的，型号是STC89C52RC，当时烧录程序就是用的下面这种烧录软件——STC-ISP。</p>
+<span id="more"></span>
+
+<p>这种方式，通过<strong>串口</strong>连接单片机，选择一个合适的波特率就可以烧录了。</p>
+<p>后来学习STM32，编程时使用KEIL软件自带的下载按钮就能下载程序，方便了不少，但需要额外使用<strong>J-Link</strong>等下载器。</p>
+<p>再后来，接触到产品研发，给已经发布出的产品升级，都是要靠远程<strong>无线升级</strong>的（想想看，产品已经到客户那里了，当软件需要升级时，要是还使用有线的方式烧录程序，得有多麻烦）<img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IAP/iap-stcisp.png"></p>
+<p>既然给单片机烧录程序的方式有多种，那烧录方式具体怎么分类呢？</p>
+<p>可以分为3种：</p>
+<ul>
+<li><p>ISP（In-System Programming）</p>
+<p>在系统编程，使用引导程序（Bootloader）加上外围<strong>UART/SPI等接口</strong>进行烧录。</p>
+</li>
+<li><p>ICP （In-circuit programmer）</p>
+<p>在电路编程，使用<strong>SWD/JTAG接口</strong>。</p>
+</li>
+<li><p>IAP（In-Application Programming） </p>
+<p>指MCU可以在系统中获取新代码并对自己重新编程，即<strong>用程序来改变程序</strong>。</p>
+</li>
+</ul>
+<p>这3种烧录方式的原理是什么呢？在分析原理之前，需要先了解一下单片机Flash的访问地址，看看程序是烧录到哪个位置了。</p>
+<h2 id="单片机Flash在地址映射表中位置"><a href="#单片机Flash在地址映射表中位置" class="headerlink" title="单片机Flash在地址映射表中位置"></a>单片机Flash在地址映射表中位置</h2><p>下图是一张STM32F4xx的地址映射表，从0x0000 0000到0xFFFF FFFF，总计4Gbyte。单片机的片上Flash、片上RAM、片上外设以及外部扩展接口的访问地址，都被映射到这4Gbyte的范围之内。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IAP/iap-memory-map.png"></p>
+<p>这张图中，我们需要先注意下半部分</p>
+<ul>
+<li>Main memory 主存储区</li>
+</ul>
+<p>通常，我们编写的代码，是放到主存储区的起始位置（0x0800 0000）开始运行的，烧录程序时，直接将程序烧录到这里即可（KEIL软件给STM32烧录程序的默认烧写地址就是0x0800 0000开始）</p>
+<ul>
+<li>System memory系统存储区</li>
+</ul>
+<p>System memory（起始位置0x1FFF 000）是STM32在出厂时，由ST在这个区域内部预置了一段BootLoader， 也就是我们常说的ISP程序 ，这是一块ROM，出厂后无法修改。</p>
+<p>了解了程序的具体地址，还要看一下单片机的启动方式：</p>
+<h2 id="启动方式选择"><a href="#启动方式选择" class="headerlink" title="启动方式选择"></a>启动方式选择</h2><p>  STM32有两个BOOT引脚，通过配置不同的高低电平，可以让单片机从不同的地址开始运行。</p>
+<ul>
+<li>BOOT0=0, BOOT1任意</li>
+</ul>
+<p>通常我们是在Main memory 主存储区（0x0800 0000）运行程序，BOOT0引脚拉低即可。</p>
+<p>这种情况，KEIL软件给STM32烧录程序，就是直接在这个地址烧录，烧录完，直接在这个地址处运行。</p>
+<ul>
+<li>BOOT0=1,BOOT1=0</li>
+</ul>
+<p>这种情况就用在使用串口方式给STM32烧录程序，这时单片机从系统存储器（0x1FFF 0000）启动，运行的是出厂预置的BootLoader程序，可以接收串口发来的程序，并将其写入Main memory（0x0800 0000），程序烧录完成后，再将BOOT0引脚拉低，Main memory（0x0800 0000）处运行刚烧录的代码了。</p>
+<ul>
+<li>BOOT0=1,BOOT1=1</li>
+</ul>
+<p>这种情况是从内存中启动，内置SRAM（也就是STM32的内存中），既然是SRAM，自然也就没有程序存储的能力了，这个模式一般用于程序调试。目前我还没用过这种方式，大家平时用这种方式的多么？</p>
+<table>
+<thead>
+<tr>
+<th>BOOT0</th>
+<th>BOOT1</th>
+<th>启动方式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>×</td>
+<td>主闪存存储器</td>
+<td>主闪存存储器被选为启动区域</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>系统存储器</td>
+<td>系统存储器被选为启动区域</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>内置SRAM</td>
+<td>内置SRAM被选为启动区域</td>
+</tr>
+</tbody></table>
+<p>有了上面的了解，再来看一下ISP、ICP和IAP</p>
+<h2 id="ISP（串口烧录）"><a href="#ISP（串口烧录）" class="headerlink" title="ISP（串口烧录）"></a>ISP（串口烧录）</h2><p>特点：</p>
+<ul>
+<li><strong>BOOT0 = 1</strong>，BOOT1 = 0</li>
+<li>启动地址：<strong>0x1FFF0000</strong></li>
+<li>使用串口下载程序</li>
+<li>系统存储器(System memory)启动方式运行内置的Bootloader，将程序写入主存储区</li>
+<li>重启后，需要再将BOOT0拉低，从主存储区启动程序</li>
+</ul>
+<p>下图是ISP方式的烧录，使用FlyMcu这个软件，通过串口给STM32烧录程序</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IAP/iap-flymcu.png"></p>
+<h2 id="ICP（JTAG口烧录）"><a href="#ICP（JTAG口烧录）" class="headerlink" title="ICP（JTAG口烧录）"></a>ICP（JTAG口烧录）</h2><p>特点：</p>
+<ul>
+<li><strong>BOOT0 = 0</strong>，BOOT1 = x</li>
+<li>启动地址：<strong>0x08000000</strong></li>
+<li>使用JTAG或者SWD模式下载程序</li>
+<li>主闪存存储器(Flash memory)启动方式，将程序在主存储区写入</li>
+<li>重启后也直接从这启动程序</li>
+</ul>
+<p>下图是ICP方式的烧录，使用JFlash软件或KEIL，通过J-Link给STM32烧录程序</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IAP/iap-jflash.png"></p>
+<p>KEIL软件的默认下载地址，就是从0x0800 0000 开始的。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IAP/iap-keil.png"></p>
+<h2 id="IAP"><a href="#IAP" class="headerlink" title="IAP"></a>IAP</h2><p>IAP的原理与上面两种有较大区别，这种方式将主存储区又分成了两个区域（根据实际需要由开发者自行分配），0800 0000起始处的这部分，存储一个开发者自己设计的Bootloader程序，另一部分存储真正需要运行的APP程序。</p>
+<p>单片机的Bootloader程序，其主要作用就是给单片机升级。在单片机启动时，首先从Bootloader程序启动，一般情况不需要升级，就会立即从Bootloader程序跳转到存储区另一部分的APP程序开始运行。</p>
+<p>假如Bootloader程序时，需要进行升级（比如APP程序运行时，接收到升级指令，可以在flash中的特定位置设置一个标志，然后触发重启，重启后进入Bootloader程序，Bootloader程序根据标志位就能判断是否需要升级），则会通过某种方式（比如通过WIFI接收升级包，或借助另一块单片机接收升级包，Bootloader再通过串口或SPI等方式从另一块单片机获取升级包数据）先将接收到的程序写入存储区中存储APP程序的那个位置，写入完成后再跳转到该位置，即实现了程序的升级</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic/%E5%8D%95%E7%89%87%E6%9C%BA%E5%B5%8C%E5%85%A5%E5%BC%8F/IAP/iap-iap.png"></p>
+<p>wan</p>
+</article><div><div style="text-align:center;color: #ccc;font-size:14px;font-family: cursive;">-------------&#x7EB8;&#x77ED;&#x60C5;&#x957F; <i class="fa fa-umbrella"></i> &#x4E0B;&#x6B21;&#x518D;&#x89C1;-------------</div></div><div id="wechat_subscriber"><center><img id="wechat_subscriber_qcode" src="undefined" onerror="onerror=null;src='https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/hexo/wxgzh.png'" alt="码农爱学习"></center><div>关注微信公众号，获取更多精彩~</div></div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">xxpcb</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://xxpcb.gitee.io/2021/05/03/%E5%8D%95%E7%89%87%E6%9C%BA%E7%A8%8B%E5%BA%8F%E7%83%A7%E5%BD%95%E7%9A%843%E7%A7%8D%E6%96%B9%E5%BC%8FISP-ICP-IAP%E6%98%AF%E4%BB%80%E4%B9%88/">http://xxpcb.gitee.io/2021/05/03/%E5%8D%95%E7%89%87%E6%9C%BA%E7%A8%8B%E5%BA%8F%E7%83%A7%E5%BD%95%E7%9A%843%E7%A7%8D%E6%96%B9%E5%BC%8FISP-ICP-IAP%E6%98%AF%E4%BB%80%E4%B9%88/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://xxpcb.gitee.io" target="_blank">码农爱学习的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%8D%95%E7%89%87%E6%9C%BA/">单片机</a><a class="post-meta__tags" href="/tags/%E7%A8%8B%E5%BA%8F%E7%83%A7%E5%BD%95/">程序烧录</a></div><div class="post_share"><div class="social-share" data-image="/img/default-cover.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/05/03/C%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C1%EF%BC%9A%E5%A6%82%E4%BD%95%E5%86%99%E5%85%A5%E8%AF%BB%E5%8F%96%EF%BC%9Ffopen%E7%9A%846%E7%A7%8D%E7%BB%84%E5%90%88%E5%8F%82%E6%95%B0%E6%80%8E%E4%B9%88%E7%94%A8%EF%BC%9F/"><img class="prev-cover" src="/img/default-cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">C文件操作1：如何写入读取？fopen的6种组合参数怎么用？</div></div></a></div><div class="next-post pull-right"><a href="/2021/05/03/%E4%BB%8B%E7%BB%8D%E4%B8%80%E6%AC%BE%E5%A5%BD%E7%8E%A9%E4%B8%94%E5%BC%80%E6%BA%90%E7%9A%84%E6%9C%BA%E5%99%A8%E4%BA%BA%E4%BB%BF%E7%9C%9F%E8%BD%AF%E4%BB%B6Webots/"><img class="next-cover" src="/img/default-cover.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">介绍一款好玩且开源的机器人仿真软件Webots</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/logo.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">xxpcb</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">132</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">91</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">28</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/xxpcb"><i class="fab fa-github"></i><span>Follow Me (gitee)</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xxpcb" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">分享：单片机、嵌入式、ARM、Linux、C/C++、python等技术文章~ <img src="/img/wxgzh-card.png"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E7%89%87%E6%9C%BAFlash%E5%9C%A8%E5%9C%B0%E5%9D%80%E6%98%A0%E5%B0%84%E8%A1%A8%E4%B8%AD%E4%BD%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">单片机Flash在地址映射表中位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%96%B9%E5%BC%8F%E9%80%89%E6%8B%A9"><span class="toc-number">2.</span> <span class="toc-text">启动方式选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ISP%EF%BC%88%E4%B8%B2%E5%8F%A3%E7%83%A7%E5%BD%95%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">ISP（串口烧录）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ICP%EF%BC%88JTAG%E5%8F%A3%E7%83%A7%E5%BD%95%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">ICP（JTAG口烧录）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IAP"><span class="toc-number">5.</span> <span class="toc-text">IAP</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/ESP8266WIFI%E8%BF%9E%E7%BD%91%E6%92%AD%E6%94%BE%E8%A7%86%E9%A2%91/" title="ESP8266WIFI连网播放视频"><img src="/../img/esp8266/4.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ESP8266WIFI连网播放视频"/></a><div class="content"><a class="title" href="/2022/05/31/ESP8266WIFI%E8%BF%9E%E7%BD%91%E6%92%AD%E6%94%BE%E8%A7%86%E9%A2%91/" title="ESP8266WIFI连网播放视频">ESP8266WIFI连网播放视频</a><time datetime="2022-05-30T16:27:10.000Z" title="发表于 2022-05-31 00:27:10">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/ESP8266%E7%AE%80%E6%98%93WIFI%E5%A4%A9%E6%B0%94%E6%97%B6%E9%92%9F/" title="ESP8266简易WIFI天气时钟"><img src="/../img/esp8266/3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="ESP8266简易WIFI天气时钟"/></a><div class="content"><a class="title" href="/2022/05/31/ESP8266%E7%AE%80%E6%98%93WIFI%E5%A4%A9%E6%B0%94%E6%97%B6%E9%92%9F/" title="ESP8266简易WIFI天气时钟">ESP8266简易WIFI天气时钟</a><time datetime="2022-05-30T16:26:53.000Z" title="发表于 2022-05-31 00:26:53">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/05/31/STM32%E7%AE%80%E6%98%93%E5%A4%9A%E7%BA%A7%E8%8F%9C%E5%8D%95-%E6%95%B0%E7%BB%84%E6%9F%A5%E8%A1%A8%E6%B3%95/" title="STM32简易多级菜单(数组查表法)"><img src="/../img/stm32/3-menu.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32简易多级菜单(数组查表法)"/></a><div class="content"><a class="title" href="/2022/05/31/STM32%E7%AE%80%E6%98%93%E5%A4%9A%E7%BA%A7%E8%8F%9C%E5%8D%95-%E6%95%B0%E7%BB%84%E6%9F%A5%E8%A1%A8%E6%B3%95/" title="STM32简易多级菜单(数组查表法)">STM32简易多级菜单(数组查表法)</a><time datetime="2022-05-30T16:17:50.000Z" title="发表于 2022-05-31 00:17:50">2022-05-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/05/STM32%E5%A4%96%E6%8E%A5DHT11%E6%98%BE%E7%A4%BA%E6%B8%A9%E6%B9%BF%E5%BA%A6/" title="STM32外接DHT11显示温湿度"><img src="/../img/stm32/2-dht11.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32外接DHT11显示温湿度"/></a><div class="content"><a class="title" href="/2022/04/05/STM32%E5%A4%96%E6%8E%A5DHT11%E6%98%BE%E7%A4%BA%E6%B8%A9%E6%B9%BF%E5%BA%A6/" title="STM32外接DHT11显示温湿度">STM32外接DHT11显示温湿度</a><time datetime="2022-04-05T03:26:36.000Z" title="发表于 2022-04-05 11:26:36">2022-04-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/04/05/STM32%E7%A7%BB%E6%A4%8DU8g2%E5%9B%BE%E5%BD%A2%E5%BA%93-%E7%8E%A9%E8%BD%ACOLED%E6%98%BE%E7%A4%BA/" title="STM32移植U8g2图形库--玩转OLED显示"><img src="/../img/stm32/1-u8g2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32移植U8g2图形库--玩转OLED显示"/></a><div class="content"><a class="title" href="/2022/04/05/STM32%E7%A7%BB%E6%A4%8DU8g2%E5%9B%BE%E5%BD%A2%E5%BA%93-%E7%8E%A9%E8%BD%ACOLED%E6%98%BE%E7%A4%BA/" title="STM32移植U8g2图形库--玩转OLED显示">STM32移植U8g2图形库--玩转OLED显示</a><time datetime="2022-04-05T03:26:06.000Z" title="发表于 2022-04-05 11:26:06">2022-04-05</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/default-cover.png')"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2022 By xxpcb</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'P6iS1Ip0yj2xKyDmnnT8mMrk-gzGzoHsz',
+      appKey: 'bHIkuKIeQSpeQgKoE3vtEYKs',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'en',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script></div></body></html>
