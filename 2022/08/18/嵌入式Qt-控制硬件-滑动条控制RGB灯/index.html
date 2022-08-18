@@ -1,0 +1,366 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>嵌入式Qt-控制硬件-滑动条控制RGB灯 | 码农爱学习的博客</title><meta name="keywords" content="Linux,嵌入式,ARM,Qt"><meta name="author" content="xxpcb"><meta name="copyright" content="xxpcb"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前面的几篇文章，介绍Qt例程，都是和硬件无关的，Windows平台和嵌入式平台都能运行。 本篇，来测试一下Qt界面控制嵌入式平台上的硬件，以野火i.MX6ULL板子上的RGB LED为例，实现Qt界面控制3种颜色LED的不同亮度混合显示。 1 设计Qt滑条控制LED界面先来看一下最终设计的界面效果：  有一个按键作为LED的总开关，控制LED的点亮与熄灭。下面的3个滑条，控制3种颜色LED以不同的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="嵌入式Qt-控制硬件-滑动条控制RGB灯">
+<meta property="og:url" content="http://xxpcb.gitee.io/2022/08/18/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E6%8E%A7%E5%88%B6%E7%A1%AC%E4%BB%B6-%E6%BB%91%E5%8A%A8%E6%9D%A1%E6%8E%A7%E5%88%B6RGB%E7%81%AF/index.html">
+<meta property="og:site_name" content="码农爱学习的博客">
+<meta property="og:description" content="前面的几篇文章，介绍Qt例程，都是和硬件无关的，Windows平台和嵌入式平台都能运行。 本篇，来测试一下Qt界面控制嵌入式平台上的硬件，以野火i.MX6ULL板子上的RGB LED为例，实现Qt界面控制3种颜色LED的不同亮度混合显示。 1 设计Qt滑条控制LED界面先来看一下最终设计的界面效果：  有一个按键作为LED的总开关，控制LED的点亮与熄灭。下面的3个滑条，控制3种颜色LED以不同的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://xxpcb.gitee.io/img/imx/qt5.png">
+<meta property="article:published_time" content="2022-08-18T14:47:00.000Z">
+<meta property="article:modified_time" content="2022-08-18T14:47:38.049Z">
+<meta property="article:author" content="xxpcb">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="嵌入式">
+<meta property="article:tag" content="ARM">
+<meta property="article:tag" content="Qt">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://xxpcb.gitee.io/img/imx/qt5.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://xxpcb.gitee.io/2022/08/18/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E6%8E%A7%E5%88%B6%E7%A1%AC%E4%BB%B6-%E6%BB%91%E5%8A%A8%E6%9D%A1%E6%8E%A7%E5%88%B6RGB%E7%81%AF/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//s4.cnzz.com"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?f9c11fefaddf7b7687633a168777f8d9"; //- "https://hm.baidu.com/hm.js?true";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script type="text/javascript">document.write(unescape("%3Cspan style='display:none;' id='cnzz_stat_icon_1277776467'%3E%3C/span%3E%3Cscript src='https://s23.cnzz.com/z_stat.php%3Fid%3D1277776467%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));</script><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '嵌入式Qt-控制硬件-滑动条控制RGB灯',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-08-18 22:47:38'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/logo.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">141</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">93</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">28</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/../img/imx/qt5.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">码农爱学习的博客</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">嵌入式Qt-控制硬件-滑动条控制RGB灯</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-08-18T14:47:00.000Z" title="发表于 2022-08-18 22:47:00">2022-08-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-08-18T14:47:38.049Z" title="更新于 2022-08-18 22:47:38">2022-08-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/i-MX6ULL/">i.MX6ULL</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>前面的几篇文章，介绍Qt例程，都是和硬件无关的，Windows平台和嵌入式平台都能运行。</p>
+<p>本篇，来测试一下<strong>Qt界面控制嵌入式平台上的硬件</strong>，以野火i.MX6ULL板子上的RGB LED为例，实现Qt界面控制3种颜色LED的不同亮度混合显示。</p>
+<h1 id="1-设计Qt滑条控制LED界面"><a href="#1-设计Qt滑条控制LED界面" class="headerlink" title="1 设计Qt滑条控制LED界面"></a>1 设计Qt滑条控制LED界面</h1><p>先来看一下最终设计的界面效果：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/1.png"></p>
+<p>有一个按键作为LED的总开关，控制LED的点亮与熄灭。下面的3个滑条，控制3种颜色LED以不同的亮度点亮。右边是一个颜色混合显示面板，模拟RGB三种颜色的LED以不同亮度点亮后的混合亮度。</p>
+<h2 id="1-1-滑条控件"><a href="#1-1-滑条控件" class="headerlink" title="1.1 滑条控件"></a>1.1 滑条控件</h2><p>Qt Creator的UI设置界面中，有水平滑条和竖直滑条控件，可以直接使用：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/2.png"></p>
+<p>右侧的属性窗户可以设置滑条的取值范围和初始值。</p>
+<h2 id="1-2-控件颜色"><a href="#1-2-控件颜色" class="headerlink" title="1.2 控件颜色"></a>1.2 控件颜色</h2><p>使用<strong>QPalette</strong>可以对界面颜色和控件的颜色进行自定义设置</p>
+<ul>
+<li><strong>QPalete::Window</strong>——通常指窗口部件的背景色</li>
+<li><strong>QPalette::WindowText</strong>——通常指窗口不见的前景色</li>
+<li><strong>QPalette::Base</strong>——底色</li>
+<li><strong>QPalette::Button</strong>——指按钮窗口部件的背景色</li>
+<li><strong>QPalette::ButtonText</strong>——指按钮窗口部件的前景色</li>
+<li><strong>QPalette::Text</strong>——文本输入窗口的前景色</li>
+<li><strong>QPalette::Background</strong>——背景色</li>
+<li><strong>QPalette::Foreground</strong>——前景色(界面中文字的统一颜色)</li>
+</ul>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/3.png"></p>
+<h3 id="界面的颜色"><a href="#界面的颜色" class="headerlink" title="界面的颜色"></a>界面的颜色</h3><p>整个UI界面的颜色可以这样设置：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">QPalette color = <span class="built_in">palette</span>();<span class="comment">//控制窗体颜色</span></span><br><span class="line">color.<span class="built_in">setColor</span>(QPalette::Background, <span class="built_in">QColor</span>(<span class="number">255</span>,<span class="number">255</span>,<span class="number">255</span>));<span class="comment">//背景颜色</span></span><br><span class="line"><span class="comment">//color.setColor(QPalette::Foreground, QColor(0,0,255,255));//前景颜色</span></span><br><span class="line"><span class="built_in">setPalette</span>(color);</span><br></pre></td></tr></table></figure>
+
+<p>这里就是把整个界面的颜色设置为纯白色</p>
+<h3 id="控件的颜色"><a href="#控件的颜色" class="headerlink" title="控件的颜色"></a>控件的颜色</h3><p>例如文本标签控件（<strong>QLabel</strong>）的文字颜色可以这样设置：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">QPalette pal;</span><br><span class="line">pal.<span class="built_in">setColor</span>(QPalette::WindowText,Qt::red);</span><br><span class="line">ui-&gt;label_R-&gt;<span class="built_in">setPalette</span>(pal); <span class="comment">//设置滑条左侧的R字体为红色</span></span><br><span class="line">pal.<span class="built_in">setColor</span>(QPalette::WindowText,Qt::green);</span><br><span class="line">ui-&gt;label_G-&gt;<span class="built_in">setPalette</span>(pal);</span><br><span class="line">pal.<span class="built_in">setColor</span>(QPalette::WindowText,Qt::blue);</span><br><span class="line">ui-&gt;label_B-&gt;<span class="built_in">setPalette</span>(pal);</span><br></pre></td></tr></table></figure>
+
+<p>颜色混合面板控件（<strong>QTextBrowser</strong>）的面板颜色可以这样设置：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">QColor color;</span><br><span class="line"><span class="keyword">int</span> R = ui-&gt;Slider_R-&gt;<span class="built_in">value</span>(); <span class="comment">//读取滑条的当前值</span></span><br><span class="line"><span class="keyword">int</span> G = ui-&gt;Slider_G-&gt;<span class="built_in">value</span>();</span><br><span class="line"><span class="keyword">int</span> B = ui-&gt;Slider_B-&gt;<span class="built_in">value</span>();</span><br><span class="line">color.<span class="built_in">setRgb</span>(R, G, B); <span class="comment">//颜色混合</span></span><br><span class="line">QPalette pal;</span><br><span class="line">pal.<span class="built_in">setColor</span>(QPalette::Base, color);</span><br><span class="line">ui-&gt;textBrowser-&gt;<span class="built_in">setPalette</span>(pal); <span class="comment">//显示到面板上</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-3-滑条UI界面代码编写"><a href="#1-3-滑条UI界面代码编写" class="headerlink" title="1.3 滑条UI界面代码编写"></a>1.3 滑条UI界面代码编写</h2><p>构造函数</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">LedWidget::<span class="built_in">LedWidget</span>(QWidget *parent) :</span><br><span class="line">    <span class="built_in">QWidget</span>(parent),</span><br><span class="line">    <span class="built_in">ui</span>(<span class="keyword">new</span> Ui::LedWidget)</span><br><span class="line">&#123;</span><br><span class="line">    ui-&gt;<span class="built_in">setupUi</span>(<span class="keyword">this</span>);</span><br><span class="line">    ui-&gt;Value_R-&gt;<span class="built_in">setText</span>(QString::<span class="built_in">number</span>(ui-&gt;Slider_R-&gt;<span class="built_in">value</span>()));</span><br><span class="line">    ui-&gt;Value_G-&gt;<span class="built_in">setText</span>(QString::<span class="built_in">number</span>(ui-&gt;Slider_G-&gt;<span class="built_in">value</span>()));</span><br><span class="line">    ui-&gt;Value_B-&gt;<span class="built_in">setText</span>(QString::<span class="built_in">number</span>(ui-&gt;Slider_B-&gt;<span class="built_in">value</span>()));</span><br><span class="line"></span><br><span class="line">    QPalette color = <span class="built_in">palette</span>();<span class="comment">//控制窗体颜色</span></span><br><span class="line">    color.<span class="built_in">setColor</span>(QPalette::Background, <span class="built_in">QColor</span>(<span class="number">255</span>,<span class="number">255</span>,<span class="number">255</span>));<span class="comment">//背景颜色</span></span><br><span class="line">    <span class="built_in">setPalette</span>(color);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>滑条滑动时的槽函数</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LedWidget::on_Slider_R_valueChanged</span><span class="params">(<span class="keyword">int</span> value)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ui-&gt;Value_R-&gt;<span class="built_in">setText</span>(QString::<span class="built_in">number</span>(value));</span><br><span class="line">    <span class="built_in">UpdateShowColor</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LedWidget::on_Slider_G_valueChanged</span><span class="params">(<span class="keyword">int</span> value)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ui-&gt;Value_G-&gt;<span class="built_in">setText</span>(QString::<span class="built_in">number</span>(value));</span><br><span class="line">    <span class="built_in">UpdateShowColor</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LedWidget::on_Slider_B_valueChanged</span><span class="params">(<span class="keyword">int</span> value)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ui-&gt;Value_B-&gt;<span class="built_in">setText</span>(QString::<span class="built_in">number</span>(value));</span><br><span class="line">    <span class="built_in">UpdateShowColor</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>更新RGB三种颜色的混合显示</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LedWidget::UpdateShowColor</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    QColor color;</span><br><span class="line">    <span class="keyword">int</span> R = ui-&gt;Slider_R-&gt;<span class="built_in">value</span>();</span><br><span class="line">    <span class="keyword">int</span> G = ui-&gt;Slider_G-&gt;<span class="built_in">value</span>();</span><br><span class="line">    <span class="keyword">int</span> B = ui-&gt;Slider_B-&gt;<span class="built_in">value</span>();</span><br><span class="line">    color.<span class="built_in">setRgb</span>(R, G, B);</span><br><span class="line">    QPalette pal;</span><br><span class="line">    pal.<span class="built_in">setColor</span>(QPalette::Base, color);</span><br><span class="line">    ui-&gt;textBrowser-&gt;<span class="built_in">setPalette</span>(pal);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="2-板子上RGB-LED的控制"><a href="#2-板子上RGB-LED的控制" class="headerlink" title="2 板子上RGB LED的控制"></a>2 板子上RGB LED的控制</h1><h2 id="2-1-i-MX6ULL系统烧录"><a href="#2-1-i-MX6ULL系统烧录" class="headerlink" title="2.1 i.MX6ULL系统烧录"></a>2.1 i.MX6ULL系统烧录</h2><p>本篇的RGB LED测试，需要先烧录野火i.MX6ULL自带的系统固件，因为该系统已有Qt运行环境，且对应的RGB LED的驱动程序也已配置好了，这样就不需要再自己写RGB LED的驱动程序了，我们只写好Qt的应用程序，实现对板子上LED的控制即可。</p>
+<p>烧写方法可参考：<a target="_blank" rel="noopener" href="https://doc.embedfire.com/linux/imx6/quick_start/zh/latest/quick_start/install_debian/install_debian.html#">https://doc.embedfire.com/linux/imx6/quick_start/zh/latest/quick_start/install_debian/install_debian.html#</a></p>
+<p><strong>可以烧写到SD卡中</strong></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/4.png"></p>
+<p><strong>烧写到eMMC中</strong></p>
+<p>因为在SD卡中运行系统，无法使用WIFI连网，可以通过fire-config工具将SD卡的系统烧写到eMMC中，刷机过程可参考：</p>
+<p><a target="_blank" rel="noopener" href="https://doc.embedfire.com/linux/imx6/linux_base/zh/latest/linux_basis/fire-config_brief/fire-config_brief.html#id7">https://doc.embedfire.com/linux/imx6/linux_base/zh/latest/linux_basis/fire-config_brief/fire-config_brief.html#id7</a></p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/5.png"></p>
+<p>设置之后，选择重启，重启后的系统将自动进行从SD卡到EMMC的刷机。刷机过程大约2分钟左右。刷机完成后，控制台会重新进入串口登录页面， 此时观察开发板的LED灯，如果LED在持续闪烁，说明刷机成功。然后调整拨码开关为相应启动方式，重新上电启动系统即可。</p>
+<p>也可以直接通过<strong>USB-OTG接口和 MFGTool2软件</strong>烧写到eMMC。ssh</p>
+<p>烧写到eMMC启动，可以使用WIFI连网，WIFI配网步骤参考：<a target="_blank" rel="noopener" href="https://doc.embedfire.com/linux/imx6/quick_start/zh/latest/quick_start/wifi/wifi.html">https://doc.embedfire.com/linux/imx6/quick_start/zh/latest/quick_start/wifi/wifi.html</a></p>
+<p><strong>Qt系统界面</strong></p>
+<p>野火i.MX6ULL自带的系统固件烧录后自启动Qt程序界面如下：</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/imx6u/2-uboot/22.jpg"></p>
+<p>串口方式登录时：</p>
+<p>普通用户（带sudo权限）</p>
+<ul>
+<li><p>账户: debian</p>
+</li>
+<li><p>密码: temppwd </p>
+</li>
+</ul>
+<p>ROOT用户</p>
+<ul>
+<li><p>账户: root</p>
+</li>
+<li><p>密码: root</p>
+</li>
+</ul>
+<p>这个系统第一次运行时，会进行屏幕触摸校准，若校准的不满意，可删除掉**/etc/pointercal文件**后重启再进行校准。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rm /etc/pointercal</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-2-无Qt的RGB-LED测试"><a href="#2-2-无Qt的RGB-LED测试" class="headerlink" title="2.2 无Qt的RGB LED测试"></a>2.2 无Qt的RGB LED测试</h2><p>野火i.MX6ULL的RGB LED的原理图如下，由于驱动程序不需要自己写了，实际上我们也不需要关心具体的硬件引脚是哪个，只需要使用驱动程序提供的设备描述符进行LED的控制即可。</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/6.png"></p>
+<p>参考野火的测试代码：<a target="_blank" rel="noopener" href="https://doc.embedfire.com/linux/imx6/quick_start/zh/latest/quick_start/led_subsystem/led_subsystem.html#id4">https://doc.embedfire.com/linux/imx6/quick_start/zh/latest/quick_start/led_subsystem/led_subsystem.html#id4</a></p>
+<h3 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h3><p>编写自己的没有Qt界面的RGB LED测试代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> RLED_DEV_PATH <span class="meta-string">&quot;/sys/class/leds/red/brightness&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GLED_DEV_PATH <span class="meta-string">&quot;/sys/class/leds/green/brightness&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BLED_DEV_PATH <span class="meta-string">&quot;/sys/class/leds/blue/brightness&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">int</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> r_fd;</span><br><span class="line">    <span class="keyword">int</span> g_fd;</span><br><span class="line">    <span class="keyword">int</span> b_fd;</span><br><span class="line"></span><br><span class="line">    r_fd = open(RLED_DEV_PATH,O_WRONLY);</span><br><span class="line">    <span class="keyword">if</span>(r_fd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(RLED_DEV_PATH);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    g_fd = open(GLED_DEV_PATH,O_WRONLY);</span><br><span class="line">    <span class="keyword">if</span>(r_fd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(GLED_DEV_PATH);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    b_fd = open(BLED_DEV_PATH,O_WRONLY);</span><br><span class="line">    <span class="keyword">if</span>(r_fd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(BLED_DEV_PATH);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        write(r_fd,<span class="string">&quot;255&quot;</span>,<span class="number">3</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        write(r_fd,<span class="string">&quot;0&quot;</span>,<span class="number">3</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        </span><br><span class="line">        write(g_fd,<span class="string">&quot;255&quot;</span>,<span class="number">3</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        write(g_fd,<span class="string">&quot;0&quot;</span>,<span class="number">3</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        </span><br><span class="line">        write(b_fd,<span class="string">&quot;255&quot;</span>,<span class="number">3</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        write(b_fd,<span class="string">&quot;0&quot;</span>,<span class="number">3</span>);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    close(r_fd);</span><br><span class="line">    close(g_fd);</span><br><span class="line">    close(b_fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将该程序在Ubuntu进行交叉编译</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arm-linux-gnueabihf-gcc led_noqt.c -o led_noqt</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试效果"><a href="#测试效果" class="headerlink" title="测试效果"></a>测试效果</h3><p>运行效果如下，3种颜色的灯每隔1s依次点亮熄灭:</p>
+<p>对于亮度的控制，可以先参考教程中的命令行点灯测试：<a target="_blank" rel="noopener" href="https://doc.embedfire.com/linux/imx6/linux_base/zh/latest/linux_basis/led_key_command_line_testing/led_key_command_line_testing.html">https://doc.embedfire.com/linux/imx6/linux_base/zh/latest/linux_basis/led_key_command_line_testing/led_key_command_line_testing.html</a></p>
+<p>实际测试，串口指令无法控制灯的亮度，<strong>只能控制亮灭，亮度为1和亮度为255的效果一样，都是同样的亮度</strong>，不知道是硬件的问题还是软件驱动的问题。</p>
+<h2 id="2-3-Qt中移植RGB-LED控制代码"><a href="#2-3-Qt中移植RGB-LED控制代码" class="headerlink" title="2.3 Qt中移植RGB LED控制代码"></a>2.3 Qt中移植RGB LED控制代码</h2><p>在滑条UI界面代码工程的基础上，添加一个自定义的类，名字可起为regled:</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/7.png"></p>
+<p>然后在这个类中，将无Qt的RGB LED测试用到的代码移植进来，并结合Qt的滑动条对三种颜色的灯进行控制。</p>
+<p>这个是构造函数，先打开3个LED灯的文件描述符：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">rgbled::<span class="built_in">rgbled</span>(QObject *parent) : <span class="built_in">QObject</span>(parent)</span><br><span class="line">&#123;</span><br><span class="line">    r_fd = <span class="built_in">open</span>(RLED_DEV_PATH,O_WRONLY);</span><br><span class="line">    <span class="keyword">if</span>(r_fd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    g_fd = <span class="built_in">open</span>(GLED_DEV_PATH,O_WRONLY);</span><br><span class="line">    <span class="keyword">if</span>(r_fd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    b_fd = <span class="built_in">open</span>(BLED_DEV_PATH,O_WRONLY);</span><br><span class="line">    <span class="keyword">if</span>(r_fd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编写一个RGB灯的颜色和亮度的控制函数，供外部调用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rgbled::SetRGBLedValue</span><span class="params">(LED_TYPE type, <span class="keyword">int</span> val)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (val &gt; <span class="number">255</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        val = <span class="number">255</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (val &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        val = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> value = <span class="built_in">std</span>::to_string(val);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (type)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> T_R_LED:</span><br><span class="line">            write(r_fd, value.c_str(), <span class="number">3</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> T_G_LED:</span><br><span class="line">            write(g_fd, value.c_str(), <span class="number">3</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> T_B_LED:</span><br><span class="line">            write(b_fd, value.c_str(), <span class="number">3</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">default</span>:<span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在UI界面类中，可以对RGB LED进行控制：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//LedWidget类中定义一个rgbled成员变量</span></span><br><span class="line">rgbled *m_pRGBLed;</span><br><span class="line"></span><br><span class="line"><span class="comment">//LedWidget构造函数中实例化一个rgbled对象</span></span><br><span class="line">m_pRGBLed = <span class="keyword">new</span> <span class="built_in">rgbled</span>(<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
+
+<p>在更新UI界面上的模拟颜色面板的同时，也将板子上的RGB LED的亮度进行同步控制：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">LedWidget::UpdateShowColor</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    QColor color;</span><br><span class="line">    <span class="keyword">int</span> R = ui-&gt;Slider_R-&gt;<span class="built_in">value</span>();</span><br><span class="line">    <span class="keyword">int</span> G = ui-&gt;Slider_G-&gt;<span class="built_in">value</span>();</span><br><span class="line">    <span class="keyword">int</span> B = ui-&gt;Slider_B-&gt;<span class="built_in">value</span>();</span><br><span class="line">    color.<span class="built_in">setRgb</span>(R, G, B);</span><br><span class="line">    QPalette pal;</span><br><span class="line">    pal.<span class="built_in">setColor</span>(QPalette::Base, color);</span><br><span class="line">    ui-&gt;textBrowser-&gt;<span class="built_in">setPalette</span>(pal);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//控制板子上的RGB LED的亮度</span></span><br><span class="line">    m_pRGBLed-&gt;<span class="built_in">SetRGBLedValue</span>(T_R_LED, R);</span><br><span class="line">    m_pRGBLed-&gt;<span class="built_in">SetRGBLedValue</span>(T_G_LED, G);</span><br><span class="line">    m_pRGBLed-&gt;<span class="built_in">SetRGBLedValue</span>(T_B_LED, B);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-4-编译时遇到的问题"><a href="#2-4-编译时遇到的问题" class="headerlink" title="2.4 编译时遇到的问题"></a>2.4 编译时遇到的问题</h2><p>程序首先在Windows的Qt Creator上进行编译，遇到了一些问题，记录下解决方法。</p>
+<ul>
+<li><p><strong>找不到unistd.h</strong></p>
+<p>在Windows中编译时，Qt Creater提示找不到unistd.h，这个其实是Visual Stidio编译器找不这个头文件。</p>
+<p>这个头文件都是Linux系统中常用的，Windows中一般用不到，要消除这个编译错误，可以在VS的安装目录手动添加一个这个文件。</p>
+<p>我的目录是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">D:\Tools1\vs2015\VC\include</span><br></pre></td></tr></table></figure>
+
+<p>新建一个unistd.h：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//for qt creater, 2022/8/13</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _UNISTD_H</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _UNISTD_H</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;io.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;process.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> </span></span><br></pre></td></tr></table></figure></li>
+<li><p><strong>open、write等函数的警告提示</strong></p>
+<p>这些也是Linux中用到的函数，在Window平台编译只是警告信息，没有报错，可以不用管</p>
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/8.png"></p>
+</li>
+</ul>
+<h1 id="3-实验演示"><a href="#3-实验演示" class="headerlink" title="3 实验演示"></a>3 实验演示</h1><h2 id="3-1-交叉编译"><a href="#3-1-交叉编译" class="headerlink" title="3.1 交叉编译"></a>3.1 交叉编译</h2><p>和之前一样，将Windows的Qt Creator中的源码复制到Ubuntu中进行交叉编译，具体操作过程可参考之前的文章：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/467928443">嵌入式Qt-动手编写并运行自己的第1个ARM-Qt程序</a></p>
+<p>这里仅记录下编译指令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/home/xxpcb/myTest/imx6ull/otherlib/qt/qt-everywhere-src-5.12.9/arm-qt/bin/qmake</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-文件复制到板子中"><a href="#3-2-文件复制到板子中" class="headerlink" title="3.2 文件复制到板子中"></a>3.2 文件复制到板子中</h2><p>由于这次测试使用的是野火的系统固件，不能和之前用网络位置挂载根文件系统的方式，在Ubuntu中直接将文件复制到板子中(Ubuntu中的网络挂载位置)，因此本篇需要使用其它的方法将Ubuntu中编译的文件复制到板子中。</p>
+<p>这里使用SSH的方式进行拷贝，首先要在Ubuntu中和i.MX6ULL板子中配置SSH功能，配置方法如下：</p>
+<p><strong>配置ssh</strong></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install openssh-server -y</span><br><span class="line">sudo systemctl status ssh <span class="comment">#查看状态</span></span><br><span class="line"><span class="comment"># 如果你的防火墙开启了，使用下面语句</span></span><br><span class="line">sudo ufw allow ssh</span><br></pre></td></tr></table></figure>
+
+<p><strong>连接方式</strong></p>
+<p>基本的ssh连接方法是：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh username@ip</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>username表示该机器的用户名，ip表示对应的ip地址</p>
+</li>
+<li><p>ssh方式文件复制</p>
+</li>
+</ul>
+<p><strong>从Ubuntu拉取文件到板子中</strong></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 从服务器拉取文件</span></span><br><span class="line"><span class="comment"># scp 服务器上的某个用户@服务器IP::/服务器文件存放路径 拉取文件保存路径</span></span><br><span class="line">scp server_user_name@192.168.1.101:server_file_path local_path</span><br><span class="line"></span><br><span class="line"><span class="comment"># 我的板子的拉取命令</span></span><br><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/qt-app/mytest/</span><br><span class="line">scp xxpcb@192.168.5.104:~/myTest/imx6ull/qt-test/4-led/led ./</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/9.png"></p>
+<h2 id="3-3-测试效果"><a href="#3-3-测试效果" class="headerlink" title="3.3 测试效果"></a>3.3 测试效果</h2><p>在测试自己的例程之前，需要先将野火的自启动Qt例程kill掉，否则两个Qt程序会同步运行互相遮挡。</p>
+<p><strong>kill掉自启动Qt程序</strong></p>
+<p>通过ps 、top 等命令查询到ebf-qtdemo的pid，然后通过kill命令停止App运行</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#879 为当前 App 的 PID 值，每次可能不一样</span></span><br><span class="line">sudo <span class="built_in">kill</span> 879</span><br></pre></td></tr></table></figure>
+
+<p><strong>运行自己的Qt程序</strong></p>
+<p>野火的系统中，提供了一个运行脚本<strong>run_myapp.sh</strong>，需要调用这个脚本来运行自己的Qt程序</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo /usr/<span class="built_in">local</span>/qt-app/run_myapp.sh /usr/<span class="built_in">local</span>/qt-app/Control_1</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/pic2/qt-arm/5-rgbled/10.png"></p>
+<p>实际测试效果如下：</p>
+<p>可以看出：</p>
+<ul>
+<li>板子上的LED的亮度其实不能调节，只能亮或灭，需要确认下是不是LED驱动的问题</li>
+<li>触摸的方式拖动板子上的滑条，不太灵活，可能是触摸和鼠标都在起作用，两者干扰了</li>
+<li>Qt界面中模拟的颜色混合面板，颜色混合显示正常</li>
+</ul>
+<h1 id="4-总结"><a href="#4-总结" class="headerlink" title="4 总结"></a>4 总结</h1><p>本篇介绍了通过Qt中滑条的使用，并使用滑条来控制i.MX6ULL板子中RGB三个颜色LED的亮灭。通过烧录野火自带的系统固件，使用系统提供的LED驱动程序，再配置自己编译的Qt应用程序，来实现整个功能。</p>
+</article><div><div style="text-align:center;color: #ccc;font-size:14px;font-family: cursive;">-------------&#x7EB8;&#x77ED;&#x60C5;&#x957F; <i class="fa fa-umbrella"></i> &#x4E0B;&#x6B21;&#x518D;&#x89C1;-------------</div></div><div id="wechat_subscriber"><center><img id="wechat_subscriber_qcode" src="undefined" onerror="onerror=null;src='https://xxpcb-1259761082.cos.ap-shanghai.myqcloud.com/hexo/wxgzh.png'" alt="码农爱学习"></center><div>关注微信公众号，获取更多精彩~</div></div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">xxpcb</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://xxpcb.gitee.io/2022/08/18/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E6%8E%A7%E5%88%B6%E7%A1%AC%E4%BB%B6-%E6%BB%91%E5%8A%A8%E6%9D%A1%E6%8E%A7%E5%88%B6RGB%E7%81%AF/">http://xxpcb.gitee.io/2022/08/18/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E6%8E%A7%E5%88%B6%E7%A1%AC%E4%BB%B6-%E6%BB%91%E5%8A%A8%E6%9D%A1%E6%8E%A7%E5%88%B6RGB%E7%81%AF/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://xxpcb.gitee.io" target="_blank">码农爱学习的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Linux/">Linux</a><a class="post-meta__tags" href="/tags/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a><a class="post-meta__tags" href="/tags/ARM/">ARM</a><a class="post-meta__tags" href="/tags/Qt/">Qt</a></div><div class="post_share"><div class="social-share" data-image="/../img/imx/qt5.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/08/08/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E5%AE%9E%E7%8E%B0%E4%B8%A4%E4%B8%AA%E7%AA%97%E5%8F%A3%E7%9A%84%E5%88%87%E6%8D%A2/"><img class="next-cover" src="/../img/imx/qt4.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">嵌入式Qt-实现两个窗口的切换</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/01/25/嵌入式Linux-Qt环境搭建/" title="嵌入式Linux-Qt环境搭建"><img class="cover" src="/../img/imx/qt1.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-01-25</div><div class="title">嵌入式Linux-Qt环境搭建</div></div></a></div><div><a href="/2022/07/31/嵌入式Qt-动手编写并运行自己的第1个ARM-Qt程序/" title="嵌入式Qt-动手编写并运行自己的第1个ARM-Qt程序"><img class="cover" src="/../img/imx/qt2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-07-31</div><div class="title">嵌入式Qt-动手编写并运行自己的第1个ARM-Qt程序</div></div></a></div><div><a href="/2022/08/08/嵌入式Qt-做一个秒表/" title="嵌入式Qt-做一个秒表"><img class="cover" src="/../img/imx/qt3.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-08-08</div><div class="title">嵌入式Qt-做一个秒表</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/logo.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">xxpcb</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">141</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">93</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">28</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://gitee.com/xxpcb"><i class="fab fa-github"></i><span>Follow Me (gitee)</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/xxpcb" target="_blank" title="Github"><i class="fab fa-github"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">分享：单片机、嵌入式、ARM、Linux、C/C++、python等技术文章~ <img src="/img/wxgzh-card.png"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-%E8%AE%BE%E8%AE%A1Qt%E6%BB%91%E6%9D%A1%E6%8E%A7%E5%88%B6LED%E7%95%8C%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">1 设计Qt滑条控制LED界面</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E6%BB%91%E6%9D%A1%E6%8E%A7%E4%BB%B6"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 滑条控件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E6%8E%A7%E4%BB%B6%E9%A2%9C%E8%89%B2"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 控件颜色</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%95%8C%E9%9D%A2%E7%9A%84%E9%A2%9C%E8%89%B2"><span class="toc-number">1.2.1.</span> <span class="toc-text">界面的颜色</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A7%E4%BB%B6%E7%9A%84%E9%A2%9C%E8%89%B2"><span class="toc-number">1.2.2.</span> <span class="toc-text">控件的颜色</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E6%BB%91%E6%9D%A1UI%E7%95%8C%E9%9D%A2%E4%BB%A3%E7%A0%81%E7%BC%96%E5%86%99"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 滑条UI界面代码编写</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E6%9D%BF%E5%AD%90%E4%B8%8ARGB-LED%E7%9A%84%E6%8E%A7%E5%88%B6"><span class="toc-number">2.</span> <span class="toc-text">2 板子上RGB LED的控制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-i-MX6ULL%E7%B3%BB%E7%BB%9F%E7%83%A7%E5%BD%95"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 i.MX6ULL系统烧录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E6%97%A0Qt%E7%9A%84RGB-LED%E6%B5%8B%E8%AF%95"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 无Qt的RGB LED测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%BB%A3%E7%A0%81"><span class="toc-number">2.2.1.</span> <span class="toc-text">测试代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E6%95%88%E6%9E%9C"><span class="toc-number">2.2.2.</span> <span class="toc-text">测试效果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-Qt%E4%B8%AD%E7%A7%BB%E6%A4%8DRGB-LED%E6%8E%A7%E5%88%B6%E4%BB%A3%E7%A0%81"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 Qt中移植RGB LED控制代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-%E7%BC%96%E8%AF%91%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 编译时遇到的问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-%E5%AE%9E%E9%AA%8C%E6%BC%94%E7%A4%BA"><span class="toc-number">3.</span> <span class="toc-text">3 实验演示</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E4%BA%A4%E5%8F%89%E7%BC%96%E8%AF%91"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 交叉编译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E6%96%87%E4%BB%B6%E5%A4%8D%E5%88%B6%E5%88%B0%E6%9D%BF%E5%AD%90%E4%B8%AD"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 文件复制到板子中</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E6%B5%8B%E8%AF%95%E6%95%88%E6%9E%9C"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 测试效果</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">4 总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/08/18/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E6%8E%A7%E5%88%B6%E7%A1%AC%E4%BB%B6-%E6%BB%91%E5%8A%A8%E6%9D%A1%E6%8E%A7%E5%88%B6RGB%E7%81%AF/" title="嵌入式Qt-控制硬件-滑动条控制RGB灯"><img src="/../img/imx/qt5.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="嵌入式Qt-控制硬件-滑动条控制RGB灯"/></a><div class="content"><a class="title" href="/2022/08/18/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E6%8E%A7%E5%88%B6%E7%A1%AC%E4%BB%B6-%E6%BB%91%E5%8A%A8%E6%9D%A1%E6%8E%A7%E5%88%B6RGB%E7%81%AF/" title="嵌入式Qt-控制硬件-滑动条控制RGB灯">嵌入式Qt-控制硬件-滑动条控制RGB灯</a><time datetime="2022-08-18T14:47:00.000Z" title="发表于 2022-08-18 22:47:00">2022-08-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/08/08/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E5%AE%9E%E7%8E%B0%E4%B8%A4%E4%B8%AA%E7%AA%97%E5%8F%A3%E7%9A%84%E5%88%87%E6%8D%A2/" title="嵌入式Qt-实现两个窗口的切换"><img src="/../img/imx/qt4.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="嵌入式Qt-实现两个窗口的切换"/></a><div class="content"><a class="title" href="/2022/08/08/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E5%AE%9E%E7%8E%B0%E4%B8%A4%E4%B8%AA%E7%AA%97%E5%8F%A3%E7%9A%84%E5%88%87%E6%8D%A2/" title="嵌入式Qt-实现两个窗口的切换">嵌入式Qt-实现两个窗口的切换</a><time datetime="2022-08-08T15:32:32.000Z" title="发表于 2022-08-08 23:32:32">2022-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/08/08/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E5%81%9A%E4%B8%80%E4%B8%AA%E7%A7%92%E8%A1%A8/" title="嵌入式Qt-做一个秒表"><img src="/../img/imx/qt3.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="嵌入式Qt-做一个秒表"/></a><div class="content"><a class="title" href="/2022/08/08/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E5%81%9A%E4%B8%80%E4%B8%AA%E7%A7%92%E8%A1%A8/" title="嵌入式Qt-做一个秒表">嵌入式Qt-做一个秒表</a><time datetime="2022-08-08T15:32:21.000Z" title="发表于 2022-08-08 23:32:21">2022-08-08</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/31/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E5%8A%A8%E6%89%8B%E7%BC%96%E5%86%99%E5%B9%B6%E8%BF%90%E8%A1%8C%E8%87%AA%E5%B7%B1%E7%9A%84%E7%AC%AC1%E4%B8%AAARM-Qt%E7%A8%8B%E5%BA%8F/" title="嵌入式Qt-动手编写并运行自己的第1个ARM-Qt程序"><img src="/../img/imx/qt2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="嵌入式Qt-动手编写并运行自己的第1个ARM-Qt程序"/></a><div class="content"><a class="title" href="/2022/07/31/%E5%B5%8C%E5%85%A5%E5%BC%8FQt-%E5%8A%A8%E6%89%8B%E7%BC%96%E5%86%99%E5%B9%B6%E8%BF%90%E8%A1%8C%E8%87%AA%E5%B7%B1%E7%9A%84%E7%AC%AC1%E4%B8%AAARM-Qt%E7%A8%8B%E5%BA%8F/" title="嵌入式Qt-动手编写并运行自己的第1个ARM-Qt程序">嵌入式Qt-动手编写并运行自己的第1个ARM-Qt程序</a><time datetime="2022-07-31T03:28:33.000Z" title="发表于 2022-07-31 11:28:33">2022-07-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/07/31/STM32%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BC%96%E7%A8%8B%E5%AE%9E%E4%BE%8B-%E5%85%A8%E8%87%AA%E5%8A%A8%E6%B4%97%E8%A1%A3%E6%9C%BA-%E4%B8%8B/" title="STM32状态机编程实例--全自动洗衣机(下)"><img src="/../img/stm32/8-washer2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32状态机编程实例--全自动洗衣机(下)"/></a><div class="content"><a class="title" href="/2022/07/31/STM32%E7%8A%B6%E6%80%81%E6%9C%BA%E7%BC%96%E7%A8%8B%E5%AE%9E%E4%BE%8B-%E5%85%A8%E8%87%AA%E5%8A%A8%E6%B4%97%E8%A1%A3%E6%9C%BA-%E4%B8%8B/" title="STM32状态机编程实例--全自动洗衣机(下)">STM32状态机编程实例--全自动洗衣机(下)</a><time datetime="2022-07-31T03:21:37.000Z" title="发表于 2022-07-31 11:21:37">2022-07-31</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/../img/imx/qt5.png')"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2022 By xxpcb</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script>var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',preloader.endLoading())</script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: 'P6iS1Ip0yj2xKyDmnnT8mMrk-gzGzoHsz',
+      appKey: 'bHIkuKIeQSpeQgKoE3vtEYKs',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'en',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !false) {
+  if (false) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script></div></body></html>
